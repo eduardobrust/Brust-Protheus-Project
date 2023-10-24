@@ -1,0 +1,61 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"type": "totvs_language_debug",
+			"request": "launch",
+			"name": "[GAB] SingThred",
+			"program": "${command:AskForProgramName}",
+			"cwb": "${workspaceFolder}",
+			"smartclientBin": "C:\\baseAguas\\bases_protheus\\smartclient.exe",
+			"isMultiSession": true,
+			"enableTableSync": true,
+			"enableMultiThread": false
+		},
+		{
+			"type": "totvs_language_debug",
+			"request": "launch",
+			"name": "[GAB] MultThred",
+			"program": "${command:AskForProgramName}",
+			"cwb": "${workspaceFolder}",
+			"smartclientBin": "C:\\baseAguas\\bases_protheus\\smartclient.exe",
+			"isMultiSession": true,
+			"enableTableSync": true,
+			"enableMultiThread": true
+		},
+		{
+			"type": "totvs_language_debug",
+			"request": "launch",
+			"name": "[BRUST] SingThred - Totvs",
+			"program": "${command:AskForProgramName}",
+			"cwb": "${workspaceFolder}",
+			"smartclientBin": "C:\\totvs\\protheus\\bin\\smartclient\\smartclient.exe",
+			"isMultiSession": true,
+			"enableTableSync": true,
+			"enableMultiThread": false
+		},
+		{
+			"type": "totvs_language_debug",
+			"request": "launch",
+			"name": "[BRUST] MultThred - Totvs",
+			"program": "${command:AskForProgramName}",
+			"cwb": "${workspaceFolder}",
+			"smartclientBin": "C:\\totvs\\protheus\\bin\\smartclient\\smartclient.exe",
+			"isMultiSession": true,
+			"enableTableSync": true,
+			"enableMultiThread": true
+		}
+	],
+	"lastPrograms": [
+		{
+			"args": [],
+			"label": "SIGAMDI",
+			"description": ""
+		},
+		{
+			"label": "U_ARQCEDAE"
+		}
+	],
+	"lastProgramExecuted": "SIGAMDI",
+	"lastProgramArguments": []
+}
