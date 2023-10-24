@@ -1,0 +1,1 @@
+select * from sigagms.sb1000;
