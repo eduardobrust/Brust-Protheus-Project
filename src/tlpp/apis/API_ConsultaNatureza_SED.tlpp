@@ -1,0 +1,281 @@
+#include 'tlpp-core.th'
+#include 'tlpp-rest.th'
+#include "msobject.ch"
+#include "totvs.ch"
+
+/*
+	EDUARDO BRUST - HOMOLOGADO NA RELEASE 12.1.2310
+	Esta API visa expor o cadastro de naturezas financeiras do Protheus[SED] com base em filtros passados por parâmetro.
+*/
+
+//Definindo e usando o namespace para a classe
+namespace nConsultaSED
+
+/*/ iConsultaSED
+Interface que define os métodos e propriedades para consultar o cadastro de naturezas financeiras do Protheus[SED].
+type Interface
+@version 12.1.2310
+@author eduardo.brust
+@since 25/10/2023
+/*/
+Interface iConsultaSED
+
+public method GETcConsultaSED()
+
+EndInterface
+
+/*/ cConsultaSED
+Classe que implementa a interface iConsultaSED para consultar o cadastro de naturezas financeiras do Protheus[SED].
+@type classe
+@version 12.1.2310
+@author eduardo.brust
+@since 25/10/2023
+/*/
+class cConsultaSED Implements iConsultaSED
+
+	private data cToken 	as Character
+	private data cCod 		as Character
+	private data cDesc 		as Character
+	private data jPath		as json
+	Private data cMenRet	as variant		//guardo a mensagem de retorno da api
+	Private data jRetorno	as json		    //monto o json de retorno da api
+
+	public method New() as object
+
+	//annotation deve ficar na implementação do metódo da classe e não da interface.
+	@Get(endpoint="tlpp/fin/v1/cConsultaSED",description="Consulta cadastro de Natureza financeira no Protheus[SED]")
+	public method GETcConsultaSED() as json
+
+	protected method ValidaQueryString(cToken as Character,cCod as Character,cDesc as Character) as Logical
+	protected method BuscaSED(cCod as Character,cDesc as Character) as json
+
+endclass
+
+
+/*/{Protheus.doc} cConsultaSED::new() as object
+Metodo construtor
+@type method
+@version 12.1.2310
+@author Eduardo Brust
+@since 25/10/2023
+return Self, retorna um objeto
+/*/
+method new() as object class cConsultaSED
+	::cToken	:= ''
+	::cCod		:= ''
+	::cDesc		:= ''
+	::jPath 	:= Nil
+	::cMenRet	:= ''
+	::jRetorno	:= Nil
+return Self
+
+
+/*/{Protheus.doc} cConsultaSED::GETcConsultaSED() as json
+Metodo Get
+@type method
+@version 12.1.2310
+@author Eduardo Brust
+@since 25/10/2023
+@return variant, return_um objeto
+/*/
+method GETcConsultaSED() as json class cConsultaSED
+	Local lRet			as logical
+	Local cCod			as Character
+	Local cDesc			as Character
+	Local cauxMenRet	as variant
+
+	::cMenRet	:= ""
+	::jRetorno	:= ::cMenRet
+
+	::jPath := oRest:getQueryRequest()
+	if ( ::jPath <> Nil )
+		::cToken := ::jPath[ 'cToken' ]
+		if ( valtype(::cToken) == 'U' )
+			::cToken := ''
+		endif
+
+		::cCod := ::jPath[ 'cCod' ]
+		if ( valtype(cCod) == 'U' )
+			::cCod := ''
+		endif
+
+		::cDesc := ::jPath[ 'cDesc' ]
+		if ( valtype(cDesc) == 'U' )
+			::cDesc := ''
+		endif
+	endif
+
+	lRet := ::ValidaQueryString(::cToken,::cCod,::cDesc)
+
+	if lRet
+		If !.T. //!U_VTOKEN(::cToken) //RETIRAR PARA RODAR EM GAB
+			lRet := .F.
+			::cMenRet	:= "Token Incorreto."
+		endif
+	endif
+
+	If lRet
+		::jRetorno	:= ::BuscaSED(::cCod,::cDesc)
+	else
+		cauxMenRet := '{ '
+		cauxMenRet += ' "method" : "GET", '
+		cauxMenRet += ' "cCodRet" : "401", '
+		cauxMenRet += ' "cDescRet" : "' + ::cMenRet + '", '
+		cauxMenRet += ' "items" : [ '
+		cauxMenRet += '] '
+		cauxMenRet += ' }'
+		::jRetorno := cauxMenRet
+	endif
+
+	lRet := oRest:setKeyHeaderResponse("Content-Type", "application/json")
+
+	::jRetorno := EncodeUtf8(::jRetorno)
+	
+return oRest:setResponse( ::jRetorno )
+
+
+/*/{Protheus.doc} cConsultaSED::ValidaQueryString(cToken as Character,cCod as Character,cDesc as Character) as Logical
+Valida se os parametros passados para a API estão consistentes.
+@type method
+@version 12.1.2310
+@author Eduardo Brust
+@since 26/10/2023
+@return logical, return .T. OR .F.
+/*/
+method ValidaQueryString(cToken as Character,cCod as Character,cDesc as Character) as Logical class cConsultaSED
+	Local lRet	:= .T.
+
+	//protecao de erro
+	DEFAULT cToken 		:= ""
+	DEFAULT cCod 		:= ""
+	DEFAULT cDesc 		:= ""
+
+	//logica para validacao dos parametros
+
+	if empty(cToken)
+		::cMenRet += "| ctoken não informado! "
+		lRet	:= .F.
+	else
+		if empty(cCod)
+			//	::cMenRet += "| cCod não informada! "
+		endif
+
+		if empty(cDesc)
+			//	::cMenRet += "| cDesc não informado! "
+		endif
+	endif
+
+return lRet
+
+
+/*/{Protheus.doc} cConsultaSED::BuscaSED(cCod as Character,cDesc as Character) as json
+Busca natureza financeira no cadastro do Protheus[SED] pelo código e/ou descrição.
+@type method
+@version 12.1.2310
+@author Eduardo Brust
+@since 10/25/2023
+@return json, retorna um objeto json
+/*/
+method BuscaSED(cCod as Character,cDesc as Character) as json class cConsultaSED
+
+	Local _cQry 	:= ""
+	Local cTrb1
+	Local cCabec    := ""
+	Local cItens    := ""
+	Local cRodape   := ""
+	Local cData     := ""
+
+	DEFAULT cCod   := ''
+	DEFAULT cDesc  := ''
+
+	IF !EMPTY(cCod) .OR. !EMPTY(cDesc)
+
+		_cQry += " SELECT ED_CODIGO,ED_DESCRIC " 		         +CRLF
+		_cQry += " FROM  " + RetSqlName("SED") + " SED " 		 +CRLF
+		_cQry += " WHERE SED.D_E_L_E_T_ = ' ' " 				 +CRLF
+		_cQry += " AND ED_FILIAL = '" + FWxFilial("SED")  + "'"  +CRLF
+
+		IF !EMPTY(cCod)
+			_cQry += " AND ED_CODIGO  = '" + cCod  + "'" 		  +CRLF
+		ENDIF
+
+		IF !EMPTY(cDesc)
+			_cQry += " AND ED_DESCRIC LIKE '%" + cDesc  + "%'" 		 +CRLF
+			_cQry += " FETCH FIRST 10 ROWS ONLY"                     +CRLF
+		ENDIF
+
+		cTrb1 := MpSysOpenQuery(_cQry)
+
+		While (cTrb1)->(!Eof())
+
+			cItens += ' { '
+			cItens += ' "cCod" : "' + AllTrim((cTrb1)->ED_CODIGO) + '", '
+			cItens += ' "cDesc" : "' + AllTrim((cTrb1)->ED_DESCRIC) + '" '
+			cItens += ' },'
+
+			(cTrb1)->(dbSkip())
+		End
+
+		//FECHO A AREA ABERTA PELA QUERY
+		If Select(cTrb1) > 0 .AND. !EMPTY(cTrb1)
+			(cTrb1)->(DbCloseArea())
+			cTrb1	:= ""
+		endif
+	ENDIF
+
+	IF !EMPTY(cItens)
+
+		cItens := SUBSTR( cItens, 1, LEN(cItens) -1)
+
+		cCabec := '{ '
+		cCabec += ' "method" : "GET", '
+		cCabec += ' "cCodRet" : "200", '
+		cCabec += ' "cDescRet" : "Natureza Encontrada", '
+		cCabec += ' "items" : [ '
+
+		cRodape += '] '
+		cRodape += ' }'
+
+		cData := cCabec+cItens+cRodape
+	else
+		cCabec := '{ '
+		cCabec += ' "method" : "GET", '
+		cCabec += ' "cCodRet" : "404", '
+		cCabec += ' "cDescRet" : "Natureza nao encontrada", '
+		cCabec += ' "items" : [ '
+		cRodape += '] '
+		cRodape += ' }'
+
+		cData := cCabec+cRodape
+	endif
+
+Return cData
+
+/*
+
+https://tdn.totvs.com/display/tec/Reflection+e+Annotation
+
+1. GET:
+   - 200 (OK): A solicitação foi bem-sucedida e o corpo da resposta contém os dados solicitados.
+   - 404 (Not Found): O recurso solicitado não foi encontrado.
+
+2. POST:
+   - 201 (Created): A solicitação foi bem-sucedida e um novo recurso foi criado.
+   - 400 (Bad Request): A solicitação não pôde ser entendida ou contém parâmetros inválidos.
+   - 409 (Conflict): O servidor detectou um conflito durante o processamento da solicitação, como um conflito de duplicação de recursos.
+
+3. PUT:
+   - 200 (OK): A solicitação foi bem-sucedida e o recurso foi atualizado.
+   - 400 (Bad Request): A solicitação não pôde ser entendida ou contém parâmetros inválidos.
+   - 404 (Not Found): O recurso a ser atualizado não foi encontrado.
+
+4. PATCH:
+   - 200 (OK): A solicitação foi bem-sucedida e o recurso foi atualizado.
+   - 400 (Bad Request): A solicitação não pôde ser entendida ou contém parâmetros inválidos.
+   - 404 (Not Found): O recurso a ser atualizado não foi encontrado.
+
+5. DELETE:
+   - 204 (No Content): A solicitação foi bem-sucedida e o recurso foi excluído.
+   - 404 (Not Found): O recurso a ser excluído não foi encontrado.
+
+*/
