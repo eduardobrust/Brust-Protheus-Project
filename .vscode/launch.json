@@ -54,8 +54,12 @@
 		},
 		{
 			"label": "U_ARQCEDAE"
+		},
+		{
+			"args": [],
+			"label": "U_MyGenDoc"
 		}
 	],
-	"lastProgramExecuted": "SIGAMDI",
+	"lastProgramExecuted": "U_MyGenDoc",
 	"lastProgramArguments": []
 }

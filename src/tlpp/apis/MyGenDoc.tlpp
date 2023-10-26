@@ -1,0 +1,5 @@
+#include 'tlpp-doc.th'
+
+User Function MyGenDoc()
+    tlpp.doc.generate( 'swagger', 'api_doc', {8003} )
+return Nil
