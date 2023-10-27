@@ -48,3 +48,10 @@ FROM (
   )
 )
 WHERE rn BETWEEN 1 AND 10;
+-----------------------------------------------------------------------------------------------------------------
+SELECT ROTINA,EMPRESA,SIGLA,M0_NOMECOM,M0_CGC,ATIVO 
+FROM ROTINA_EMPRESA
+INNER JOIN SYS_COMPANY
+ON D_E_L_E_T_ = ' '
+AND M0_CODIGO = '00'
+AND SUBSTR(M0_CODFIL,1,6) = EMPRESA;

@@ -108,7 +108,7 @@ method GETcConsultaSED() as json class cConsultaSED
 	lRet := ::ValidaQueryString(::cToken,::cCod,::cDesc)
 
 	if lRet
-		If !.T. //!U_VTOKEN(::cToken) //RETIRAR PARA RODAR EM GAB
+		If .F. // !U_VTOKEN(::cToken) RETIRAR DEPOIS DOS TESTES
 			lRet := .F.
 			::cMenRet	:= "Token Incorreto."
 		endif

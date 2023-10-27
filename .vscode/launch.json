@@ -58,8 +58,12 @@
 		{
 			"args": [],
 			"label": "U_MyGenDoc"
+		},
+		{
+			"args": [],
+			"label": "U_GetTokenOrq"
 		}
 	],
-	"lastProgramExecuted": "U_MyGenDoc",
+	"lastProgramExecuted": "U_GetTokenOrq",
 	"lastProgramArguments": []
 }
