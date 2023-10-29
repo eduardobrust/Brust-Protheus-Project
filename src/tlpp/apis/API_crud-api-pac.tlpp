@@ -9,8 +9,8 @@
 	A API é destinada a ser utilizada na integração Protheus x Orquestra
 */
 
-//Definindo e usando o namespace para a classe
-namespace nCrudPAC
+//Definindo  o namespace para a classe
+namespace nApiGab
 
 /*/ iCrudPAC
 Main Interface de controle

@@ -8,8 +8,8 @@
 	Esta API visa expor o cadastro de naturezas financeiras do Protheus[SED] com base em filtros passados por parâmetro.
 */
 
-//Definindo e usando o namespace para a classe
-namespace nAPInamespace
+//Definindo o namespace para a classe
+namespace nApiGab
 
 /*/ iConsultaSED
 definição de um contrato que uma classe deve implementar
@@ -71,7 +71,7 @@ return Self
 
 
 /*/{Protheus.doc} cConsultaSED::GETConsultaSED() as json
-Metodo Get
+Metodo Get para consulta da SED
 @type method
 @version 12.1.2310
 @author Eduardo Brust
