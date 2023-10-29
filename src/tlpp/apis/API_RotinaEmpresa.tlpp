@@ -12,6 +12,14 @@
 //Definindo o namespace para a classe
 namespace nApiGab
 
+Interface iApiRotinaEmpresa
+
+public method GetApiConsultaRotinaEmpresa() as json
+public method PostApiConsultaRotinaEmpresa() as json
+public method PatchApiConsultaRotinaEmpresa() as json
+
+EndInterface
+
 /*/ cApiRotinaEmpresa
 Classe que herda a clase nGab.cRotinaEmpresa com seus métodos e implementa um polimorfismo expondo uma nova classe nApiGab.cApiRotinaEmpresa
 @type classe
@@ -19,7 +27,7 @@ Classe que herda a clase nGab.cRotinaEmpresa com seus métodos e implementa um po
 @author eduardo.brust
 @since 25/10/2023
 /*/
-class cApiRotinaEmpresa from nGab.cRotinaEmpresa
+class cApiRotinaEmpresa from nGab.cRotinaEmpresa Implements iApiRotinaEmpresa
 
 	private data cToken 	as Character
 	private data cRotina 	as Character
@@ -33,8 +41,14 @@ class cApiRotinaEmpresa from nGab.cRotinaEmpresa
 	public method New() as object
 
 	//annotation deve ficar na implementação do metódo da classe e não da interface.
-	@Get(endpoint='tlpp/cfg/v1/cApiRotinaEmpresa',description='Consulta Tabela ROTINA_EMPRESA')
+	@Get(endpoint='tlpp/cfg/v1/cApiRotinaEmpresa',description='Consulta registro na Tabela ROTINA_EMPRESA')
 	public method GetApiConsultaRotinaEmpresa() as json
+
+	@Post(endpoint='tlpp/cfg/v1/cApiRotinaEmpresa/',description='Inclui registro na Tabela ROTINA_EMPRESA')
+	public method PostApiConsultaRotinaEmpresa() as json
+
+	@Patch(endpoint='tlpp/cfg/v1/cApiRotinaEmpresa/:cRotina',description='Altera registro na Tabela ROTINA_EMPRESA')
+	public method PatchApiConsultaRotinaEmpresa() as json
 
 endclass
 
@@ -112,7 +126,7 @@ method GetApiConsultaRotinaEmpresa() as json class cApiRotinaEmpresa
 
 	lRet := oRest:setKeyHeaderResponse("Content-Type", "application/json")
 
-	::jRetorno := ::GETConsultaRotinaEmpresa(::cRotina,lFullEmp,::cAtivo)
+	::jRetorno := ::GETConsultaRotinaEmpresa(::cRotina,::cEmpresa,lFullEmp,::cAtivo)
 
 return oRest:setResponse( ::jRetorno )
 

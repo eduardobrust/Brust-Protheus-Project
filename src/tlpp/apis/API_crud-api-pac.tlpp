@@ -21,11 +21,11 @@ type Interface
 /*/
 Interface iCrudPAC
 
-public method GETcCrudPAC()
-public method PostcCrudPAC()
-public method PutcCrudPAC()
-public method PatchcCrudPAC()
-public method DeletecCrudPAC()
+public method GETcCrudPAC() as json
+public method PostcCrudPAC() as json
+public method PutcCrudPAC() as json
+public method PatchcCrudPAC() as json
+public method DeletecCrudPAC() as json
 EndInterface
 
 /*/ cCrudPAC
@@ -52,17 +52,17 @@ class cCrudPAC Implements iCrudPAC
 	@Get(endpoint="tlpp/orquestra/v1/cCrudPAC",description="Busca Acesso na PAC")  
 	public method GETcCrudPAC() as json
 
-	@Post(endpoint="tlpp/orquestra/v1/cCrudPAC",description="Grava Acesso na PAC")
+	@Post(endpoint="tlpp/orquestra/v1/cCrudPAC",description="Inclui Acesso na PAC")
 	public method PostcCrudPAC() as json
 
 	@Put(endpoint="tlpp/orquestra/v1/cCrudPAC",description="Altera Acesso na PAC")
 	public method PutcCrudPAC() as json
 
-	@Delete(endpoint="tlpp/orquestra/v1/cCrudPAC",description="Deleta Acesso na PAC")
-	public method DeletecCrudPAC() as json
-
 	@Patch(endpoint="tlpp/orquestra/v1/cCrudPAC/:codigo",description="Altera Acesso na PAC")
 	public method PatchcCrudPAC() as json
+
+	@Delete(endpoint="tlpp/orquestra/v1/cCrudPAC",description="Deleta Acesso na PAC")
+	public method DeletecCrudPAC() as json
 
 	protected method ValidaQueryString(cPacFil as Character,cPacUsu as Character,cPacCC as Character,cPacProcesso as Character) as Logical
 	protected method ConsultaPAC(cPacFil as Character,cPacUsu as Character,cPacCC as Character,cPacProcesso as Character) as json
