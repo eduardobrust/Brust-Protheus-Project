@@ -55,8 +55,10 @@
 		{
 			"args": [],
 			"label": "u_testaclasse"
+		},
+		{
+			"label": "xxxx"
 		}
 	],
-	"lastProgramExecuted": "u_testaclasse",
-	"lastProgramArguments": []
+	"lastProgramExecuted": "xxxx"
 }

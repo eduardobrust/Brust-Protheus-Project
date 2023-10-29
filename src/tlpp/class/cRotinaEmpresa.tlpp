@@ -8,43 +8,43 @@
 	Classe para ler dados de cruzamento de rotinas x empresas de uma tabela(ROTINA_EMPRESA) e devolver um JSON com os dados filtrados pela rotina.
 
 	Para instanciar a classe siga este exemplo:
-	oEmpresas   := nGab.cRotinasEmpresas():New()  //objeto := namespace.classe():construtor()
+	oEmpresas   := nGab.cRotinaEmpresa():New()  //objeto := namespace.classe():construtor()
     oEmpresas   := oEmpresas:GETConsultaRotinaEmpresa("FSTARTINOVA",.f.) // .T. para todas as filiais da empresa; .F. somente a matriz
 */
 
 //Definindo o namespace para a classe
 namespace nGab
 
-/*/ iRotinasEmpresas
+/*/ iRotinaEmpresa
 definição de um contrato que uma classe deve implementar
 type Interface
 @version 12.1.2310
 @author eduardo.brust
 @since 28/10/2023
 /*/
-Interface iRotinasEmpresas
+Interface iRotinaEmpresa
 
-public method GETConsultaRotinaEmpresa(cNomeRotina as Character,lFullEmp as Logical,cAtivo as Character) as json
+public method GETConsultaRotinaEmpresa(cRotina as Character,lFullEmp as Logical,cAtivo as Character) as json
 
 EndInterface
 
 
-/*/ cRotinasEmpresas
-Classe que implementa a interface iRotinasEmpresas para consultar as empresas que uma determinada rotina pode rodar.
+/*/ cRotinaEmpresa
+Classe que implementa a interface iRotinaEmpresa para consultar as empresas que uma determinada rotina pode rodar.
 @type classe
 @version 12.1.2310
 @author eduardo.brust
 @since 28/10/2023
 /*/
-class cRotinasEmpresas Implements iRotinasEmpresas
+class cRotinaEmpresa Implements iRotinaEmpresa
 
 	public method New() as object
 
-	public method GETConsultaRotinaEmpresa(cNomeRotina as Character,lFullEmp as Logical,cAtivo as Character) as json
+	public method GETConsultaRotinaEmpresa(cRotina as Character,lFullEmp as Logical,cAtivo as Character) as json
 endclass
 
 
-/*/{Protheus.doc} cRotinasEmpresas::new() as object
+/*/{Protheus.doc} cRotinaEmpresa::new() as object
 Metodo construtor
 @type method
 @version 12.1.2310
@@ -52,12 +52,12 @@ Metodo construtor
 @since 28/10/2023
 return Self, retorna um objeto
 /*/
-method new() as object class cRotinasEmpresas
+method new() as object class cRotinaEmpresa
 
 return Self
 
 
-/*/{Protheus.doc} cRotinasEmpresas::GETConsultaRotinaEmpresa(cNomeRotina as Character,lFullEmp as Logical,cAtivo as Character) as json
+/*/{Protheus.doc} cRotinaEmpresa::GETConsultaRotinaEmpresa(cRotina as Character,lFullEmp as Logical,cAtivo as Character) as json
 Consulta as empresas que uma determinada rotina pode rodar. passando o parametro se busca todas as filiais ou somente a matriz.
 @type method
 @version 12.1.2310
@@ -65,7 +65,7 @@ Consulta as empresas que uma determinada rotina pode rodar. passando o parametro
 @since 28/10/2023
 @return json, retorna um objeto json
 /*/
-method GETConsultaRotinaEmpresa(cNomeRotina as Character,lFullEmp as Logical,cAtivo as Character) as json class cRotinasEmpresas
+method GETConsultaRotinaEmpresa(cRotina as Character,lFullEmp as Logical,cAtivo as Character) as json class cRotinaEmpresa
 	Local _cQry 	:= "" 	as Character
 	Local cTrb1				as Character
 	Local cHeader	:= ''	as Character
@@ -76,7 +76,7 @@ method GETConsultaRotinaEmpresa(cNomeRotina as Character,lFullEmp as Logical,cAt
 	Local vRet				as Variant
 
 	//protecao de erro
-	DEFAULT cNomeRotina := ""
+	DEFAULT cRotina := ""
 	DEFAULT lFullEmp 	:= .F.
 	DEFAULT cAtivo 		:= "S"
 
@@ -98,8 +98,8 @@ method GETConsultaRotinaEmpresa(cNomeRotina as Character,lFullEmp as Logical,cAt
 	
 	_cQry += " WHERE EMPRESA <> ' ' "  										  	  +CRLF
 
-	IF !EMPTY(cNomeRotina)
-		_cQry += " AND UPPER(TRIM(ROTINA)) = '" + UPPER(ALLTRIM(cNomeRotina)) + "'"    +CRLF
+	IF !EMPTY(cRotina)
+		_cQry += " AND UPPER(TRIM(ROTINA)) = '" + UPPER(ALLTRIM(cRotina)) + "'"    +CRLF
 	ENDIF 
 
 	IF !EMPTY(cAtivo) .AND. ALLTRIM(cAtivo) <> '*'
@@ -117,7 +117,7 @@ method GETConsultaRotinaEmpresa(cNomeRotina as Character,lFullEmp as Logical,cAt
 	While (cTrb1)->(!Eof())
 
 		cItens += ' { '
-		cItens += ' "nomeRotina" : "' + AllTrim((cTrb1)->ROTINA) + '", '
+		cItens += ' "Rotina" : "' + AllTrim((cTrb1)->ROTINA) + '", '
 		cItens += ' "codigoReduzido" : "' + AllTrim((cTrb1)->EMPRESA) + '", '
 		cItens += ' "codigo" : "' + AllTrim((cTrb1)->EMPRESA) + '", '
 		cItens += ' "sigla" : "' + AllTrim((cTrb1)->SIGLA) + '", '

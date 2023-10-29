@@ -1,0 +1,146 @@
+#include 'tlpp-core.th'
+#include 'tlpp-rest.th'
+#include "msobject.ch"
+#include "totvs.ch"
+
+/*
+	EDUARDO BRUST - HOMOLOGADO NA RELEASE 12.1.2310
+	Esta API visa expor a tabela ROTINA_EMPRESA retornando um json com os dados da tabela.
+    Sua classe herda a clase nGab.cRotinaEmpresa com seus métodos e implementa um polimorfismo expondo uma nova classe nApiGab.cApiRotinaEmpresa
+*/
+
+//Definindo o namespace para a classe
+namespace nApiGab
+
+/*/ cApiRotinaEmpresa
+Classe que herda a clase nGab.cRotinaEmpresa com seus métodos e implementa um polimorfismo expondo uma nova classe nApiGab.cApiRotinaEmpresa
+@type classe
+@version 12.1.2310
+@author eduardo.brust
+@since 25/10/2023
+/*/
+class cApiRotinaEmpresa from nGab.cRotinaEmpresa
+
+	private data cToken 	as Character
+	private data cRotina 	as Character
+	private data cEmpresa 	as Character
+	private data cFullEmp	as Character
+	private data cAtivo 	as Character
+	private data jQuery		as json
+	Private data cMenRet	as variant		//guardo a mensagem de retorno da api
+	Private data jRetorno	as json		    //monto o json de retorno da api
+
+	public method New() as object
+
+	//annotation deve ficar na implementação do metódo da classe e não da interface.
+	@Get(endpoint='tlpp/cfg/v1/cApiRotinaEmpresa',description='Consulta Tabela ROTINA_EMPRESA')
+	public method GetApiConsultaRotinaEmpresa() as json
+
+endclass
+
+
+/*/{Protheus.doc} cApiRotinaEmpresa::new() as object
+Metodo construtor
+@type method
+@version 12.1.2310
+@author Eduardo Brust
+@since 25/10/2023
+return Self, retorna um objeto
+/*/
+method new() as object class cApiRotinaEmpresa
+	::cToken		:= ''
+	::cRotina		:= ''
+	::cEmpresa		:= ''
+	::cFullEmp		:= ''
+	::cAtivo		:= ''
+	::jQuery 		:= Nil
+	::cMenRet		:= ''
+	::jRetorno		:= Nil
+return Self
+
+
+/*/{Protheus.doc} cApiRotinaEmpresa::GetApiConsultaRotinaEmpresa() as json
+Metodo Get para consulta a tabela ROTINA_EMPRESA
+@type method
+@version 12.1.2310
+@author Eduardo Brust
+@since 25/10/2023
+@return variant, return_um objeto
+/*/
+method GetApiConsultaRotinaEmpresa() as json class cApiRotinaEmpresa
+	Local lRet			:= .T. 	as logical
+	Local lFullEmp		:= .T. 	as logical		
+
+	::jQuery := oRest:getQueryRequest()
+	if ( ::jQuery <> Nil )
+		::cToken := ::jQuery[ 'cToken' ]
+		if ( valtype(::cToken) == 'U' )
+			::cToken := ''
+		endif
+
+		::cRotina := ::jQuery[ 'cRotina' ]
+		if ( valtype(::cRotina) == 'U' )
+			::cRotina := ''
+		endif
+
+		::cEmpresa := ::jQuery[ 'cEmpresa' ]
+		if ( valtype(::cEmpresa) == 'U' )
+			::cEmpresa := ''
+		endif
+
+		::cFullEmp := ::jQuery[ 'cFullEmp' ]
+		if ( valtype(::cFullEmp) == 'U' )
+			lFullEmp := .T.
+		elseif ::cFullEmp == '1'
+			lFullEmp := .T.
+		elseif ::cFullEmp == '0'
+			lFullEmp := .F.
+		endif
+
+		::cAtivo := ::jQuery[ 'cAtivo' ]
+		if ( valtype(::cAtivo) == 'U' )
+			::cAtivo := 'S'
+		endif
+	endif
+
+	if lRet
+		If .F. // !U_VTOKEN(::cToken) RETIRAR DEPOIS DOS TESTES
+			lRet := .F.
+			::cMenRet	:= "Token Incorreto."
+		endif
+	endif
+
+	lRet := oRest:setKeyHeaderResponse("Content-Type", "application/json")
+
+	::jRetorno := ::GETConsultaRotinaEmpresa(::cRotina,lFullEmp,::cAtivo)
+
+return oRest:setResponse( ::jRetorno )
+
+/*
+
+https://tdn.totvs.com/display/tec/Reflection+e+Annotation
+
+1. GET:
+   - 200 (OK): A solicitação foi bem-sucedida e o corpo da resposta contém os dados solicitados.
+   - 404 (Not Found): O recurso solicitado não foi encontrado.
+
+2. POST:
+   - 201 (Created): A solicitação foi bem-sucedida e um novo recurso foi criado.
+   - 400 (Bad Request): A solicitação não pôde ser entendida ou contém parâmetros inválidos.
+   - 409 (Conflict): O servidor detectou um conflito durante o processamento da solicitação, como um conflito de duplicação de recursos.
+
+3. PUT:
+   - 200 (OK): A solicitação foi bem-sucedida e o recurso foi atualizado.
+   - 400 (Bad Request): A solicitação não pôde ser entendida ou contém parâmetros inválidos.
+   - 404 (Not Found): O recurso a ser atualizado não foi encontrado.
+
+4. PATCH:
+   - 200 (OK): A solicitação foi bem-sucedida e o recurso foi atualizado.
+   - 400 (Bad Request): A solicitação não pôde ser entendida ou contém parâmetros inválidos.
+   - 404 (Not Found): O recurso a ser atualizado não foi encontrado.
+
+5. DELETE:
+   - 204 (No Content): A solicitação foi bem-sucedida e o recurso foi excluído.
+   - 404 (Not Found): O recurso a ser excluído não foi encontrado.
+
+*/

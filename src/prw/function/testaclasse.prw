@@ -12,6 +12,9 @@ User Function testaclasse()
 	RpcSetType(3)
 	RpcSetEnv( "99", _cfil, , ,_cModulo,ProcName(),aTables )
 
+	oApiEmpresas := nApiGab.cApiRotinasEmpresas():New()
+	oApiEmpresas := oApiEmpresas:GetApiConsultaRotinaEmpresa()
+
     oEmpresas   := nGab.cRotinasEmpresas():New()
     oEmpresas   := oEmpresas:GETConsultaRotinaEmpresa("FSTARTINOVA",.T.,"*")
 
