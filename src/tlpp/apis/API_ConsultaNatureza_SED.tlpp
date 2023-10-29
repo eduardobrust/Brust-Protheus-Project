@@ -9,10 +9,10 @@
 */
 
 //Definindo e usando o namespace para a classe
-namespace nConsultaSED
+namespace nAPInamespace
 
 /*/ iConsultaSED
-Interface que define os métodos e propriedades para consultar o cadastro de naturezas financeiras do Protheus[SED].
+definição de um contrato que uma classe deve implementar
 type Interface
 @version 12.1.2310
 @author eduardo.brust
@@ -20,7 +20,7 @@ type Interface
 /*/
 Interface iConsultaSED
 
-public method GETcConsultaSED()
+public method GETConsultaSED() as json
 
 EndInterface
 
@@ -40,11 +40,11 @@ class cConsultaSED Implements iConsultaSED
 	Private data cMenRet	as variant		//guardo a mensagem de retorno da api
 	Private data jRetorno	as json		    //monto o json de retorno da api
 
-	public method New() as object
+	public method New() as object 
 
 	//annotation deve ficar na implementação do metódo da classe e não da interface.
 	@Get(endpoint="tlpp/fin/v1/cConsultaSED",description="Consulta cadastro de Natureza financeira no Protheus[SED]")
-	public method GETcConsultaSED() as json
+	public method GETConsultaSED() as json
 
 	protected method ValidaQueryString(cToken as Character,cCod as Character,cDesc as Character) as Logical
 	protected method BuscaSED(cCod as Character,cDesc as Character) as json
@@ -70,7 +70,7 @@ method new() as object class cConsultaSED
 return Self
 
 
-/*/{Protheus.doc} cConsultaSED::GETcConsultaSED() as json
+/*/{Protheus.doc} cConsultaSED::GETConsultaSED() as json
 Metodo Get
 @type method
 @version 12.1.2310
@@ -78,7 +78,7 @@ Metodo Get
 @since 25/10/2023
 @return variant, return_um objeto
 /*/
-method GETcConsultaSED() as json class cConsultaSED
+method GETConsultaSED() as json class cConsultaSED
 	Local lRet			as logical
 	Local cCod			as Character
 	Local cDesc			as Character
@@ -143,7 +143,7 @@ Valida se os parametros passados para a API estão consistentes.
 @return logical, return .T. OR .F.
 /*/
 method ValidaQueryString(cToken as Character,cCod as Character,cDesc as Character) as Logical class cConsultaSED
-	Local lRet	:= .T.
+	Local lRet	:= .T. as logical
 
 	//protecao de erro
 	DEFAULT cToken 		:= ""
@@ -178,12 +178,12 @@ Busca natureza financeira no cadastro do Protheus[SED] pelo código e/ou descriçã
 /*/
 method BuscaSED(cCod as Character,cDesc as Character) as json class cConsultaSED
 
-	Local _cQry 	:= ""
-	Local cTrb1
-	Local cCabec    := ""
-	Local cItens    := ""
-	Local cRodape   := ""
-	Local cData     := ""
+	Local _cQry 	:= "" 	as Character
+	Local cTrb1				as Character
+	Local cCabec    := ""	as Character
+	Local cItens    := ""	as Character
+	Local cRodape   := ""	as Character
+	Local cData     := ""	as variant
 
 	DEFAULT cCod   := ''
 	DEFAULT cDesc  := ''

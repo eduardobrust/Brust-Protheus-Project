@@ -12,5 +12,5 @@ User Function GetTokenOrq()
 	RpcSetType(3)
 	RpcSetEnv( "00", _cfil, , ,_cModulo,ProcName(),aTables )
 
-    ctoken := U_TOKORQ("carlos.dasilva")
+    ctoken := U_TOKORQ("meline.rodrigues")
 return 

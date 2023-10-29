@@ -1,0 +1,140 @@
+#include 'tlpp-core.th'
+#include 'tlpp-rest.th'
+#include "msobject.ch"
+#include "totvs.ch"
+
+/*
+	EDUARDO BRUST - HOMOLOGADO NA RELEASE 12.1.2310
+	Classe para ler dados de cruzamento de rotinas x empresas de uma tabela(ROTINA_EMPRESA) e devolver um JSON com os dados filtrados pela rotina.
+*/
+
+//Definindo e usando o namespace para a classe
+//namespace nRotinasEmpresas
+
+/*/ iRotinasEmpresas
+definição de um contrato que uma classe deve implementar
+type Interface
+@version 12.1.2310
+@author eduardo.brust
+@since 28/10/2023
+/*/
+Interface iRotinasEmpresas
+
+public method GETConsultaRotinaEmpresa(cNomeRotina as Character,lFullEmp as Logical) as json
+
+EndInterface
+
+
+/*/ cRotinasEmpresas
+Classe que implementa a interface iRotinasEmpresas para consultar as empresas que uma determinada rotina pode rodar.
+@type classe
+@version 12.1.2310
+@author eduardo.brust
+@since 28/10/2023
+/*/
+class cRotinasEmpresas Implements iRotinasEmpresas
+
+	public method New() as object
+
+	public method GETConsultaRotinaEmpresa(cNomeRotina as Character,lFullEmp as Logical) as json
+endclass
+
+
+/*/{Protheus.doc} cRotinasEmpresas::new() as object
+Metodo construtor
+@type method
+@version 12.1.2310
+@author Eduardo Brust
+@since 28/10/2023
+return Self, retorna um objeto
+/*/
+method new() as object class cRotinasEmpresas
+
+return Self
+
+
+/*/{Protheus.doc} cRotinasEmpresas::GETConsultaRotinaEmpresa(cNomeRotina as Character,lFullEmp as Logical) as json
+Consulta as empresas que uma determinada rotina pode rodar. passando o parametro se busca todas as filiais ou somente a matriz.
+@type method
+@version 12.1.2310
+@author Eduardo Brust
+@since 28/10/2023
+@return json, retorna um objeto json
+/*/
+method GETConsultaRotinaEmpresa(cNomeRotina as Character,lFullEmp as Logical) as json class cRotinasEmpresas
+	Local _cQry 	:= "" 	as Character
+	Local cTrb1				as Character
+	Local cHeader	:= ''	as Character
+	Local cItens	:= ''	as Character
+	Local cTrailer	:= ''	as Character
+	Local cRetorno	:= ''	as Character
+	Local jRetorno	 		as json
+	Local vRet				as Variant
+
+	//protecao de erro
+	DEFAULT cNomeRotina := ""
+	DEFAULT lFullEmp 	:= .F.
+
+	//monto o json padrão
+	cHeader		:= '{
+	cHeader		+= '"empresas":['
+
+	//cItens --montado na query
+
+	cTrailer	+= ']
+	cTrailer	+= '}'
+
+	IF !EMPTY(cNomeRotina)
+
+		_cQry += " SELECT ROTINA,EMPRESA,SIGLA,M0_NOMECOM,M0_CGC,ATIVO 				" +CRLF
+		_cQry += " FROM ROTINA_EMPRESA                                 				" +CRLF
+		_cQry += " LEFT JOIN SYS_COMPANY                               				" +CRLF
+		_cQry += " ON D_E_L_E_T_ = ' '                                 				" +CRLF
+		_cQry += " AND M0_CODIGO = '" + CEMPANT + "'                   				" +CRLF
+		_cQry += " AND SUBSTR(M0_CODFIL,1,6) = EMPRESA                 				" +CRLF
+		_cQry += " WHERE UPPER(TRIM(ROTINA)) = '" + UPPER(ALLTRIM(cNomeRotina)) + "'"    +CRLF
+		_cQry += " AND ATIVO = 'S' "  										  		  +CRLF
+
+		If !lFullEmp
+			_cQry += " AND SUBSTR(EMPRESA,5,2) = '01'                      			" +CRLF
+		Endif
+		_cQry += " ORDER BY 2                                          				" +CRLF
+
+		cTrb1 := MpSysOpenQuery(_cQry)
+
+		While (cTrb1)->(!Eof())
+
+			cItens += ' { '
+			cItens += ' "codigoReduzido" : "' + AllTrim((cTrb1)->EMPRESA) + '", '
+			cItens += ' "codigo" : "' + AllTrim((cTrb1)->EMPRESA) + '", '
+			cItens += ' "sigla" : "' + AllTrim((cTrb1)->SIGLA) + '", '
+			cItens += ' "descricao" : "' + AllTrim((cTrb1)->M0_NOMECOM) + '", '
+			cItens += ' "cnpj" : "' + AllTrim((cTrb1)->M0_CGC) + '"'
+			cItens += ' },'
+
+			(cTrb1)->(dbSkip())
+		End
+
+		//FECHO A AREA ABERTA PELA QUERY
+		If Select(cTrb1) > 0 .AND. !EMPTY(cTrb1)
+			(cTrb1)->(DbCloseArea())
+			cTrb1	:= ""
+		endif
+	ENDIF
+
+	// Remove a vírgula do último item
+	cItens := SUBSTR(cItens,1,LEN(cItens)-1)
+
+	// Monto string formato json
+	cRetorno := cHeader + cItens + cTrailer
+
+	//transformo string em objeto json para o retorno do metodo
+	jRetorno := JsonObject():New()
+	vRet := jRetorno:FromJson(cRetorno)
+
+	if ValType(vRet) <> "U"
+		 FreeObj(jRetorno)
+		 jRetorno['empresas'] := {}
+  	endif
+
+return jRetorno

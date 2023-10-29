@@ -53,17 +53,10 @@
 			"description": ""
 		},
 		{
-			"label": "U_ARQCEDAE"
-		},
-		{
 			"args": [],
-			"label": "U_MyGenDoc"
-		},
-		{
-			"args": [],
-			"label": "U_GetTokenOrq"
+			"label": "u_testaclasse"
 		}
 	],
-	"lastProgramExecuted": "U_GetTokenOrq",
+	"lastProgramExecuted": "u_testaclasse",
 	"lastProgramArguments": []
 }
