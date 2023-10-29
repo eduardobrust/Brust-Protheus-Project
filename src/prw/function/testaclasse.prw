@@ -12,8 +12,8 @@ User Function testaclasse()
 	RpcSetType(3)
 	RpcSetEnv( "99", _cfil, , ,_cModulo,ProcName(),aTables )
 
-    oEmpresas   := cRotinasEmpresas():New()
-    oEmpresas   := oEmpresas:GETConsultaRotinaEmpresa(" fstartinova ",.f.)
+    oEmpresas   := nGab.cRotinasEmpresas():New()
+    oEmpresas   := oEmpresas:GETConsultaRotinaEmpresa(" fstarticf ",.T.)
 
 	if valtype(oEmpresas) == 'J'
 		if len(oEmpresas["empresas"]) > 0
