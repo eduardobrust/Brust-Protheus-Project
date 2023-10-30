@@ -1,0 +1,877 @@
+#include "totvs.ch"
+#include 'tlpp-core.th'
+#include 'tlpp-rest.th'
+#include "FWPrintSetup.ch" 
+#include "rptdef.ch"
+
+// CONSTANTES NECESSÁRIAS
+//#Define CRLF  Chr(10) + Chr (13) // SALTO DE LINHA (CARRIAGE RETURN + LINE FEED)
+
+//Definindo e usando o namespace para a classe
+using namespace nIcfProRata
+
+/*/ iIcfProRata
+Main Interface de controle
+type Interface
+version 12.1.33
+author eduardo.brust
+since 05/12/2022
+/*/
+Interface iIcfProRata
+
+//DEFINICAO DOS METODOS DA INTERFACE
+PROTECTED METHOD New()							as Object        	//responsavel por criar uma nova instancia do objeto da classe
+PROTECTED METHOD Destroy(_oObj) 				as Object           //responsavel por destruir a instancia do objeto da classe em memoria
+PROTECTED METHOD RetUltimoInv() 				as Character	    //responsavel por retornar o ultimo Inventario gravado na tabela inventario
+PROTECTED METHOD RetUltimaFat() 				as numeric	    	//responsavel por retornar a ultima faturarateio gravada
+PROTECTED METHOD SetaArrayInv() 				as Logical	    	//responsavel por alimentar array com a qtd de meses que faltam inventário na tabela
+PROTECTED METHOD AtualizaDatas(dData as Date) 	as Logical	    	//responsavel por atualizar as datas para rodar o inventario
+PROTECTED METHOD GravaInv() 					as Logical	    	//responsavel por gravar o inventario gerado da competencia atual
+PROTECTED METHOD MontaQryExcel()				as Logical	    	//responsavel por montar a query usada para gerar o excel do inventário
+//Por Waldyr Filho em 15/12/2022 (Criare Consulting) - Sharepoint 22097
+PROTECTED METHOD GeraCSV()						as Logical	    	//responsavel por Gerar CSV do Inventario atual
+PROTECTED METHOD GeraPDF()						as Logical	    	//responsavel por Gerar PDF do Inventario atual
+PROTECTED METHOD ZipaArq()						as Logical			//responsável por compactar os arquivos gerados para posterior envio
+PROTECTED METHOD EnvioEmail() 					as Logical	    	//responsavel por Enviar email com o CSV e o PDF do Inventario gerados
+PROTECTED METHOD ClearArq()						as Object			//responsável por Limpar os arquivos gerados na pasta inventario depois de serem enviados por email
+//
+//PROTECTED METHOD GravaLog(cMsg as character) 	as Logical	    	//responsavel por gravar o inventario gerado da competencia atual
+PROTECTED METHOD fPrepEnv()						as Logical  		//responsavel por preparar ambiente no protheus
+
+EndInterface
+
+/*/ cClasseFontes1
+Main classe de controle para geracao de Inventario Pro_Rata
+@type classe
+@version 12.1.33
+@author eduardo.brust
+@since 05/12/2022
+/*/
+CLASS cInventarioProRata Implements iIcfProRata
+
+	//Propriedades da Classe
+	PUBLIC Data dDataExec			as Date		            		//guarda a data usada por todo fluxo de processamento
+
+	PROTECTED Data cTabInventario	as character             		//guarda o nome da tabela de Inventario
+	PROTECTED Data cAnoMesInv		as character             		//guarda o AnoMes do Inventario que será rodado
+	PROTECTED Data cInventarioAtual	as character             		//guarda o codigo gerado para o Inventario atual
+	PROTECTED Data cInventarioAnt	as character             		//guarda o codigo gerado para o Inventario atual
+	//Por Waldyr Filho em 15/12/2022 (Criare Consulting) - Sharepoint 22097
+	PROTECTED Data cArqCSV			as character					//guarda o nome do arquivo CSV gerado
+	PROTECTED Data cArqPDF			as character					//guarda o nome do arquivo PDF gerado
+	PROTECTED Data cArqZip			as character					//Guardo o nome do arquivo que foi zipado para posterior envio de email
+	PROTECTED Data nTotCedae		as numeric						//guarda o total do VALOR_CEDAE da planilha
+	PROTECTED Data nTotRioMais		as numeric						//guarda o total do VALOR_RIOMAIS da planilha
+	PROTECTED Data nTotNotaF		as numeric						//guarda o total do VALORFATURA da planilha
+	//
+	PROTECTED Data cPathArq			as character					//guarda o caminho onde o arquivo excel sera gerado
+	PROTECTED Data cTrbQry			as character					//guarda o alias da query para geracao do excel
+
+	PRIVATE	Data aInventario  		as array	                	//guarda qts inventários estão pendentes para serem gerados
+	PRIVATE	Data aArqInv  			as array	                	//guarda os arquivos gerados que farão parte do ZIP
+
+	//DEFINICAO DOS METODOS DA CLASSE
+	PROTECTED METHOD New() 							as Object
+	PROTECTED METHOD Destroy(_oObj) 				as Object
+	PROTECTED METHOD RetUltimoInv()					as Character
+	PROTECTED METHOD RetUltimaFat() 				as numeric
+	PROTECTED METHOD SetaArrayInv()					as Logical
+	PROTECTED METHOD AtualizaDatas(dData as Date) 	as Logical
+	PROTECTED METHOD GravaInv() 					as Logical
+	PROTECTED METHOD MontaQryExcel()				as Logical
+	//Por Waldyr Filho em 15/12/2022 (Criare Consulting) - Sharepoint 22097
+	PROTECTED METHOD GeraCSV() 						as Logical
+	PROTECTED METHOD GeraPDF() 						as Logical
+	PROTECTED METHOD ZipaArq()						as Logical
+	PROTECTED METHOD EnvioEmail() 					as Logical
+	PROTECTED METHOD ClearArq()						as Object
+	//
+	PROTECTED METHOD fPrepEnv() 					as Logical
+
+ENDCLASS
+
+
+/*/{Protheus.doc} inventicf
+User Function principal
+@type function
+@version 12.1.33
+@author eduardo.brust
+@since 05/12/2022
+/*/
+User Function inventicf()
+
+	Local objInv := Nil as object
+	Local lRet   := .T. as Logical
+
+	If !isBlind()
+		If !FWAlertYesNo("Confirma a geração dos arquivos do Inventário?", "Inventário Pró-Rata CEDAE - ICF")
+			Return
+		EndIf
+	EndIf
+	
+	// Cria instancia da classe
+	objInv := cInventarioProRata():New()
+
+	If objInv:fPrepEnv()
+
+		ProcLogIni( {} ,"INVENTICF")
+		ProcLogAtu('INICIO')
+
+		ProcLogAtu("MENSAGEM", "[##1 MONTAGEM ARRAY DO INVENTARIO]")
+		lRet := objInv:SetaArrayInv()
+		
+		If lRet
+			ProcLogAtu("MENSAGEM", "[##2 GRAVACAO DO INVENTARIO]")
+			lRet := objInv:GravaInv()
+		EndIf
+
+		If lRet
+			ProcLogAtu("MENSAGEM", "[##3 SELECAO REGISTROS DO INVENTARIO]")
+			lRet := objInv:MontaQryExcel()
+		EndIf
+
+		//Por Waldyr Filho em 15/12/2022 (Criare Consulting) - Sharepoint 22097
+		If lRet
+			ProcLogAtu("MENSAGEM", "[##4 GERACAO DO ARQUIVO CSV]")
+			lRet := objInv:GeraCSV()
+		EndIf
+
+		If lRet
+			ProcLogAtu("MENSAGEM", "[##5 GERACAO DO ARQUIVO PDF]")
+			lRet := objInv:GeraPDF()
+		EndIf
+
+		If lRet
+			ProcLogAtu("MENSAGEM", "[##6 GERACAO DO ARQUIVO ZIP]")
+			lRet := objInv:ZipaArq()
+		EndIf
+
+		If lRet
+			ProcLogAtu("MENSAGEM", "[##7 ENVIO DO ARQUIVO ZIP]")
+			lRet := objInv:EnvioEmail()
+		EndIf
+
+		//Apago os arquivo gerados na pasta para evitar novo envio de email
+		ProcLogAtu("MENSAGEM", "[##8 ELIMINACAO DOS ARQUIVOS CSV E PDF]")
+		objInv:ClearArq()
+		//
+
+		If !isBlind()
+			If lRet
+				FWAlertSuccess("Arquivos gerados com sucesso.", "Aviso")
+			Else
+				FWAlertError("Falha na geração dos arquivos do Inventário!", "Alerta")
+			EndIf
+		EndIf
+
+		ProcLogAtu('FIM')
+
+	EndIf
+
+	//Limpo instancia da classe em memória e saio do sistema
+	objInv:Destroy(objInv)
+
+Return
+
+
+/*/{Protheus.doc} cInventarioProRata::New() as Object
+responsavel por criar uma nova instancia do objeto da classe
+@type method
+@version 12.1.33
+@author eduardo.brust
+@since 05/12/2022
+@return logical, .t. or .f.
+/*/
+Method New() as Object CLASS cInventarioProRata
+
+	::dDataExec			:= MonthSub(Date(), 1)		//RETORNA A DATA DO SISTEMA - 1 MES
+	::cAnoMesInv		:= ""
+	::cInventarioAtual	:= ""
+	::cInventarioAnt	:= ""
+	::aInventario		:= {}
+	::cTabInventario	:= "ICF_PRO.INVENTARIO_PRORATA"
+	::cPathArq			:= "\logicf02protheus\inventario\"
+	::cTrbQry			:= ""
+	//Por Waldyr Filho em 15/12/2022 (Criare Consulting) - Sharepoint 22097
+	::cArqCSV			:= ""
+	::cArqPDF			:= ""
+	::cArqZIP			:= ""
+	::nTotCedae         := 0
+	::nTotRioMais       := 0
+	::nTotNotaF         := 0
+	::aArqInv			:= {}
+	//
+
+Return Self
+
+
+/*/{Protheus.doc} cInventarioProRata::Destroy(_oObj as Object ) as Object
+responsavel por destruir a instancia do objeto da classe em memoria
+@type method
+@version 12.1.33
+@author eduardo.brust
+@since 05/12/2022
+@return variant,Instancia da classe
+/*/
+Method Destroy(_oObj as Object ) as Object CLASS cInventarioProRata
+
+	FreeObj(_oObj)
+
+	If IsBlind()
+		RpcClearEnv()
+	EndIf
+
+Return Self
+
+
+/*/{Protheus.doc} cInventarioProRata::RetUltimoInv() as Character
+responsavel por retornar o ultimo Inventario gravado na tabela inventario
+@type method
+@version 12.1.33
+@author eduardo.brust
+@since 05/12/2022
+@return Character, retorna ultimo inventario rodado no banco
+/*/
+Method RetUltimoInv() as Character CLASS cInventarioProRata
+	Local cUltimoInv	:= ""	as Character
+	Local cQuery 		:= ""	as Character
+	Local _cTrbTab		:= ""	as Character
+
+	cUltimoInv	:= "XXX"
+	cQuery 		:= ""
+
+	cQuery += " SELECT NVL(MAX(INVENTARIO),'XXX') INVENTARIO " + CRLF
+	cQuery += " FROM " + ::cTabInventario + "                " + CRLF
+
+	_cTrbTab := MpSysOpenQuery(cQuery)
+
+	if !EMPTY(_cTrbTab)
+		cUltimoInv := ALLTRIM((_cTrbTab)->INVENTARIO)
+	endif
+
+	//FECHO A AREA ABERTA PELA QUERY
+	If Select(_cTrbTab) > 0 .AND. !EMPTY(_cTrbTab)
+		(_cTrbTab)->(DbCloseArea())
+		_cTrbTab	:= ""
+	endif
+
+Return cUltimoInv
+
+
+/*/{Protheus.doc} cInventarioProRata::RetUltimaFat() as numeric
+responsavel por retornar a ultima faturarateio gravada
+@type method
+@version 12.1.33
+@author eduardo.brust
+@since 05/12/2022
+@return numeric, retorna a ultima competencia de fatura
+/*/
+Method RetUltimaFat() as numeric CLASS cInventarioProRata
+	Local nUltimaFat	:= 0	as numeric
+	Local cQuery 		:= ""	as Character
+	Local _cTrbTab		:= ""	as Character
+
+	nUltimaFat	:= 0
+	cQuery 		:= ""
+
+	cQuery += " SELECT NVL(MAX(COMPETENCIA),0) COMPETENCIA " + CRLF
+	cQuery += " FROM ICF_PRO.FATURARATEIO                    " + CRLF
+
+	_cTrbTab := MpSysOpenQuery(cQuery)
+
+	if !EMPTY(_cTrbTab)
+		nUltimaFat :=	(_cTrbTab)->COMPETENCIA
+	endif
+
+	//FECHO A AREA ABERTA PELA QUERY
+	If Select(_cTrbTab) > 0 .AND. !EMPTY(_cTrbTab)
+		(_cTrbTab)->(DbCloseArea())
+		_cTrbTab	:= ""
+	endif
+
+Return nUltimaFat
+
+
+/*/{Protheus.doc} cInventarioProRata::SetaArrayInv() as Logical
+responsavel por alimentar array com a qtd de meses que faltam inventário na tabela
+@type method
+@version 12.1.33
+@author eduardo.brust
+@since 05/12/2022
+@return logical, .t. or .f.
+/*/
+Method SetaArrayInv() as Logical CLASS cInventarioProRata
+	Local lRet			:= .F.	as Logical
+	Local cUltimoInv	:= ""	as Character
+	Local I				:= 0	as numeric
+	Local dDataIni				as date
+	Local nMeses		:= 0	as numeric
+	Local nUltimaFat	:= 0	as numeric
+	Local dDataFim				as Date
+
+	::aInventario := {}
+
+	//metodo para retornar o ultimo inventario gravado
+	cUltimoInv	:= ::RetUltimoInv()
+
+	//metodo para retornar a ultima fatura gravada
+	nUltimaFat	:= ::RetUltimaFat()
+
+	//Indica que não tem nem 1 inventario gravado.
+	IF cUltimoInv == "XXX"
+		dDataIni 	:= STOD("20220801")	//PRIMEIRO MES DE INVENTARIO
+	ELSE
+		cAux		:= SUBSTR(cUltimoInv,4,6)+"01"
+		dDataIni	:= STOD(cAux)
+		dDataIni	:= MonthSum(dDataIni,1)  //pulo 1 mes para não gerar o inventario ja gerado no banco
+	Endif
+
+	//monto a data final que o inventário deverá ser gerado
+	dDataFim := STOD(cvaltochar(nUltimaFat) + "01")
+
+	//protecao de erro
+	if VALTYPE(dDataIni) == 'D' .AND. VALTYPE(dDataFim) == 'D' .AND. ( dDataIni < dDataFim .OR. dDataIni = dDataFim )
+		nMeses := DateDifFMonth(dDataIni,FirstDate(dDataFim))
+
+		//recupero todos os meses que não tiveram inventario gravado
+		FOR I:= 0 TO nMeses
+			AADD(::aInventario,MonthSum(dDataIni,I))
+			lRet	:= .T.
+		NEXT
+	endif
+
+	If !lRet
+		ProcLogAtu("MENSAGEM", "FALHA NA MONTAGEM ARRAY DO INVENTARIO")
+	EndIf
+
+Return lRet
+
+
+/*/{Protheus.doc} cInventarioProRata::AtualizaDatas(dData as Date)	as Logical
+responsavel por atualizar as datas para rodar o inventario
+@type method
+@version 12.1.33
+@author eduardo.brust
+@since 05/12/2022
+@return logical, .t. or .f.
+/*/
+Method AtualizaDatas(dData as Date)	as Logical CLASS cInventarioProRata
+	Local	dDataAux1			as Date				//RETORNA O MES ATUAL PARA RODAR O INVENTARIO
+	Local	dDataAux2			as Date				//RETORNA O ULTIMO INVENTARIO QUE DEVE ESTAR GRAVADO NA TABELA
+	Local 	cAnoMesAtu	:= ""	as character
+	Local 	cAnoMesAnt	:= ""	as character
+	Local	lRet		:= .T.	as Logical
+
+	//protecao de erro
+	DEFAULT dData := date()
+
+	::dDataExec			:= dData
+
+	dDataAux1			:= ::dDataExec
+	dDataAux2			:= MonthSub(::dDataExec,1)
+	cAnoMesAtu			:= ALLTRIM(STR(Year(dDataAux1))) +  ALLTRIM(STRZERO(Month(dDataAux1),2))
+	cAnoMesAnt			:= ALLTRIM(STR(Year(dDataAux2))) +  ALLTRIM(STRZERO(Month(dDataAux2),2))
+
+	::cAnoMesInv		:= ALLTRIM(STR(Year(dDataAux1))) +  ALLTRIM(STRZERO(Month(dDataAux1),2))
+	::cInventarioAtual	:= "INV" + cAnoMesAtu
+	::cInventarioAnt	:= "INV" + cAnoMesAnt
+
+Return lRet
+
+
+/*/{Protheus.doc} cInventarioProRata::GravaInv() as Logical
+responsavel por gravar o inventario gerado da competencia atual
+@type method
+@version 12.1.33
+@author eduardo.brust
+@since 05/12/2022
+@return logical, .t. or .f.
+/*/
+Method GravaInv() as Logical CLASS cInventarioProRata
+	Local lRet		:= .F.	as Logical
+	Local nStatus 	:= 0	as numeric
+	Local cQuery 	:= ""	as Character
+	Local I			:= 0	as numeric
+
+	FOR I:= 1 TO LEN(::aInventario)
+		nStatus	:= 0
+		cQuery 	:= ""
+
+		//metodo para definir os meses. somo 1 mes devido ao tratamento de subtracao dos meses no método
+		lRet	:= ::AtualizaDatas(::aInventario[I])
+
+		cQuery += " insert /*+ append */ into " + ::cTabInventario + "             " + CRLF
+		cQuery += " (                                                              " + CRLF
+		cQuery += "  SELECT A.*                                                    " + CRLF
+		cQuery += " FROM                                                           " + CRLF
+		cQuery += " (                                                              " + CRLF
+		cQuery += " SELECT                                                         " + CRLF
+		cQuery += "         '320101' EMPRESA,                                      " + CRLF
+		cQuery += "         '" + ::cInventarioAtual + "' INVENTARIO,               " + CRLF
+		cQuery += "         TO_NUMBER(TO_CHAR(SYSDATE, 'YYYYMMDD')) DATA_GERACAO,  " + CRLF
+		cQuery += "         I.COMPETENCIA,                                         " + CRLF
+		cQuery += "         I.IDFATURA,                                            " + CRLF
+		cQuery += "         I.IDLIGACAO,                                           " + CRLF
+		cQuery += "         I.EMISSAO,                                             " + CRLF
+		cQuery += "         I.EMISSAO VENCIMENTO,                                  " + CRLF
+		cQuery += "         ' ' NOME_CLIENTE,                                      " + CRLF
+		cQuery += "         I.VALOR_CEDAE,                                         " + CRLF
+		cQuery += "         I.VALOR_RIOMAIS,                                       " + CRLF
+		cQuery += "         I.VALORRECEITASOMA,                                    " + CRLF
+		cQuery += "         I.VALORFATURA                                          " + CRLF
+		cQuery += " FROM " + ::cTabInventario + " I                                " + CRLF
+		cQuery += " WHERE INVENTARIO = '" + ::cInventarioAnt + "'                  " + CRLF
+		cQuery += " UNION ALL                                                      " + CRLF
+		cQuery += "         SELECT                                                 " + CRLF
+		cQuery += "         '320101' EMPRESA,                                      " + CRLF
+		cQuery += "         '" + ::cInventarioAtual + "' INVENTARIO,               " + CRLF
+		cQuery += "         TO_NUMBER(TO_CHAR(SYSDATE, 'YYYYMMDD')) DATA_GERACAO,  " + CRLF
+		cQuery += "         F.COMPETENCIA,                                         " + CRLF
+		cQuery += "         F.IDFATURA,                                            " + CRLF
+		cQuery += "         F.IDLIGACAO,                                           " + CRLF
+		cQuery += "         F.EMISSAO,                                             " + CRLF
+		cQuery += "         F.EMISSAO VENCIMENTO,                                  " + CRLF
+		cQuery += "         ' ' NOME_CLIENTE,                                      " + CRLF
+		cQuery += "         F.VALOR_CEDAE,                                         " + CRLF
+		cQuery += "         F.VALOR_RIOMAIS,                                       " + CRLF
+		cQuery += "         F.VALORRECEITASOMA,                                    " + CRLF
+		cQuery += "         F.VALORFATURA                                          " + CRLF
+		cQuery += "     FROM                                                       " + CRLF
+		cQuery += "         ICF_PRO.faturarateio F                                 " + CRLF
+		cQuery += "     WHERE                                                      " + CRLF
+		cQuery += "         F.COMPETENCIA = " + CVALTOCHAR(::cAnoMesInv) 			 + CRLF
+		cQuery += " ) A                                                            " + CRLF
+		cQuery += "                                                                " + CRLF
+		cQuery += " LEFT JOIN ICF_PRO.FATURABAIXADA B ON A.IDFATURA = B.IDFATURA   " + CRLF
+		cQuery += "         AND A.IDLIGACAO = B.IDLIGACAO                          " + CRLF
+		cQuery += "         AND B.COMPETENCIA = " + CVALTOCHAR(::cAnoMesInv)    	 + CRLF
+		cQuery += "     WHERE                                                      " + CRLF
+		cQuery += "         B.IDFATURA IS NULL                                     " + CRLF
+		cQuery += " )                                                              " + CRLF
+
+		nStatus := TCSQLExec(cQuery)
+
+		if (nStatus < 0)
+			ProcLogAtu("MENSAGEM", "FALHA NA GRAVACAO DO INVENTARIO")
+			lRet  := .F.
+		endif
+	NEXT
+
+Return lRet
+
+
+/*/{Protheus.doc} cInventarioProRata::MontaQryExcel() as Logical
+responsavel por montar a query usada para gerar o excel do inventário
+@type method
+@version 12.1.33
+@author eduardo.brust
+@since 05/12/2022
+@return logical, .t. or .f.
+/*/
+METHOD MontaQryExcel() as Logical CLASS cInventarioProRata
+	Local _cQuery		:= ""	as character
+	Local lRet			:= .T.	as logical
+
+	//SELECAO DOS CAMPOS DA QUERY
+	_cQuery += " SELECT                                                 " + CRLF
+	_cQuery += " *                                                      " + CRLF
+	_cQuery += " FROM " + ::cTabInventario + " I                        " + CRLF
+	_cQuery += " WHERE INVENTARIO = '" + ::cInventarioAtual + "'        " + CRLF
+	_cQuery += " ORDER BY COMPETENCIA,IDFATURA,IDLIGACAO                " + CRLF
+
+	::cTrbQry := MpSysOpenQuery(_cQuery)
+
+	//verifico se retornou algum registro
+	IF (::cTrbQry)->(!Eof())
+		lRet := .T.
+	else
+		ProcLogAtu("MENSAGEM", "NAO ENCONTROU REGISTROS DO INVENTARIO")
+		lRet := .F.
+	endif
+
+Return lRet
+
+
+/*/{Protheus.doc} cInventarioProRata::GeraCSV() as Logical
+responsavel por Gerar CSV do Inventario atual
+@type method
+@version 12.1.33
+@author Waldyr Filho
+@since 15/12/2022
+@return logical, .t. or .f.
+/*/
+Method GeraCSV() as Logical CLASS cInventarioProRata
+
+	Local cPathCSV    	:= ""	as character
+	Local lCabec		:= .T.	as logical
+	Local lArqCSV		:= .F.	as logical
+	Local cMesAno		:= ""	as character
+	Local oFileCSV		:= Nil	as object
+	Local cLinha    	:= ""	as character
+	Local lRet			:= .F.	as logical
+
+	If !ExistDir(::cPathArq)
+		MakeDir(::cPathArq)
+	endif
+
+	::cArqCSV := "invent_prorata_" + ::cAnoMesInv + ".csv"
+
+	cPathCSV := ::cPathArq + ::cArqCSV
+    If File(cPathCSV)
+		fErase(cPathCSV)
+	EndIf
+
+	lCabec  := .T.
+	lArqCSV := .F.
+	cMesAno := Right(::cAnoMesInv, 2) + "/" + Left(::cAnoMesInv, 4)
+	While (::cTrbQry)->(!Eof())
+
+		If lCabec
+			oFileCSV := FWFileWriter():New(cPathCSV, .T.)
+
+			If ! oFileCSV:Create()
+				ProcLogAtu("MENSAGEM", "FALHA NA CRIACAO DO ARQUIVO " + ::cArqCSV)
+				lRet := .F.
+				Exit
+			EndIf
+
+			cLinha := "NOME: 6.2 - Inventario de contas Pro-Rata CEDAE - ICF"
+			oFileCSV:Write(cLinha + CRLF)
+			cLinha := "POSICAO: " + cMesAno
+			oFileCSV:Write(cLinha + CRLF)
+			cLinha := "EMISSAO: " + DTOC(Date()) + " " + Time()
+			oFileCSV:Write(cLinha + CRLF)
+			cLinha := ""
+			oFileCSV:Write(cLinha + CRLF)
+
+			cLinha := "EMPRESA;INVENTARIO;DATA_GERACAO;COMPETENCIA;IDFATURA;IDLIGACAO;EMISSAO;VENCIMENTO;NOME_CLIENTE;VALOR_CEDAE;VALOR_RIOMAIS;VALORFATURA"
+			oFileCSV:Write(cLinha + CRLF)
+
+			lCabec  := .F.
+			lArqCSV := .T.
+		EndIf
+
+		cLinha := ""
+		cLinha += AllTrim((::cTrbQry)->EMPRESA) + ";"
+		cLinha += AllTrim((::cTrbQry)->INVENTARIO) + ";"
+		cLinha += AllTrim(Str((::cTrbQry)->DATA_GERACAO)) + ";"
+		cLinha += AllTrim(Str((::cTrbQry)->COMPETENCIA)) + ";"
+		cLinha += AllTrim(Str((::cTrbQry)->IDFATURA)) + ";"
+		cLinha += AllTrim(Str((::cTrbQry)->IDLIGACAO)) + ";"
+		cLinha += AllTrim(Str((::cTrbQry)->EMISSAO)) + ";"
+		cLinha += AllTrim(Str((::cTrbQry)->VENCIMENTO)) + ";"
+		cLinha += AllTrim((::cTrbQry)->NOME_CLIENTE) + ";"
+		cLinha += StrTran(AllTrim(Str((::cTrbQry)->VALOR_CEDAE)), ".", ",") + ";"
+		cLinha += StrTran(AllTrim(Str((::cTrbQry)->VALOR_RIOMAIS)), ".", ",") + ";"
+		cLinha += StrTran(AllTrim(Str((::cTrbQry)->VALORFATURA)), ".", ",")
+			
+		oFileCSV:Write(cLinha + CRLF)
+
+		::nTotCedae   += (::cTrbQry)->VALOR_CEDAE
+		::nTotRioMais += (::cTrbQry)->VALOR_RIOMAIS
+		::nTotNotaF   += (::cTrbQry)->VALORFATURA
+			
+		(::cTrbQry)->(DbSkip())
+	EndDo
+
+	If Select(::cTrbQry) > 0 .AND. !EMPTY(::cTrbQry)
+		(::cTrbQry)->(DbCloseArea())
+		::cTrbQry := ""
+	endif
+		
+	If lArqCSV
+		cLinha := ";;;;;;;;TOTAIS GERAIS;"
+		cLinha += StrTran(AllTrim(Str(::nTotCedae)), ".", ",") + ";"
+		cLinha += StrTran(AllTrim(Str(::nTotRioMais)), ".", ",") + ";"
+		cLinha += StrTran(AllTrim(Str(::nTotNotaF)), ".", ",")
+		oFileCSV:Write(cLinha + CRLF)
+
+		oFileCSV:Close()
+		lRet := .T.
+	EndIf
+
+Return lRet
+
+
+/*/{Protheus.doc} cInventarioProRata::GeraPDF() as Logical
+responsavel por Gerar PDF do Inventario atual
+@type method
+@version 12.1.33
+@author Waldyr Filho
+@since 16/12/2022
+@return logical, .t. or .f.
+/*/
+Method GeraPDF() as Logical CLASS cInventarioProRata
+
+	Local lAdjustToLegacy 	:= .F. 	as logical
+	Local lDisableSetup		:= .T.	as logical
+	Local lServer			:= .T.	as logical
+	Local cPathPDF    		:= ""	as character
+	Local oFilePDF			:= Nil	as object
+	Local cMesAno			:= ""	as character
+	Local lRet				:= .T.	as logical
+	Local cBitMap			:= ""	as character
+	Local lLogo				:= .T.	as logical
+
+	Private oFont9   := TFont():New("Arial",9,9,.T.,.T.,5,.T.,5,.T.,.F.)
+	Private oFont10  := TFont():New("Arial",9,10,.T.,.T.,5,.T.,5,.T.,.F.)
+	Private oFont11  := TFont():New("Arial",9,11,.T.,.T.,5,.T.,5,.T.,.F.)
+	Private oFont14  := TFont():New("Arial",9,14,.T.,.T.,5,.T.,5,.T.,.F.)
+	Private oFont14n := TFont():New("Arial",9,14,.T.,.F.,5,.T.,5,.T.,.F.)
+
+	If !ExistDir(::cPathArq)
+		MakeDir(::cPathArq)
+	endif
+
+	cBitMap := "\system\lgrlpdf" + cEmpAnt + cFilAnt + ".bmp"
+    If !File(cBitMap)
+        cBitMap	:= "\system\lgrletq" + cEmpAnt + cFilAnt + ".bmp"
+        If !File(cBitMap)
+            lLogo := .F.
+        EndIf
+    EndIf
+
+	::cArqPDF := "invent_prorata_" + ::cAnoMesInv + ".pdf"
+
+	cPathPDF := ::cPathArq + ::cArqPDF
+    If File(cPathPDF)
+		fErase(cPathPDF)
+	EndIf
+
+	cMesAno := Right(::cAnoMesInv, 2) + "/" + Left(::cAnoMesInv, 4)
+
+	oFilePDF := FWMSPrinter():New(::cArqPDF, IMP_PDF, lAdjustToLegacy, ::cPathArq, lDisableSetup, , , , lServer)
+	oFilePDF:SetPortrait()
+	oFilePDF:SetPaperSize(DMPAPER_A4)
+	oFilePDF:SetMargin(60, 60, 60, 60)
+	oFilePDF:cPathPDF := ::cPathArq
+	oFilePDF:SetViewPDF(.F.)
+
+	oFilePDF:StartPage()
+
+	If lLogo
+		oFilePDF:SayBitMap(050, 005, cBitMap, 120, 035)
+	Else
+		oFilePDF:Say(050, 005, cFilAnt, _oFont30N, 200)
+	EndIf
+
+	oFilePDF:Say(080, 200, "INVENTÁRIO DE CONTAS PRÓ-RATA CEDAE - ICF ÁGUA", oFont11) 
+	oFilePDF:Say(110, 005, "EMISSÃO: " + DTOC(Date()) + " " + Time(), oFont10)
+	oFilePDF:Say(120, 005, "POSIÇÃO: " + cMesAno, oFont10)
+	
+	oFilePDF:Say (140, 200, "RÚBRICAS - PRÓ-RATA CEDAE - ICF ÁGUA", oFont10) 
+	oFilePDF:Line(145, 005, 145, 550)
+	
+	oFilePDF:Say (170, 005, "VALOR CEDAE"   , oFont10) 
+	oFilePDF:Say (170, 205, "VALOR RIOMAIS" , oFont10) 
+	oFilePDF:Say (170, 405, "VALOR TOTAL NF", oFont10) 
+
+	oFilePDF:Say (200, 005, "R$ " + Transform(::nTotCedae  , "@E 99,999,999.99"), oFont10) 
+	oFilePDF:Say (200, 205, "R$ " + Transform(::nTotRioMais, "@E 99,999,999.99"), oFont10) 
+	oFilePDF:Say (200, 405, "R$ " + Transform(::nTotNotaF  , "@E 99,999,999.99"), oFont10) 
+
+	oFilePDF:EndPage()
+
+	oFilePDF:Preview()
+
+Return lRet
+
+
+/*/{Protheus.doc} cInventarioProRata::ZipaArq() as Logical
+responsável por compactar os arquivos gerados para posterior envio
+@type method
+@version 12.1.33
+@author Waldyr Filho
+@since 20/12/2022
+@return logical, .t. or .f.
+/*/
+Method ZipaArq() as Logical CLASS cInventarioProRata
+	
+	Local lRet		:= .F.
+	Local cPath		:= ""
+	Local nRet		:= 0
+
+	cPath := StrTran(::cPathArq, "\", "/" )
+
+	If File(cPath + ::cArqCSV)
+		aAdd(::aArqInv, cPath + ::cArqCSV)
+	EndIf
+	If File(cPath + ::cArqPDF)
+		aAdd(::aArqInv, cPath + ::cArqPDF)
+	EndIf
+
+	If LEN(::aArqInv) > 0
+		::cArqZip := "invent_prorata_" + ::cAnoMesInv + ".zip"
+		If File(cPath + ::cArqZip)
+			fErase(cPath + ::cArqZip)
+		EndIf
+		nRet := FZip(cPath + ::cArqZip, ::aArqInv, cPath)
+		If nRet = 0
+			lRet := .T.
+		Else
+			ProcLogAtu("MENSAGEM", "FALHA NA GERACAO DO ARQUIVO ZIP")
+		EndIf
+	Else
+		ProcLogAtu("MENSAGEM", "ARQUIVOS CSV E PDF NAO ENCONTRADOS PARA COMPOR O ZIP")
+	EndIf
+
+Return lRet
+
+
+/*/{Protheus.doc} cInventarioProRata::EnvioEmail() as Logical
+responsavel por Enviar email com o CSV e o PDF do Inventario gerados
+@type method
+@version 12.1.33
+@author Waldyr Filho
+@since 21/12/2022
+@return logical, .t. or .f.
+/*/
+Method EnvioEmail() as Logical CLASS cInventarioProRata
+	
+	Local cMesAno		:= ""
+	Local cTitulo		:= ""
+	Local oServer		:= Nil
+	Local cMailServer	:= SuperGetMv("MV_RELSERV",, "")
+	Local cMailConta	:= SuperGetMv("MV_RELACNT",, "")
+	Local cMailSenha	:= SuperGetMv("MV_RELAPSW",, "")
+	Local nPorta 		:= SuperGetMv("MV_XRELPOR",, 25) //informa a porta que o servidor SMTP irá se comunicar, podendo ser 25 ou 587
+	Local nTimeOut		:= SuperGetMv("MV_RELTIME",, 60)
+	Local nErro			:= 0
+	Local oMessage		:= Nil
+	Local cEmail		:= SuperGetMv("MV_XMAILCT",, "")
+	Local cBody			:= ""
+
+	//PROTEÇÃO DE ERRO
+	//Default cEmail := "waldyr.filho@grupoaguasdobrasil.com.br"	//para qual email sera enviado
+
+	cMesAno := Right(::cAnoMesInv, 2) + "/" + Left(::cAnoMesInv, 4)
+
+	//DEFINO O SISTEMA NO TITULO DO EMAIL
+	cTitulo := "INVENTÁRIO DE CONTAS PRÓ-RATA CEDAE - ICF ÁGUA - Ano/Mês: " + cMesAno
+
+	//Envia Email com resultado da Integracao
+	//Cria a conexão com o server STMP ( Envio de e-mail )
+	oServer := TMailManager():New()
+
+	//seta SSL
+	oServer:SetUseSSL( .T. )
+
+	oServer:Init( "", cMailServer, cMailConta, cMailSenha, 0, nPorta )
+
+	//seta um tempo de time out com servidor de 1min
+	If oServer:SetSmtpTimeOut( nTimeOut ) != 0
+		ProcLogAtu("MENSAGEM", "FALHA NA INICIALIZACAO DO SERVIDOR SMTP")
+		Return .F.
+	EndIf
+
+	//realiza a conexão SMTP
+	If oServer:SmtpConnect() != 0
+		ProcLogAtu("MENSAGEM", "FALHA NA CONEXAO DO SERVIDOR SMTP")
+		Return .F.
+	EndIf
+
+	//REALIZO AUTENTICACAO NO SERVIDOR DE EMAIL
+	nErro := oServer:SmtpAuth( cMailConta ,cMailSenha )
+	If nErro != 0
+		oServer:SMTPDisconnect()
+		ProcLogAtu("MENSAGEM", "FALHA NA AUTENTICACAO DO SERVIDOR SMTP")
+		Return .F.
+	Endif
+
+	//Apos a conexão, cria o objeto da mensagem
+	oMessage := TMailMessage():New()
+
+	//Limpa o objeto
+	oMessage:Clear()
+
+	//Popula com os dados de envio
+	oMessage:cFrom    := cMailConta
+	oMessage:cTo      := cEmail
+	oMessage:cCc      := ""
+	oMessage:cBcc     := ""
+	oMessage:cSubject := "GRUPO AGUAS - " + AllTrim(FwFilialName()) + " – " + cTitulo
+	oMessage:MsgBodyType( "text/html" )
+
+	cBody :="<html>"
+	cBody +="<head>"
+	cBody +="<meta http-equiv='Content-Type' content='text/html; charset=UTF8'>"
+	cBody +="</head>"
+	cBody +="<body>"
+	cBody +="</div>"
+	cBody +="<div id='conteudo'>"
+	cBody +=	"Em anexo. Arquivo ZIP contendo CSV e PDF referentes ao Inventário supracitado."
+	cBody +="</div>"
+	cBody +="</div>"
+	cBody +="<div id='footer'>"
+	cBody +="<p></p>"
+	cBody +="</div>"
+	cBody +="</font></p>"
+	cBody +="</body>"
+	cBody +="</html>"
+
+	oMessage:cBody := cBody
+
+	//Adiciona arquivo ZIP em anexo
+	If oMessage:AttachFile(::cPathArq + ::cArqZIP) < 0
+		ProcLogAtu("MENSAGEM", "FALHA AO ANEXAR ARQUIVO ZIP AO EMAIL")
+	Else
+		//adiciona uma tag informando que é um attach e o nome do arq
+		oMessage:AddAtthTag( 'Content-Disposition: attachment; filename= ' + ::cArqZIP)
+	EndIf
+
+	//Envia o e-mail
+	If oMessage:Send( oServer ) != 0
+		ProcLogAtu("MENSAGEM", "FALHA AO ENVIAR O EMAIL")
+		Return .F.
+	EndIf
+
+	//Desconecta do servidor
+	If oServer:SmtpDisconnect() != 0
+		ProcLogAtu("MENSAGEM", "FALHA NA DESCONEXAO DO SERVIDOR SMTP")
+		Return .F.
+	EndIf
+
+Return .T.
+
+
+/*/{Protheus.doc} cInventarioProRata::ClearArq() as Logical
+responsável por Limpar os arquivos gerados na pasta cedae depois de serem enviados por email
+@type method
+@version 12.1.33
+@author Waldyr Filho
+@since 21/12/2022
+@return logical, .t. or .f.
+/*/
+Method ClearArq() CLASS cInventarioProRata
+
+	Local nI := 0
+
+	//VARRO O ARRAY COM OS ARQUIVOS QUE SERÃO APAGADOS
+	For nI := 1 TO LEN(::aArqInv)
+		fErase(::aArqInv[nI])
+	Next
+
+Return
+
+
+/*/{Protheus.doc} cInventarioProRata::fPrepEnv()  as Logical
+prepara ambiente no protheus
+@type method
+@version 12.1.33
+@author eduardo.brust
+@since 05/12/2022
+@return logical, .t. or .f.
+/*/
+Method fPrepEnv() as Logical CLASS cInventarioProRata
+	Local _cfil		:= "320101" as character
+	Local aTables 	:= {"SA1"}  as Array
+	Local _cModulo	:= "FAT"    as character
+	Local lRet		:= .T.      as Logical
+
+	IF ISBLIND() .OR. GetRemoteType() == -1 .OR. !TCIsConnected()
+		RpcClearEnv()
+		RpcSetType(3)
+		lRet := RpcSetEnv( "00", _cfil, , ,_cModulo,ProcName(),aTables )
+	ENDIF
+
+Return lRet

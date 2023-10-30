@@ -58,7 +58,7 @@ class cCrudPAC Implements iCrudPAC
 	@Put(endpoint="tlpp/orquestra/v1/cCrudPAC",description="Altera Acesso na PAC")
 	public method PutcCrudPAC() as json
 
-	@Patch(endpoint="tlpp/orquestra/v1/cCrudPAC/:codigo",description="Altera Acesso na PAC")
+	@Patch(endpoint="tlpp/orquestra/v1/cCrudPAC/:cToken",description="Altera Acesso na PAC")
 	public method PatchcCrudPAC() as json
 
 	@Delete(endpoint="tlpp/orquestra/v1/cCrudPAC",description="Deleta Acesso na PAC")

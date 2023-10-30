@@ -1,0 +1,963 @@
+#include "totvs.ch"
+#include 'tlpp-core.th'
+#include 'tlpp-rest.th'
+#include "FWPrintSetup.ch" 
+#include "rptdef.ch"
+
+//Definindo e usando o namespace para a classe
+Using NameSpace nRelOutorgas
+
+/*/ iRelOutorgas
+Main Interface de controle
+type Interface
+version 12.1.33
+author waldyr.filho
+since 06/02/2023
+/*/
+Interface iRelOutorgas
+
+Protected Method New()                As Object   //criar uma nova instancia do objeto da classe
+Protected Method Destroy(_oObj)       As Object   //destruir a instancia do objeto da classe em memoria
+Protected Method TelaInicial()        As Logical  //exibir tela para selecionar relatório
+Protected Method SelecPasta()         As Logical  //exibir tela para selecionar pasta do PDF
+Protected Method ExisteContab()       As Logical  //verificar se já existe contabilização da taxa do relatório selecionado
+Protected Method GeraContab()         As Logical  //gerar contabilização da taxa do relatório selecionado
+Protected Method GeraPDF()            As Object   //gerar PDF do relatório selecionado
+
+Private Method Contab_75()            As Numeric  //realizar cálculos do relatório 7.5
+Private Method Contab_751()           As Numeric  //realizar cálculos do relatório 7.51
+Private Method Contab_752()           As Numeric  //realizar cálculos do relatório 7.52
+Private Method PDF_75()               As Object   //gerar PDF do relatório 7.5
+Private Method PDF_751()              As Object   //gerar PDF do relatório 7.51
+Private Method PDF_752()              As Object   //gerar PDF do relatório 7.52
+
+EndInterface
+
+
+/*/ cRelOutorgasVariaveis
+Main classe de controle para geracao de Inventario Pro_Rata
+@type classe
+@version 12.1.33
+@author waldyr.filho
+@since 06/02/2023
+/*/
+Class cRelOutorgasVariaveis Implements iRelOutorgas
+
+	Public  Data cTitulo     As Character
+	Public  Data cNomeRelMsg As Character
+	Public  Data cNomeRelLog As Character
+
+	Private Data cOrigem     As Character
+	Private Data dDataIni    As Date		            		//guarda a data usada por todo fluxo de processamento
+	Private Data dDataFim    As Date		            		//guarda a data usada por todo fluxo de processamento
+	Private Data cMesAno     As Character
+	
+	Private Data cLoteRel    As Character
+	Private Data cLPadRel    As Character
+	Private Data cCodRel     As Character
+	Private Data cHistRel    As Character
+	Private Data ContaDeb    As Character
+	Private Data CCustoDeb   As Character
+	Private Data ContaCred   As Character
+	Private Data CCustoCred  As Character
+	Private Data aContab_75  As Array
+	Private Data aContab_751 As Array
+	Private Data aContab_752 As Array
+	Private Data cPathArq    As Character 
+	Private Data cArqPDF     As Character 
+
+	Private Data oFont10     As Object
+	Private Data oFont10b    As Object
+	Private Data oFont11     As Object
+	Private Data oFont11b    As Object
+
+	Protected Method New()                As Object   //criar uma nova instancia do objeto da classe
+	Protected Method Destroy(_oObj)       As Object   //destruir a instancia do objeto da classe em memoria
+	Protected Method TelaInicial()        As Logical  //exibir tela para selecionar relatório
+	Protected Method SelecPasta()         As Logical  //exibir tela para selecionar pasta do PDF
+	Protected Method ExisteContab()       As Logical  //verificar se já existe contabilização da taxa do relatório selecionado
+	Protected Method GeraContab()         As Logical  //gerar contabilização da taxa do relatório selecionado
+	Protected Method GeraPDF()            As Object   //gerar PDF do relatório selecionado
+
+	Private Method Contab_75()            As Numeric  //realizar cálculos do relatório 7.5
+	Private Method Contab_751()           As Numeric  //realizar cálculos do relatório 7.51
+	Private Method Contab_752()           As Numeric  //realizar cálculos do relatório 7.52
+	Private Method PDF_75()               As Object   //gerar PDF do relatório 7.5
+	Private Method PDF_751()              As Object   //gerar PDF do relatório 7.51
+	Private Method PDF_752()              As Object   //gerar PDF do relatório 7.52
+
+EndClass
+
+
+/*/{Protheus.doc} RelOutorgas
+User Function principal
+@type function
+@version 12.1.33
+@author waldyr.filho
+@since 06/02/2023
+/*/
+User Function RelOutorgas()
+
+	Local objRel := Nil As Object
+
+	//RpcSetType(3)
+	//RpcSetEnv( "00", "320101")
+	
+	objRel := cRelOutorgasVariaveis():New()
+
+	If FwCodFil() <> "320101"
+		FWAlertWarning("Função só pode ser acionada a partir da filial Matriz da Rio+.", objRel:cTitulo)
+		objRel:Destroy(objRel)
+		Return
+	EndIf
+	
+	If !objRel:TelaInicial()
+		objRel:Destroy(objRel)
+		Return
+	EndIf
+
+	ProcLogIni({}, "RELOUTORGA")
+	ProcLogAtu('INICIO')
+
+	ProcLogAtu("MENSAGEM", "[##1 SELECIONOU RELATORIO " + objRel:cNomeRelLog + "]")
+
+	ProcLogAtu("MENSAGEM", "[##2 VERIFICA SE JA HOUVE CONTABILIZACAO]")
+	If objRel:ExisteContab()
+		If FWAlertYesNo("Confirma a reemissão do relatório " + objRel:cNomeRelMsg + "?", objRel:cTitulo)
+			ProcLogAtu("MENSAGEM", "[##3 REEMISSAO DO RELATORIO " + objRel:cNomeRelLog + "]")
+			objRel:GeraPDF()
+		EndIf
+	Else
+		If FWAlertYesNo("Confirma a emissão do relatório " + objRel:cNomeRelMsg + ", bem como a sua contabilização?", objRel:cTitulo)
+			ProcLogAtu("MENSAGEM", "[##3 CONTABILIZACAO DO RELATORIO " + objRel:cNomeRelLog + "]")
+			objRel:GeraContab()
+
+			ProcLogAtu("MENSAGEM", "[##4 EMISSAO DO RELATORIO " + objRel:cNomeRelLog + "]")
+			objRel:GeraPDF()
+		EndIf
+	EndIf
+
+	ProcLogAtu('FIM')
+
+	objRel:Destroy(objRel)
+
+Return
+
+
+/*/{Protheus.doc} cRelOutorgasVariaveis::New() As Object
+criar uma nova instancia do objeto da classe
+@type method
+@version 12.1.33
+@author waldyr.filho
+@since 06/02/2023
+@return Self
+/*/
+Method New() As Object Class cRelOutorgasVariaveis
+
+	::cTitulo     := "Outorgas Variáveis"
+	::cOrigem     := "RELOUTORGA"
+	::dDataIni    := MonthSub(FirstDate(dDataBase), 1)
+	::dDataFim    := LastDate(::dDataIni)
+	::cMesAno     := StrZero(Month(::dDataIni), 2) + "/" + StrZero(Year(::dDataIni), 4)
+	
+	::cPathArq    := ""
+	::cArqPDF     := ""
+
+	::cLoteRel    := "0ICF03"
+	::cLPadRel    := "407"
+	
+	::aContab_75  := {}
+	::aContab_751 := {}
+	::aContab_752 := {}
+
+	::cCodRel     := "7.5  "
+	::cHistRel    := ::cCodRel + " REF. TAXA OUTORGA MES " + ::cMesAno
+	::cNomeRelMsg := "Cálculo Taxa de Outorga"
+	::cNomeRelLog := Upper(NoAcento(::cNomeRelMsg))
+	::ContaDeb    := "41122001"
+	::CCustoDeb   := "15303100"
+	::ContaCred   := "21501001"
+	::CCustoCred  := ""
+	::cArqPDF     := "reloutorgas_75_" + DTOS(::dDataIni) + ".pdf"
+
+	::oFont10     := TFont():New("Arial", 9, 10, .T., .F., 5, .T., 5, .T., .F.)
+	::oFont10b    := TFont():New("Arial", 9, 10, .T., .T., 5, .T., 5, .T., .F.)
+	::oFont11     := TFont():New("Arial", 9, 11, .T., .F., 5, .T., 5, .T., .F.)
+	::oFont11b    := TFont():New("Arial", 9, 11, .T., .T., 5, .T., 5, .T., .F.)
+
+Return Self
+
+
+/*/{Protheus.doc} cRelOutorgasVariaveis::TelaInicial() As Logical
+exibir tela para selecionado relatório
+@type method
+@version 12.1.33
+@author waldyr.filho
+@since 13/02/2023
+@return Logical
+/*/
+Method TelaInicial() As Logical Class cRelOutorgasVariaveis
+
+	Local oTela  As Object
+	Local oCombo As Object
+
+	Local aRelats := {}
+	Local cCombo  := ""
+
+	Local lRet  := .T.
+
+	aAdd(aRelats, "7.5   - Cálculo de Outorga")
+	aAdd(aRelats, "7.5.1 - Taxa de Regulação")
+	aAdd(aRelats, "7.5.2 - Fundo Metropolitano")
+
+	oTela := TDialog():New(180, 180, 320, 450, ::cTitulo,,,,,,,,, .T.)
+
+	TSay():New(010, 012,{||"Selecione o Relatório"}, oTela,,,,,, .T.,,, 250, 010)
+
+	oCombo := TComboBox():New(020, 012, {|u|If(PCount() > 0, cCombo := u, cCombo)}, ;
+		aRelats, 080, 25, oTela,, ;
+		{||oTela:Refresh()} ;
+		,,,, .T.,,,,,,,,, "cCombo")
+
+	//oFile := TFileDialog("All(*)", "Arquivos", 0, ,.F.,GETF_RETDIRECTORY)
+
+    /*
+	@ 037,009 Say   "Arquivo CSV dos Centros de Custo" Size 120,008 PIXEL OF _oDlg
+    @ 046,009 MSGET _cArquivo Size 120,010 WHEN .F. PIXEL OF _oDlg
+    @ 046,140 BUTTON "..." SIZE 013,013 PIXEL OF _oDlg   Action(_cArquivo := cGetFile("*.csv|*.csv","Importacao de Dados",0, ,.T.,GETF_LOCALHARD))
+	*/
+
+	oCombo:nAt := 1 //posiciona no primeiro item da combo
+
+	TButton():New(040, 012, "Gerar", oTela,{|| If(::SelecPasta(), oTela:End(), lRet := .T.)}, ;
+		040, 020,,, .F., .T., .F.,, .F.,,, .F. )
+	TButton():New(040, 070, "Sair" , oTela,{|| oTela:End(), lRet := .F.}, ;
+		040, 020,,, .F., .T., .F.,, .F.,,, .F. )
+
+	oTela:Activate(,,, .T.)
+
+	If Left(cCombo, 5) == "  7.5"
+		::cCodRel     := "7.5  "
+		::cHistRel    := ::cCodRel + " REF. TAXA OUTORGA MES " + ::cMesAno
+		::cNomeRelMsg := "Cálculo Taxa de Outorga"
+		::cNomeRelLog := Upper(NoAcento(::cNomeRelMsg))
+		::ContaDeb    := "41122001"
+		::CCustoDeb   := "15303100"
+		::ContaCred   := "21501001"
+		::CCustoCred  := ""
+		::cArqPDF     := "reloutorgas_75_" + DTOS(::dDataIni) + ".pdf"
+	
+	ElseIf Left(cCombo, 5) == "7.5.1"
+		::cCodRel     := "7.5.1"
+		::cHistRel    := ::cCodRel + " REF. TAXA REGULACAO MES " + ::cMesAno
+		::cNomeRelMsg := "Cálculo Taxa de Regulação"
+		::cNomeRelLog := Upper(NoAcento(::cNomeRelMsg))
+		::ContaDeb    := "41122002"
+		::CCustoDeb   := "15303100"
+		::ContaCred   := "21501002"
+		::CCustoCred  := ""
+		::cArqPDF     := "reloutorgas_751_" + DTOS(::dDataIni) + ".pdf"
+	
+	ElseIf Left(cCombo, 5) == "7.5.2"
+		::cCodRel     := "7.5.2"
+		::cHistRel    := ::cCodRel + " REF. FUNDO METROPOLIT. MES " + ::cMesAno
+		::cNomeRelMsg := "Cálculo Fundo Metropolitano"
+		::cNomeRelLog := Upper(NoAcento(::cNomeRelMsg))
+		::ContaDeb    := "41122004"
+		::CCustoDeb   := "15303100"
+		::ContaCred   := "21501003"
+		::CCustoCred  := ""
+		::cArqPDF     := "reloutorgas_752_" + DTOS(::dDataIni) + ".pdf"
+	
+	EndIf
+
+Return lRet
+
+
+/*/{Protheus.doc} cRelOutorgasVariaveis::SelecPasta() As Logical
+exibir tela para selecionar pasta do PDF
+@type method
+@version 12.1.33
+@author waldyr.filho
+@since 13/02/2023
+@return Logical
+/*/
+Method SelecPasta() as Logical CLASS cRelOutorgasVariaveis
+	
+	Local lRet := .T.
+
+	::cPathArq := cGetFile("All(*)", "Selecione a pasta", 0, "C:\", .T., GETF_RETDIRECTORY+GETF_LOCALHARD+GETF_NETWORKDRIVE, .T., .T.)
+	
+	If Empty(::cPathArq)
+		FWAlertWarning("Selecione a pasta onde o PDF será gravado.", ::cTitulo)
+		lRet := .F.
+	EndIf
+
+Return lRet
+
+
+/*/{Protheus.doc} cRelOutorgasVariaveis::Destroy(oObj As Object) As Object
+destruir a instancia do objeto da classe em memoria
+@type method
+@version 12.1.33
+@author waldyr.filho
+@since 06/02/2023
+@return Self
+/*/
+Method Destroy(oObj As Object) As Object Class cRelOutorgasVariaveis
+
+	FreeObj(oObj)
+
+Return Self
+
+
+/*/{Protheus.doc} cRelOutorgasVariaveis::ExisteContab() As Logical
+verificar se já existe contabilização da taxa do relatório selecionado
+@type method
+@version 12.1.33
+@author waldyr.filho
+@since 06/02/2023
+@return Logical
+/*/
+Method ExisteContab() As Logical Class cRelOutorgasVariaveis
+
+	Local cQry := ""  As Character
+	Local cTrb := ""  As Character
+	Local lRet := .F. As Logical
+
+	cQry += "SELECT COUNT(CT2_LOTE) AS QTD "                                                  + CRLF
+	cQry += "FROM " + RetSqlName("CT2") + " CT2 "                                             + CRLF
+	cQry += "WHERE CT2_FILIAL = '" + FwxFilial("CT2") + "' "                                  + CRLF
+	cQry += "AND CT2_DATA BETWEEN '" + DTOS(::dDataIni) + "' AND '" + DTOS(::dDataFim) + "' " + CRLF
+	cQry += "AND CT2_LOTE = '" + ::cLoteRel + "' "                                            + CRLF
+	cQry += "AND CT2_FILORI = '" + FwCodFil() + "' "                                          + CRLF
+	cQry += "AND CT2_LP = '" + ::cLPadRel + "' "                                              + CRLF
+	cQry += "AND SUBSTR(CT2_HIST, 1, 5) = '" + ::cCodRel + "' "                               + CRLF
+	cQry += "AND CT2.D_E_L_E_T_ = ' ' "                                                       + CRLF
+
+	cTrb := MpSysOpenQuery(cQry)
+
+	If (cTrb)->QTD > 0
+		lRet := .T.
+	EndIf
+
+	(cTrb)->(DbCloseArea())
+
+Return lRet
+
+
+/*/{Protheus.doc} cRelOutorgasVariaveis::GeraContab() As Logical
+gerar contabilização da taxa do relatório selecionado
+@type method
+@version 12.1.33
+@author waldyr.filho
+@since 06/02/2023
+@return Logical
+/*/
+Method GeraContab() As Logical Class cRelOutorgasVariaveis
+
+	Local lRet      := .F. As Logical
+	Local nValCont  := 0   As Numeric
+	Local nHndl     := 0   As Numeric
+	Local cArquivo  := ""  As Character
+	Local nTotLcto  := 0   As Numeric
+	Local lMostra   := .F. As Logical
+	Local lAglutina := .F. As Logical
+
+	/*
+	INFORMACOES DO DEBITO
+	_CT5_DEBITO
+	_CT5_CCD
+	_CT5_VLD
+	
+	INFORMACOES DO CREDITO
+	_CT5_CREDIT
+	_CT5_CCC
+	_CT5_VLC
+
+	INFORMACOES GERAIS
+	_CT5_ORIGEM
+	_CT5_HIST
+	*/
+
+	If ::cCodRel == "7.5  "
+		nValCont := ::Contab_75()
+	ElseIf ::cCodRel == "7.5.1"
+		nValCont := ::Contab_751()
+	ElseIf ::cCodRel == "7.5.2"
+		nValCont := ::Contab_752()
+	EndIf
+
+	Begin Transaction
+
+		//Cabeçaçho da Contabilização
+		nHndl := HeadProva(::cLoteRel, ::cOrigem, SubStr(cUsuario, 7, 15), @cArquivo)
+
+		//Lançamento a Débito
+		_CT5_DEBITO	:= ::ContaDeb
+		_CT5_CCD	:= ::CCustoDeb
+		_CT5_VLD	:= nValCont
+		_CT5_CREDIT	:= ""
+		_CT5_CCC	:= ""
+		_CT5_VLC	:= 0
+		_CT5_ORIGEM	:= ::cOrigem
+		_CT5_HIST	:= ::cHistRel
+
+		nTotLcto += DetProva(nHndl, ::cLPadRel, ::cOrigem, ::cLoteRel)
+
+		//Lançamento a Crédito
+		_CT5_CREDIT	:= ::ContaCred
+		_CT5_CCC	:= ::CCustoCred
+		_CT5_VLC	:= nValCont
+		_CT5_DEBITO	:= ""
+		_CT5_CCD	:= ""
+		_CT5_VLD	:= 0
+		_CT5_ORIGEM	:= ::cOrigem
+		_CT5_HIST	:= ::cHistRel
+
+		nTotLcto += DetProva(nHndl, ::cLPadRel, ::cOrigem, ::cLoteRel)
+
+		//Rodapé da Contabilização
+		RodaProva(nHndl, nTotLcto)
+
+		//Grava Lançamento Contábil na CT2
+		cA100Incl(cArquivo, nHndl, 3, ::cLoteRel, lMostra, lAglutina,, ::dDataFim)
+
+	End Transaction
+
+Return lRet
+
+
+/*/{Protheus.doc} cRelOutorgasVariaveis::Contab_75() As Numeric
+realizar cálculos do relatório 7.5
+@type method
+@version 12.1.33
+@author waldyr.filho
+@since 07/02/2023
+@return Numeric
+/*/
+Method Contab_75() As Numeric Class cRelOutorgasVariaveis
+
+	Local cQry     := "" As Character
+	Local cTrb     := "" As Character
+	Local aDebCred := {} As Array
+	Local nI       := 0  As Numeric
+
+	aAdd(aDebCred, {"D", "11203029", 0})
+	aAdd(aDebCred, {"C", "11201997", 0})
+
+	For nI := 1 To Len(aDebCred)
+
+		cQry := "SELECT SUM(CT2_VALOR) AS VALOR "                                                 + CRLF
+		cQry += "FROM " + RetSqlName("CT2") + " CT2 "                                             + CRLF
+		cQry += "WHERE CT2_FILIAL = '" + FwxFilial("CT2") + "' "                                  + CRLF
+		cQry += "AND CT2_DATA BETWEEN '" + DTOS(::dDataIni) + "' AND '" + DTOS(::dDataFim) + "' " + CRLF
+		If aDebCred[nI, 2] == "11201997"
+			cQry += "AND CT2_LOTE LIKE '%ICF%' "                                                  + CRLF
+		EndIf
+		cQry += "AND CT2_FILORI = '" + FwCodFil() + "' "                                          + CRLF
+		cQry += "AND CT2_LP <> '" + ::cLPadRel + "' "                                             + CRLF
+		If aDebCred[nI, 1] == "C"
+			cQry += "AND CT2_CREDIT = '" + aDebCred[nI, 2] + "' "                                 + CRLF
+		Else
+			cQry += "AND CT2_DEBITO = '" + aDebCred[nI, 2] + "' "                                 + CRLF
+		EndIf
+		cQry += "AND CT2.D_E_L_E_T_ = ' ' "                                                       + CRLF
+
+		cTrb := MpSysOpenQuery(cQry)
+
+		aDebCred[nI, 3] := (cTrb)->VALOR
+
+		(cTrb)->(DbCloseArea())
+
+	Next
+
+	//1 - Arrecadação Mensal:
+	aAdd(::aContab_75, aDebCred[1, 3]) //Arrecadação Mensal por Município - Ponto Arrecadador ( 1)
+
+	//2 - Expurgos
+	aAdd(::aContab_75, aDebCred[2, 3]*(-1)) //Valores a Repassar a Terceiros - CEDAE          ( 2)
+
+	//3 - Arrecadação Líquida
+	aAdd(::aContab_75, ::aContab_75[1] + ::aContab_75[2]) //                                  ( 3)
+
+	//4 - Fator / Percentual
+	aAdd(::aContab_75, 0.03) //                                                               ( 4)
+
+	//5 - Outorga Váriavel
+	aAdd(::aContab_75, Round(::aContab_75[3] * ::aContab_75[4], 2)) //                        ( 5)
+
+Return ::aContab_75[5]
+
+
+/*/{Protheus.doc} cRelOutorgasVariaveis::Contab_751() As Numeric
+realizar cálculos do relatório 7.51
+@type method
+@version 12.1.33
+@author waldyr.filho
+@since 07/02/2023
+@return Numeric
+/*/
+Method Contab_751() As Numeric Class cRelOutorgasVariaveis
+
+	Local cQry     := "" As Character
+	Local cTrb     := "" As Character
+	Local aDebCred := {} As Array
+	Local nI       := 0  As Numeric
+
+	aAdd(aDebCred, {"C", "31101006", 0})
+	aAdd(aDebCred, {"C", "31101007", 0})
+	aAdd(aDebCred, {"C", "31106001", 0})
+	aAdd(aDebCred, {"D", "31106001", 0})
+	aAdd(aDebCred, {"D", "31101006", 0})
+	aAdd(aDebCred, {"D", "31101007", 0})
+
+	For nI := 1 To Len(aDebCred)
+
+		cQry := "SELECT SUM(CT2_VALOR) AS VALOR "                                                 + CRLF
+		cQry += "FROM " + RetSqlName("CT2") + " CT2 "                                             + CRLF
+		cQry += "WHERE CT2_FILIAL = '" + FwxFilial("CT2") + "' "                                  + CRLF
+		cQry += "AND CT2_DATA BETWEEN '" + DTOS(::dDataIni) + "' AND '" + DTOS(::dDataFim) + "' " + CRLF
+		cQry += "AND CT2_LOTE LIKE '%ICF%' "                                                      + CRLF
+		cQry += "AND CT2_FILORI = '" + FwCodFil() + "' "                                          + CRLF
+		cQry += "AND CT2_LP <> '" + ::cLPadRel + "' "                                             + CRLF
+		If aDebCred[nI, 1] == "C"
+			cQry += "AND CT2_CREDIT = '" + aDebCred[nI, 2] + "' "                                 + CRLF
+		Else
+			cQry += "AND CT2_DEBITO = '" + aDebCred[nI, 2] + "' "                                 + CRLF
+		EndIf
+		cQry += "AND CT2.D_E_L_E_T_ = ' ' "                                                       + CRLF
+
+		cTrb := MpSysOpenQuery(cQry)
+
+		aDebCred[nI, 3] := (cTrb)->VALOR
+
+		(cTrb)->(DbCloseArea())
+
+	Next
+
+	//1 - Receita Bruta/Operacional:
+	aAdd(::aContab_751, aDebCred[1, 3]) //Tarifas - Contrato de Interdependência                 ( 1)
+	aAdd(::aContab_751, aDebCred[2, 3]) //Parcelamento CEDAE PRO-RATA                            ( 2)
+	aAdd(::aContab_751, aDebCred[3, 3] -  aDebCred[4, 3]) //Ajuste por Competência               ( 3)
+	aAdd(::aContab_751, ::aContab_751[1] + ::aContab_751[2] + ::aContab_751[3]) //Total Receitas ( 4)
+
+	//2 - Abatimentos
+	aAdd(::aContab_751, aDebCred[5, 3]*(-1)) //Tarifas - Contrato de Interdependência            ( 5)
+	aAdd(::aContab_751, aDebCred[6, 3]*(-1)) //Parcelamento CEDAE PRO-RATA                       ( 6)
+	aAdd(::aContab_751, ::aContab_751[5] + ::aContab_751[6]) //Total Abatimentos                 ( 7)
+
+	//3 - Total Receita (-) Abatimento
+	aAdd(::aContab_751, ::aContab_751[4] + ::aContab_751[7]) //                                  ( 8)
+
+	//4 - Impostos Sobre Vendas e Serviços
+	aAdd(::aContab_751, Round(::aContab_751[8] * 0.0165, 2)) //                                  ( 9)
+	aAdd(::aContab_751, Round(::aContab_751[8] * 0.0760, 2)) //                                  (10)
+
+	//5 - Base de Cálculo
+	aAdd(::aContab_751, ::aContab_751[8] - ::aContab_751[9] - ::aContab_751[10]) //              (11)
+
+	//6 - Fator / Percentual
+	aAdd(::aContab_751, 0.0050) //                                                               (12)
+
+	//7 - Taxa de Regulação a Pagar
+	aAdd(::aContab_751, Round(::aContab_751[11] * ::aContab_751[12], 2)) //                      (13)
+
+Return ::aContab_751[13]
+
+
+/*/{Protheus.doc} cRelOutorgasVariaveis::Contab_752() As Numeric
+realizar cálculos do relatório 7.52
+@type method
+@version 12.1.33
+@author waldyr.filho
+@since 07/02/2023
+@return Numeric
+/*/
+Method Contab_752() As Numeric Class cRelOutorgasVariaveis
+
+	Local cQry     := "" As Character
+	Local cTrb     := "" As Character
+	Local aDebCred := {} As Array
+	Local nI       := 0  As Numeric
+
+	aAdd(aDebCred, {"D", "11203029", 0})
+	aAdd(aDebCred, {"C", "11201997", 0})
+
+	For nI := 1 To Len(aDebCred)
+
+		cQry := "SELECT SUM(CT2_VALOR) AS VALOR "                                                 + CRLF
+		cQry += "FROM " + RetSqlName("CT2") + " CT2 "                                             + CRLF
+		cQry += "WHERE CT2_FILIAL = '" + FwxFilial("CT2") + "' "                                  + CRLF
+		cQry += "AND CT2_DATA BETWEEN '" + DTOS(::dDataIni) + "' AND '" + DTOS(::dDataFim) + "' " + CRLF
+		If aDebCred[nI, 2] == "11201997"
+			cQry += "AND CT2_LOTE LIKE '%ICF%' "                                                  + CRLF
+		EndIf
+		cQry += "AND CT2_FILORI = '" + FwCodFil() + "' "                                          + CRLF
+		cQry += "AND CT2_LP <> '" + ::cLPadRel + "' "                                             + CRLF
+		If aDebCred[nI, 1] == "C"
+			cQry += "AND CT2_CREDIT = '" + aDebCred[nI, 2] + "' "                                 + CRLF
+		Else
+			cQry += "AND CT2_DEBITO = '" + aDebCred[nI, 2] + "' "                                 + CRLF
+		EndIf
+		cQry += "AND CT2.D_E_L_E_T_ = ' ' "                                                       + CRLF
+
+		cTrb := MpSysOpenQuery(cQry)
+
+		aDebCred[nI, 3] := (cTrb)->VALOR
+
+		(cTrb)->(DbCloseArea())
+
+	Next
+
+	//1 - Arrecadação Mensal:
+	aAdd(::aContab_752, aDebCred[1, 3]) //Arrecadação Mensal por Município - Ponto Arrecadador ( 1)
+
+	//2 - Expurgos
+	aAdd(::aContab_752, aDebCred[2, 3]*(-1)) //Valores a Repassar a Terceiros - CEDAE          ( 2)
+
+	//3 - Arrecadação Líquida
+	aAdd(::aContab_752, ::aContab_752[1] + ::aContab_752[2]) //                                ( 3)
+
+	//4 - Fator / Percentual
+	aAdd(::aContab_752, 0.005) //                                                              ( 4)
+
+	//5 - Outorga Váriavel
+	aAdd(::aContab_752, Round(::aContab_752[3] * ::aContab_752[4], 2)) //                      ( 5)
+
+Return ::aContab_752[5]
+
+
+/*/{Protheus.doc} cRelOutorgasVariaveis::GeraPDF() As Object
+gerar PDF do relatório selecionado
+@type method
+@version 12.1.33
+@author waldyr.filho
+@since 08/02/2023
+@return Logical
+/*/
+Method GeraPDF() As Object Class cRelOutorgasVariaveis
+
+	If ::cCodRel == "7.5  "
+		::PDF_75()
+	ElseIf ::cCodRel == "7.5.1"
+		::PDF_751()
+	ElseIf ::cCodRel == "7.5.2"
+		::PDF_752()
+	EndIf
+
+Return
+
+
+/*/{Protheus.doc} cRelOutorgasVariaveis::PDF_75() As Object
+gerar PDF do relatório 7.5
+@type method
+@version 12.1.33
+@author waldyr.filho
+@since 13/02/2023
+@return Object
+/*/
+Method PDF_75() As Object Class cRelOutorgasVariaveis
+
+	Local lAdjustToLegacy := .F. As Logical
+	Local lDisableSetup   := .T. As Logical
+	Local lServer         := .T. As Logical
+	Local cPathPDF        := ""	 As Character
+	Local oFilePDF        := Nil As Object
+	Local cBitMap         := ""  As Character
+	Local lLogo           := .T. As Logical
+
+	cBitMap := "\system\lgrlpdf" + cEmpAnt + cFilAnt + ".bmp"
+    If !File(cBitMap)
+        cBitMap	:= "\system\lgrletq" + cEmpAnt + cFilAnt + ".bmp"
+        If !File(cBitMap)
+            lLogo := .F.
+        EndIf
+    EndIf
+
+	cPathPDF := ::cPathArq + ::cArqPDF
+    If File(cPathPDF)
+		fErase(cPathPDF)
+	EndIf
+
+	If Len(::aContab_75) == 0
+		::Contab_75()
+	EndIf
+
+	oFilePDF := FWMSPrinter():New(::cArqPDF, IMP_PDF, lAdjustToLegacy, ::cPathArq, lDisableSetup, , , , lServer)
+	oFilePDF:SetPortrait()
+	oFilePDF:SetPaperSize(DMPAPER_A4)
+	oFilePDF:SetMargin(60, 60, 60, 60)
+	oFilePDF:cPathPDF := ::cPathArq
+	oFilePDF:SetViewPDF(.T.)
+
+	oFilePDF:StartPage()
+
+	If lLogo
+		oFilePDF:SayBitMap(050, 005, cBitMap, 120, 035)
+	Else
+		oFilePDF:Say(050, 005, cFilAnt, _oFont30N, 200)
+	EndIf
+
+	//Cabeçalho
+	
+	oFilePDF:SayAlign(050, 180, "NOME: 7.5 - CÁLCULO DA OUTORGA POR MUNICÍPIO", ::oFont11b, 300,,, 0)
+	oFilePDF:SayAlign(065, 180, "DATA BASE: " + ::cMesAno, ::oFont11b, 300,,, 0)
+
+	//Coluna da Esquerda
+	
+	oFilePDF:SayAlign(120, 005, "1) Arrecadação Mensal"                               , ::oFont10b, 200,,, 0)
+	oFilePDF:SayAlign(132, 005, "Arrecadação Mensal por Município - Ponto Arrecadador", ::oFont10 , 200,,, 0)
+	
+	oFilePDF:SayAlign(152, 005, "2) Expurgos"                                         , ::oFont10b, 200,,, 0)
+	oFilePDF:SayAlign(164, 005, "CEDAE"                                               , ::oFont10b, 200,,, 0)
+	oFilePDF:SayAlign(176, 005, "Valores a Repassar a Terceiros - CEDAE"              , ::oFont10 , 200,,, 0)
+
+	oFilePDF:SayAlign(196, 005, "3) Arrecadação Líquida"                              , ::oFont10b, 200,,, 0)
+
+	oFilePDF:SayAlign(216, 005, "4) Fator / Percentual"                               , ::oFont10b, 200,,, 0)
+
+	oFilePDF:SayAlign(236, 005, "5) Outorga Variável"                                 , ::oFont10b, 200,,, 0)
+
+	//Coluna da Direita
+
+	oFilePDF:SayAlign(120, 200, "AP5", ::oFont10b, 70,,, 2)
+
+	// 1) Arecadação Mensal
+	oFilePDF:SayAlign(132, 200, Transform(::aContab_75[1], "@E 999,999,999.99"), ::oFont10 , 70,,, 1)
+
+	// 2) Expurgos
+	oFilePDF:SayAlign(176, 200, Transform(::aContab_75[2], "@E 999,999,999.99"), ::oFont10 , 70,,, 1)
+
+	// 3) Arrecadação Líquida
+	oFilePDF:SayAlign(196, 200, Transform(::aContab_75[3], "@E 999,999,999.99"), ::oFont10b, 70,,, 1)
+
+	// 4) Fator / Percentual
+	oFilePDF:SayAlign(216, 200, Transform(::aContab_75[4] * 100, "@E 999.99%") , ::oFont10b, 70,,, 1)
+
+	// 5) Outorga Variável
+	oFilePDF:SayAlign(236, 200, Transform(::aContab_75[5], "@E 999,999,999.99"), ::oFont10b, 70,,, 1)
+
+
+	oFilePDF:EndPage()
+
+	oFilePDF:Preview()
+
+Return
+
+
+/*/{Protheus.doc} cRelOutorgasVariaveis::PDF_751() As Object
+gerar PDF do relatório 7.5.1
+@type method
+@version 12.1.33
+@author waldyr.filho
+@since 08/02/2023
+@return Object
+/*/
+Method PDF_751() As Object Class cRelOutorgasVariaveis
+
+	Local lAdjustToLegacy := .F. As Logical
+	Local lDisableSetup   := .T. As Logical
+	Local lServer         := .T. As Logical
+	Local cPathPDF        := ""	 As Character
+	Local oFilePDF        := Nil As Object
+	Local cBitMap         := ""  As Character
+	Local lLogo           := .T. As Logical
+
+	cBitMap := "\system\lgrlpdf" + cEmpAnt + cFilAnt + ".bmp"
+    If !File(cBitMap)
+        cBitMap	:= "\system\lgrletq" + cEmpAnt + cFilAnt + ".bmp"
+        If !File(cBitMap)
+            lLogo := .F.
+        EndIf
+    EndIf
+
+	cPathPDF := ::cPathArq + ::cArqPDF
+    If File(cPathPDF)
+		fErase(cPathPDF)
+	EndIf
+
+	If Len(::aContab_751) == 0
+		::Contab_751()
+	EndIf
+
+	oFilePDF := FWMSPrinter():New(::cArqPDF, IMP_PDF, lAdjustToLegacy, ::cPathArq, lDisableSetup, , , , lServer)
+	oFilePDF:SetPortrait()
+	oFilePDF:SetPaperSize(DMPAPER_A4)
+	oFilePDF:SetMargin(60, 60, 60, 60)
+	oFilePDF:cPathPDF := ::cPathArq
+	oFilePDF:SetViewPDF(.T.)
+
+	oFilePDF:StartPage()
+
+	If lLogo
+		oFilePDF:SayBitMap(050, 005, cBitMap, 120, 035)
+	Else
+		oFilePDF:Say(050, 005, cFilAnt, _oFont30N, 200)
+	EndIf
+
+	//Cabeçalho
+	
+	oFilePDF:SayAlign(050, 180, "NOME: 7.5.1 - CÁLCULO DA TAXA DE REGULAÇÃO", ::oFont11b, 300,,, 0)
+	oFilePDF:SayAlign(065, 180, "DATA BASE: " + ::cMesAno, ::oFont11b, 300,,, 0)
+
+	//Coluna da Esquerda
+	
+	oFilePDF:SayAlign(120, 005, "1) Receita Bruta/Operacional"          , ::oFont10b, 200,,, 0)
+	oFilePDF:SayAlign(132, 005, "Tarifas - Contrato de Interdependência", ::oFont10 , 200,,, 0)
+	oFilePDF:SayAlign(144, 005, "Parcelamento CEDAE PRO-RATA"           , ::oFont10 , 200,,, 0)
+	oFilePDF:SayAlign(156, 005, "Ajuste por Competência"                , ::oFont10 , 200,,, 0)
+	oFilePDF:SayAlign(168, 005, "Total Receitas"                        , ::oFont10b, 200,,, 0)
+
+	oFilePDF:SayAlign(188, 005, "2) Abatimentos"                        , ::oFont10b, 200,,, 0)
+	oFilePDF:SayAlign(200, 005, "2.1) Contas Canceladas"                , ::oFont10b, 200,,, 0)
+	oFilePDF:SayAlign(212, 005, "Tarifas - Contrato de Interdependência", ::oFont10 , 200,,, 0)
+	oFilePDF:SayAlign(224, 005, "Parcelamento CEDAE PRO-RATA"           , ::oFont10 , 200,,, 0)
+	oFilePDF:SayAlign(236, 005, "Total Abatimentos"                     , ::oFont10b, 200,,, 0)
+
+	oFilePDF:SayAlign(256, 005, "3) Total Receita (-) Abatimento"       , ::oFont10b, 200,,, 0)
+
+	oFilePDF:SayAlign(276, 005, "4) Impostos Sobre Vendas e Serviços"   , ::oFont10b, 200,,, 0)
+	oFilePDF:SayAlign(288, 005, "PIS - 1,65%"                           , ::oFont10 , 200,,, 0)
+	oFilePDF:SayAlign(300, 005, "COFINS - 7,60%"                        , ::oFont10 , 200,,, 0)
+
+	oFilePDF:SayAlign(320, 005, "5) Base de Cálculo"                    , ::oFont10b, 200,,, 0)
+
+	oFilePDF:SayAlign(340, 005, "6) Fator / Percentual"                 , ::oFont10b, 200,,, 0)
+
+	oFilePDF:SayAlign(360, 005, "7) Taxa de Regulação a Pagar"          , ::oFont10b, 200,,, 0)
+
+	//Coluna da Direita
+
+	oFilePDF:SayAlign(120, 200, "AP5", ::oFont10b, 70,,, 2)
+
+	// 1) Receita Bruta/Operacional
+	oFilePDF:SayAlign(132, 200, Transform(::aContab_751[01], "@E 999,999,999.99"), ::oFont10 , 70,,, 1)
+	oFilePDF:SayAlign(144, 200, Transform(::aContab_751[02], "@E 999,999,999.99"), ::oFont10 , 70,,, 1)
+	oFilePDF:SayAlign(156, 200, Transform(::aContab_751[03], "@E 999,999,999.99"), ::oFont10 , 70,,, 1)
+	oFilePDF:SayAlign(168, 200, Transform(::aContab_751[04], "@E 999,999,999.99"), ::oFont10b, 70,,, 1)
+
+	// 2) Abatimentos
+	oFilePDF:SayAlign(212, 200, Transform(::aContab_751[05], "@E 999,999,999.99"), ::oFont10 , 70,,, 1)
+	oFilePDF:SayAlign(224, 200, Transform(::aContab_751[06], "@E 999,999,999.99"), ::oFont10 , 70,,, 1)
+	oFilePDF:SayAlign(236, 200, Transform(::aContab_751[07], "@E 999,999,999.99"), ::oFont10b, 70,,, 1)
+
+	// 3) Total Receita (-) Abatimento
+	oFilePDF:SayAlign(256, 200, Transform(::aContab_751[08], "@E 999,999,999.99"), ::oFont10b, 70,,, 1)
+
+	// 4) Impostos Sobre Vendas e Serviços
+	oFilePDF:SayAlign(288, 200, Transform(::aContab_751[09], "@E 999,999,999.99"), ::oFont10 , 70,,, 1)
+	oFilePDF:SayAlign(300, 200, Transform(::aContab_751[10], "@E 999,999,999.99"), ::oFont10 , 70,,, 1)
+
+	// 5) Base de Cálculo
+	oFilePDF:SayAlign(320, 200, Transform(::aContab_751[11], "@E 999,999,999.99"), ::oFont10b, 70,,, 1)
+
+	// 6) Fator / Percentual
+	oFilePDF:SayAlign(340, 200, Transform(::aContab_751[12] * 100, "@E 999.99%") , ::oFont10b, 70,,, 1)
+
+	// 7) Taxa de Regulação a Pagar
+	oFilePDF:SayAlign(360, 200, Transform(::aContab_751[13], "@E 999,999,999.99"), ::oFont10b, 70,,, 1)
+
+
+	oFilePDF:EndPage()
+
+	oFilePDF:Preview()
+
+Return
+
+
+/*/{Protheus.doc} cRelOutorgasVariaveis::PDF_752() As Object
+gerar PDF do relatório 7.5.2
+@type method
+@version 12.1.33
+@author waldyr.filho
+@since 13/02/2023
+@return Object
+/*/
+Method PDF_752() As Object Class cRelOutorgasVariaveis
+
+	Local lAdjustToLegacy := .F. As Logical
+	Local lDisableSetup   := .T. As Logical
+	Local lServer         := .T. As Logical
+	Local cPathPDF        := ""	 As Character
+	Local oFilePDF        := Nil As Object
+	Local cBitMap         := ""  As Character
+	Local lLogo           := .T. As Logical
+
+	cBitMap := "\system\lgrlpdf" + cEmpAnt + cFilAnt + ".bmp"
+    If !File(cBitMap)
+        cBitMap	:= "\system\lgrletq" + cEmpAnt + cFilAnt + ".bmp"
+        If !File(cBitMap)
+            lLogo := .F.
+        EndIf
+    EndIf
+
+	cPathPDF := ::cPathArq + ::cArqPDF
+    If File(cPathPDF)
+		fErase(cPathPDF)
+	EndIf
+
+	If Len(::aContab_752) == 0
+		::Contab_752()
+	EndIf
+
+	oFilePDF := FWMSPrinter():New(::cArqPDF, IMP_PDF, lAdjustToLegacy, ::cPathArq, lDisableSetup, , , , lServer)
+	oFilePDF:SetPortrait()
+	oFilePDF:SetPaperSize(DMPAPER_A4)
+	oFilePDF:SetMargin(60, 60, 60, 60)
+	oFilePDF:cPathPDF := ::cPathArq
+	oFilePDF:SetViewPDF(.T.)
+
+	oFilePDF:StartPage()
+
+	If lLogo
+		oFilePDF:SayBitMap(050, 005, cBitMap, 120, 035)
+	Else
+		oFilePDF:Say(050, 005, cFilAnt, _oFont30N, 200)
+	EndIf
+
+	//Cabeçalho
+	
+	oFilePDF:SayAlign(050, 180, "NOME: 7.5.2 - CÁLCULO DO FUNDO DE DESENVOLVIMENTO REGIÃO METROPOLITANA", ::oFont11b, 500,,, 0)
+	oFilePDF:SayAlign(065, 180, "DATA BASE: " + ::cMesAno, ::oFont11b, 300,,, 0)
+
+	//Coluna da Esquerda
+	
+	oFilePDF:SayAlign(120, 005, "1) Arrecadação Mensal"                               , ::oFont10b, 200,,, 0)
+	oFilePDF:SayAlign(132, 005, "Arrecadação Mensal por Município - Ponto Arrecadador", ::oFont10 , 200,,, 0)
+	
+	oFilePDF:SayAlign(152, 005, "2) Expurgos"                                         , ::oFont10b, 200,,, 0)
+	oFilePDF:SayAlign(164, 005, "CEDAE"                                               , ::oFont10b, 200,,, 0)
+	oFilePDF:SayAlign(176, 005, "Valores a Repassar a Terceiros - CEDAE"              , ::oFont10 , 200,,, 0)
+
+	oFilePDF:SayAlign(196, 005, "3) Arrecadação Líquida"                              , ::oFont10b, 200,,, 0)
+
+	oFilePDF:SayAlign(216, 005, "4) Fator / Percentual"                               , ::oFont10b, 200,,, 0)
+
+	oFilePDF:SayAlign(236, 005, "5) Fundo de Desenvolvimento a Pagar"                 , ::oFont10b, 200,,, 0)
+
+	//Coluna da Direita
+
+	oFilePDF:SayAlign(120, 200, "AP5", ::oFont10b, 70,,, 2)
+
+	// 1) Arecadação Mensal
+	oFilePDF:SayAlign(132, 200, Transform(::aContab_752[1], "@E 999,999,999.99"), ::oFont10 , 70,,, 1)
+
+	// 2) Expurgos
+	oFilePDF:SayAlign(176, 200, Transform(::aContab_752[2], "@E 999,999,999.99"), ::oFont10 , 70,,, 1)
+
+	// 3) Arrecadação Líquida
+	oFilePDF:SayAlign(196, 200, Transform(::aContab_752[3], "@E 999,999,999.99"), ::oFont10b, 70,,, 1)
+
+	// 4) Fator / Percentual
+	oFilePDF:SayAlign(216, 200, Transform(::aContab_752[4] * 100, "@E 999.99%") , ::oFont10b, 70,,, 1)
+
+	// 5) Outorga Variável
+	oFilePDF:SayAlign(236, 200, Transform(::aContab_752[5], "@E 999,999,999.99"), ::oFont10b, 70,,, 1)
+
+
+	oFilePDF:EndPage()
+
+	oFilePDF:Preview()
+
+Return

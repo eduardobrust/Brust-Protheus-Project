@@ -1,0 +1,16 @@
+{
+    "itens": [
+      {
+        "cRotina": "Rotina 1",
+        "cEmpresa": "Empresa 1",
+        "cAtivo": "S",
+        "cSigla": "R1"
+      },
+      {
+        "cRotina": "Rotina 2",
+        "cEmpresa": "Empresa 2",
+        "cAtivo": "N",
+        "cSigla": "R2"
+      }
+    ]
+  }

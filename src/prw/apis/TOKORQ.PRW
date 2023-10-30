@@ -21,7 +21,7 @@
 
 User Function TOKORQ(NomeUsu)
 
-	Local aArea 	:= GetArea()
+//	Local aArea 	:= GetArea()
 	Local cTokenAdm	:= GetNewPar("MV_XTOKENO","eUphdeXP4mzJbuRBE5IqaolBfKP%2f1nFjiwLMRw6eSMz0cjcWZWcndWjxZWY%2bHl%2bW003RT%2bWVhMbWwz2SlaajhzUaNVoQ%2fJ3BMoYYpuc0tIo%3d")	
 	Local cToken	:= ""
 	Local cErro		:= ""
@@ -31,7 +31,7 @@ User Function TOKORQ(NomeUsu)
 	Local cMetodo1 	:= "Assume01" //Metodo Utilizado
 	Local cEnd1		:= SuperGetMv("MV_XWSORQ1",,"http://10.10.0.221:94/webservice/v2.5/authentication.asmx?WSDL") 
 	Local cSimul	:= SuperGetMv("MV_XSIMULO",,"0")
-	Local cErro		:= ""
+//	Local cErro		:= ""
 	Local cAviso 	:= ""
 
     if vazio(c_Usuario) .OR. ValType(c_Usuario) = "U"
