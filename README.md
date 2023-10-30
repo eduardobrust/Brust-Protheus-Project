@@ -55,6 +55,7 @@ ng new po-proj-routine-company --skip-install
 
 npm version @angular/rxjs 
 npm install rxjs@~7.5.5 --save
+npm list rxjs
 
 1.2. executar o comando na pasta raiz do projeto
 npm install
