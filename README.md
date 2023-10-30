@@ -51,9 +51,10 @@ para atualiazar o angular : npm update
 1. passos para instalação do PO UI
 ng new po-proj-routine-company --skip-install
 
-1.1. verificar as dependencias do angular no arquivo package.json
+1.1. verificar as dependencias do angular no arquivo package.json [rxjs sempre dá problema]
 
-npm version @angular/rxjs
+npm version @angular/rxjs 
+npm install rxjs@~7.5.5 --save
 
 1.2. executar o comando na pasta raiz do projeto
 npm install
