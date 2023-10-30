@@ -160,8 +160,7 @@ method GetApiConsultaRotinaEmpresa() as json class cApiRotinaEmpresa
 	endif
 
 	if lRet
-
-		::jRetorno := ::GETConsultaRotinaEmpresa(::cRotina,::cEmpresa,lFullEmp,::cAtivo,::cSigla)
+		::jRetorno := ::GETConsultaRotinaEmpresa(cRotina = ::cRotina,lFullEmp = lFullEmp ,cEmpresa = ::cEmpresa,cAtivo = ::cAtivo,cSigla = ::cSigla) //usando parametros nomeados
 
 		//verifico se recurso foi encontrado.
 		if valtype(::jRetorno) == 'J'

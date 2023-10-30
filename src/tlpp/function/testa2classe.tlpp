@@ -1,7 +1,9 @@
-#INCLUDE 'totvs.ch'
-#INCLUDE "restful.ch"
+#include 'tlpp-core.th'
+#include 'tlpp-rest.th'
+#include "msobject.ch"
+#include "totvs.ch"
 
-User Function testaclasse()
+User Function testa2classe()
 	local i
 
 	_cfil		:= "01"
@@ -12,15 +14,14 @@ User Function testaclasse()
 	RpcSetType(3)
 	RpcSetEnv( "99", _cfil, , ,_cModulo,ProcName(),aTables )
 
-	//testando parametros nomeados chamada via rotinas em advpl não são suportados. somente chamadas via rotinas em tlpp
-
 	//testando a classe
-    oEmpresas   := nGab.cRotinaEmpresa():New()
-    oEmpresas   := oEmpresas:GETConsultaRotinaEmpresa('FSTARTINOVA' ,.t.) //GETConsultaRotinaEmpresa(cRotina as Character,lFullEmp as Logical,cEmpresa as Character,cAtivo as Character)
+	oEmpresas   := nGab.cRotinaEmpresa():New()
+   // oEmpresas   := oEmpresas:GETConsultaRotinaEmpresa(lFullEmp = .T. ,cAtivo = '*',cRotina = 'FSTARTINOVA',cEmpresa = '320101',cSigla = 'RIOMAIS') //GETConsultaRotinaEmpresa(cRotina as Character,lFullEmp as Logical,cEmpresa as Character,cAtivo as Character)
+	oEmpresas   := oEmpresas:GETConsultaRotinaEmpresa(cSigla = 'RIOMAIS')	
 
-	//testando api	
-	//	oApiEmpresas := nApiGab.cApiRotinaEmpresa():New()
-	//	oApiEmpresas := oApiEmpresas:GETConsultaRotinaEmpresa(' fstartinova ' ,.t.) //testando parametros nomeados ; testando heranca da classe
+	//testando api
+	//oApiEmpresas := nApiGab.cApiRotinaEmpresa():New()
+	//oApiEmpresas := oApiEmpresas:GETConsultaRotinaEmpresa(lFullEmp = .T. ,cAtivo = '*',cRotina = 'FSTARTINOVA',cEmpresa = '320101',cSigla = 'RIOMAIS') //testando parametros nomeados ; testando heranca da classe
 
 	if valtype(oEmpresas) == 'J'
 		if len(oEmpresas["empresas"]) > 0

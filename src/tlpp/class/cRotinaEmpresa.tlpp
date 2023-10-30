@@ -9,12 +9,13 @@
 
 	Para instanciar a classe siga este exemplo:
 	oEmpresas   := nGab.cRotinaEmpresa():New()  //objeto := namespace.classe():construtor()
-    oEmpresas   := oEmpresas:GETConsultaRotinaEmpresa("FSTARTINOVA","320101",.T.,"S") 
+    oEmpresas   := oEmpresas:GETConsultaRotinaEmpresa("FSTARTINOVA",.T.,"320101","S","RIOMAIS") 
 	FSTARTINOVA = ROTINA A SER PESQUISADA
-	320101 = EMPRESA A SER PESQUISADA
 	.T. para todas as filiais da empresa; .F. somente a matriz
+	320101 = EMPRESA A SER PESQUISADA
 	S = INDICA SOMENTE REGISTROS ATIVOS ; N = INDICA REGISTROS INATIVOS ; * = INDICA TODOS OS REGISTROS;
 	TODOS OS PARAMETROS SÃO OPCIONAIS FAZENDO COM QUE O JSON RETORNADO SEJA COMPLETO OU FILTRADO CONFORME NECESSIDADE
+	RIOMAIS = SIGLA ATRELADA A EMPRESA
 
 	ESTRUTURA DO JSON DE RETORNO
 	{
@@ -44,7 +45,7 @@ type Interface
 /*/
 Interface iRotinaEmpresa
 
-public method GETConsultaRotinaEmpresa(cRotina as Character,cEmpresa as Character,lFullEmp as Logical,cAtivo as Character) as json
+public method GETConsultaRotinaEmpresa(cRotina as Character,lFullEmp as Logical,cEmpresa as Character,cAtivo as Character,cSigla as Character) as json
 
 EndInterface
 
@@ -60,7 +61,7 @@ class cRotinaEmpresa Implements iRotinaEmpresa
 
 	public method New() as object
 
-	public method GETConsultaRotinaEmpresa(cRotina as Character,cEmpresa as Character,lFullEmp as Logical,cAtivo as Character) as json
+	public method GETConsultaRotinaEmpresa(cRotina as Character,lFullEmp as Logical,cEmpresa as Character,cAtivo as Character,cSigla as Character) as json
 endclass
 
 
@@ -77,7 +78,7 @@ method new() as object class cRotinaEmpresa
 return Self
 
 
-/*/{Protheus.doc} cRotinaEmpresa::GETConsultaRotinaEmpresa(cRotina as Character,cEmpresa as Character,lFullEmp as Logical,cAtivo as Character) as json
+/*/{Protheus.doc} cRotinaEmpresa::GETConsultaRotinaEmpresa(cRotina as Character,lFullEmp as Logical,cEmpresa as Character,cAtivo as Character,cSigla as Character) as json
 Consulta as empresas que uma determinada rotina pode rodar. passando o parametro se busca todas as filiais ou somente a matriz.
 @type method
 @version 12.1.2310
@@ -85,7 +86,7 @@ Consulta as empresas que uma determinada rotina pode rodar. passando o parametro
 @since 28/10/2023
 @return json, retorna um objeto json
 /*/
-method GETConsultaRotinaEmpresa(cRotina as Character,cEmpresa as Character,lFullEmp as Logical,cAtivo as Character) as json class cRotinaEmpresa
+method GETConsultaRotinaEmpresa(cRotina as Character,lFullEmp as Logical,cEmpresa as Character,cAtivo as Character,cSigla as Character) as json class cRotinaEmpresa
 	Local _cQry 	:= "" 	as Character
 	Local cTrb1				as Character
 	Local cHeader	:= ''	as Character
@@ -96,10 +97,11 @@ method GETConsultaRotinaEmpresa(cRotina as Character,cEmpresa as Character,lFull
 	Local vRet				as Variant
 
 	//protecao de erro
-	DEFAULT cRotina 	:= ""
-	DEFAULT cEmpresa 	:= ""
+	DEFAULT cRotina 	:= ''
+	DEFAULT cEmpresa 	:= ''
 	DEFAULT lFullEmp 	:= .T.
-	DEFAULT cAtivo 		:= "S"
+	DEFAULT cAtivo 		:= ''
+	DEFAULT cSigla		:= ''
 
 	//monto o json padrão
 	cHeader		:= '{
@@ -132,8 +134,12 @@ method GETConsultaRotinaEmpresa(cRotina as Character,cEmpresa as Character,lFull
 	ENDIF
 
 	If !lFullEmp
-		_cQry += " AND SUBSTR(EMPRESA,5,2) = '01'                      			" +CRLF  //PEGO SOMENTE A MATRIZ 
+		_cQry += " AND SUBSTR(EMPRESA,5,2) = '01'                      			" +CRLF  //PEGO SOMENTE A MATRIZ
 	Endif
+
+	IF !EMPTY(cSigla)
+		_cQry += " AND UPPER(TRIM(SIGLA)) = '" + UPPER(ALLTRIM(cSigla)) + "'"    +CRLF
+	ENDIF
 
 	_cQry += " ORDER BY 1,2                                          			" +CRLF
 
@@ -141,15 +147,15 @@ method GETConsultaRotinaEmpresa(cRotina as Character,cEmpresa as Character,lFull
 
 	While (cTrb1)->(!Eof())
 
-			cItens += ' { '
-			cItens += ' "Rotina" : "' + AllTrim((cTrb1)->ROTINA) + '", '
-			cItens += ' "codigoReduzido" : "' + SUBSTR(AllTrim((cTrb1)->EMPRESA),1,2) + '", '
-			cItens += ' "codigo" : "' + AllTrim((cTrb1)->EMPRESA) + '", '
-			cItens += ' "sigla" : "' + AllTrim((cTrb1)->SIGLA) + '", '
-			cItens += ' "descricao" : "' + AllTrim((cTrb1)->M0_NOMECOM) + '", '
-			cItens += ' "cnpj" : "' + AllTrim((cTrb1)->M0_CGC) + '",'
-			cItens += ' "ativo" : "' + AllTrim((cTrb1)->ATIVO) + '"'
-			cItens += ' },'
+		cItens += ' { '
+		cItens += ' "Rotina" : "' + AllTrim((cTrb1)->ROTINA) + '", '
+		cItens += ' "codigoReduzido" : "' + SUBSTR(AllTrim((cTrb1)->EMPRESA),1,2) + '", '
+		cItens += ' "codigo" : "' + AllTrim((cTrb1)->EMPRESA) + '", '
+		cItens += ' "sigla" : "' + AllTrim((cTrb1)->SIGLA) + '", '
+		cItens += ' "descricao" : "' + AllTrim((cTrb1)->M0_NOMECOM) + '", '
+		cItens += ' "cnpj" : "' + AllTrim((cTrb1)->M0_CGC) + '",'
+		cItens += ' "ativo" : "' + AllTrim((cTrb1)->ATIVO) + '"'
+		cItens += ' },'
 
 		(cTrb1)->(dbSkip())
 	End
