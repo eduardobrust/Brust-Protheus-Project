@@ -11,15 +11,21 @@ Node: 18.18.0
 Package Manager: npm 9.8.1
 OS: win32 x64
 
-Angular:
-...
+Angular: 16.2.11
+... animations, common, compiler, compiler-cli, core, forms
+... platform-browser, platform-browser-dynamic, router
 
-Package                      Version
-------------------------------------------------------
-@angular-devkit/architect    0.1602.8 (cli-only)
-@angular-devkit/core         16.2.8 (cli-only)
-@angular-devkit/schematics   16.2.8 (cli-only)
-@schematics/angular          16.2.8 (cli-only)
+Package                         Version
+---------------------------------------------------------
+@angular-devkit/architect       0.1602.8
+@angular-devkit/build-angular   16.2.8
+@angular-devkit/core            16.2.8
+@angular-devkit/schematics      16.2.8
+@angular/cli                    16.2.8
+@schematics/angular             16.2.8
+rxjs                            7.5.7
+typescript                      5.1.6
+zone.js                         0.13.3
 
 Estrutura sugerida para o projeto :
 
