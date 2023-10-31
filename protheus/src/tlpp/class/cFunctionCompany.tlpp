@@ -9,7 +9,7 @@
 
 	Para instanciar a classe siga este exemplo:
 	oEmpresas   := nGab.cFunctionCompany():New()  //objeto := namespace.classe():construtor()
-    oEmpresas   := oEmpresas:GETConsultaFunctionCompany("FSTARTINOVA",.T.,"320101","Y","RIOMAIS") 
+    oEmpresas   := oEmpresas:getFunctionCompany("FSTARTINOVA",.T.,"320101","Y","RIOMAIS") 
 	FSTARTINOVA = CFUNCTION A SER PESQUISADA
 	.T. para todas as filiais da COMPANY; .F. somente a matriz
 	320101 = COMPANY A SER PESQUISADA
@@ -45,7 +45,7 @@ type Interface
 /*/
 Interface iFunctionCompany
 
-public method GETConsultaFunctionCompany(cFunction as Character,lAllBranches as Logical,cCompany as Character,cAtivo as Character,cAbbreviation as Character) as json
+public method getFunctionCompany(cFunction as Character,lAllBranches as Logical,cCompany as Character,cAtivo as Character,cAbbreviation as Character) as json
 
 EndInterface
 
@@ -61,7 +61,7 @@ class cFunctionCompany Implements iFunctionCompany
 
 	public method New() as object
 
-	public method GETConsultaFunctionCompany(cFunction as Character,lAllBranches as Logical,cCompany as Character,cAtivo as Character,cAbbreviation as Character) as json
+	public method getFunctionCompany(cFunction as Character,lAllBranches as Logical,cCompany as Character,cAtivo as Character,cAbbreviation as Character) as json
 endclass
 
 
@@ -78,7 +78,7 @@ method new() as object class cFunctionCompany
 return Self
 
 
-/*/{Protheus.doc} cFunctionCompany::GETConsultaFunctionCompany(cFunction as Character,lAllBranches as Logical,cCompany as Character,cAtivo as Character,cAbbreviation as Character) as json
+/*/{Protheus.doc} cFunctionCompany::getFunctionCompany(cFunction as Character,lAllBranches as Logical,cCompany as Character,cAtivo as Character,cAbbreviation as Character) as json
 Consulta as empresas que uma determinada CFUNCTION pode rodar. passando o parametro se busca todas as filiais ou somente a matriz.
 @type method
 @version 12.1.2310
@@ -86,7 +86,7 @@ Consulta as empresas que uma determinada CFUNCTION pode rodar. passando o parame
 @since 28/10/2023
 @return json, retorna um objeto json
 /*/
-method GETConsultaFunctionCompany(cFunction as Character,lAllBranches as Logical,cCompany as Character,cAtivo as Character,cAbbreviation as Character) as json class cFunctionCompany
+method getFunctionCompany(cFunction as Character,lAllBranches as Logical,cCompany as Character,cAtivo as Character,cAbbreviation as Character) as json class cFunctionCompany
 	Local _cQry 	:= "" 	as Character
 	Local cTrb1				as Character
 	Local cHeader	:= ''	as Character
@@ -105,7 +105,7 @@ method GETConsultaFunctionCompany(cFunction as Character,lAllBranches as Logical
 
 	//monto o json padrão
 	cHeader		:= '{
-	cHeader		+= '"empresas":['
+	cHeader		+= '"companies":['
 
 	//cItens --montado na query
 

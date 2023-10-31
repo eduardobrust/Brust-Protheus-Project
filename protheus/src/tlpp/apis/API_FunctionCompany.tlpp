@@ -32,11 +32,11 @@ namespace nApiGab
 
 Interface iApiFunctionCompany
 
-public method GetApiConsultaFunctionCompany() as json
-public method PostApiIncluiFunctionCompany() as json
-public method PatchApiAlteraFunctionCompany() as json
+public method GetApiFunctionCompany() as json
+public method PostApiFunctionCompany() as json
+public method PatchApiFunctionCompany() as json
 
-Private method AlteraFunctionCompany() as json
+Private method UpdateFunctionCompany() as json
 
 EndInterface
 
@@ -65,15 +65,15 @@ class cApiFunctionCompany from nGab.cFunctionCompany Implements iApiFunctionComp
 
 	//annotation deve ficar na implementação do metódo da classe e não da interface.
 	@Get(endpoint='tlpp/cfg/v1/cApiFunctionCompany',description='Consulta registro na Tabela FUNCTION_COMPANY')
-	public method GetApiConsultaFunctionCompany() as json
+	public method GetApiFunctionCompany() as json
 
 	@Post(endpoint='tlpp/cfg/v1/cApiFunctionCompany',description='Inclui registro na Tabela FUNCTION_COMPANY')
-	public method PostApiIncluiFunctionCompany() as json
+	public method PostApiFunctionCompany() as json
 
 	@Patch(endpoint='tlpp/cfg/v1/cApiFunctionCompany',description='Altera registro na Tabela FUNCTION_COMPANY')
-	public method PatchApiAlteraFunctionCompany() as json
+	public method PatchApiFunctionCompany() as json
 
-	Private method AlteraFunctionCompany()
+	Private method UpdateFunctionCompany()
 
 endclass
 
@@ -101,7 +101,7 @@ method new() as object class cApiFunctionCompany
 return Self
 
 
-/*/{Protheus.doc} cApiFunctionCompany::GetApiConsultaFunctionCompany() as json
+/*/{Protheus.doc} cApiFunctionCompany::GetApiFunctionCompany() as json
 Metodo Get para consulta a tabela FUNCTION_COMPANY
 @type method
 @version 12.1.2310
@@ -109,7 +109,7 @@ Metodo Get para consulta a tabela FUNCTION_COMPANY
 @since 10/28/2023
 @return variant, return_um objeto
 /*/
-method GetApiConsultaFunctionCompany() as json class cApiFunctionCompany
+method GetApiFunctionCompany() as json class cApiFunctionCompany
 	Local lRet			:= .T. 	as logical
 	Local lAllBranches		:= .T. 	as logical
 
@@ -154,19 +154,19 @@ method GetApiConsultaFunctionCompany() as json class cApiFunctionCompany
 		If .F. // !U_VTOKEN(::cToken) // VALIDO SE TOKEN E VALIDO RETIRAR DEPOIS DOS TESTES
 			lRet := .F.
 
-			::jRetorno := {"erro": "Token inválido""company"o": 401}
+			::jRetorno := {"error": "Invalid Token", "code": 401}
 			oRest:setStatusCode( 401 )
 		endif
 	endif
 
 	if lRet
-		::jRetorno := ::GETConsultaFunctionCompany(cFunction = ::cFunction,lAllBranches = lAllBranches ,cCompany = ::cCompany,cAtivo = ::cAtivo,cAbbreviation = ::cAbbreviation) //usando parametros nomeados
+		::jRetorno := ::getFunctionCompany(cFunction = ::cFunction,lAllBranches = lAllBranches ,cCompany = ::cCompany,cAtivo = ::cAtivo,cAbbreviation = ::cAbbreviation) //usando parametros nomeados
 
 		//verifico se recurso foi encontrado.
-		if valtype(::jRetorno) == 'J'
-			if len(::jRetorno["empresas"]) <= 0
+		if valtype(::jRetorno) == 'J' .AND. ::jRetorno:HasProperty("companies")
+			if len(::jRetorno["companies"]) <= 0
 
-				::jRetorno := {"erro": "Recurso não encontrado""company"o": 404}
+				::jRetorno := {"error": "Resource not found", "code": 404}
 				oRest:setStatusCode( 404 )
 			endif
 		endif
@@ -177,7 +177,7 @@ method GetApiConsultaFunctionCompany() as json class cApiFunctionCompany
 return oRest:setResponse( ::jRetorno )
 
 
-/*/{Protheus.doc} cApiFunctionCompany::PatchApiAlteraFunctionCompany() as json
+/*/{Protheus.doc} cApiFunctionCompany::PatchApiFunctionCompany() as json
 Metodo Patch para atualizacao de registros na tabela FUNCTION_COMPANY
 @type method
 @version 12.1.2310
@@ -185,7 +185,7 @@ Metodo Patch para atualizacao de registros na tabela FUNCTION_COMPANY
 @since 10/29/2023
 @return variant, return_um objeto
 /*/
-method PatchApiAlteraFunctionCompany() as json class cApiFunctionCompany
+method PatchApiFunctionCompany() as json class cApiFunctionCompany
 	Local lRet	:= .T. 	as logical
 
 	::jHeader := oRest:getHeaderRequest()
@@ -196,7 +196,7 @@ method PatchApiAlteraFunctionCompany() as json class cApiFunctionCompany
 	if lRet
 		If .F. // !U_VTOKEN(::cToken) // VALIDO SE TOKEN E VALIDO RETIRAR DEPOIS DOS TESTES
 			lRet := .F.
-			::jRetorno := {"erro": "Token inválido""company"o": 401}
+			::jRetorno := {"error": "Invalid Token", "code": 401}
 			oRest:setStatusCode( 401 )
 		endif
 	endif
@@ -206,13 +206,13 @@ method PatchApiAlteraFunctionCompany() as json class cApiFunctionCompany
 		::jBody:fromJson( oRest:GetBodyRequest() )
 		if !( ::jBody:HasProperty("itens") )
 			lRet := .F.
-			::jRetorno := {"erro": "Bad Request", "company": 400}
+			::jRetorno := {"erro": "Bad Request", "code": 400}
 			oRest:setStatusCode( 400 )
 		endif
 	endif
 
 	if lRet
-		::AlteraFunctionCompany()
+		::UpdateFunctionCompany()
 	endif
 
 	lRet := oRest:setKeyHeaderResponse("Content-Type", "application/json")
@@ -220,14 +220,14 @@ method PatchApiAlteraFunctionCompany() as json class cApiFunctionCompany
 return oRest:setResponse( ::jRetorno )
 
 
-/*/{Protheus.doc} cApiFunctionCompany::AlteraFunctionCompany()
+/*/{Protheus.doc} cApiFunctionCompany::UpdateFunctionCompany()
 Altera registros na tabela FUNCTION_COMPANY
 @type method
 @version 12.1.2310
 @author Eduardo Brust
 @since 10/29/2023
 /*/
-method AlteraFunctionCompany() class cApiFunctionCompany
+method UpdateFunctionCompany() class cApiFunctionCompany
 	Local cUpdate	:= ""	as character
 	local nStatus	:=	0	as numeric
 	Local i					as numeric

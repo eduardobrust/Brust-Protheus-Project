@@ -16,24 +16,24 @@ User Function testaclasse()
 
 	//testando a classe
     oEmpresas   := nGab.cFunctionCompany():New()
-    oEmpresas   := oEmpresas:GETConsultaFunctionCompany('FSTARTINOVA' ,.t.) //GETConsultaFunctionCompany(cFunction as Character,lAllBranches as Logical,cCompany as Character,cAtivo as Character)
+    oEmpresas   := oEmpresas:getFunctionCompany('FSTARTINOVA' ,.t.) //getFunctionCompany(cFunction as Character,lAllBranches as Logical,cCompany as Character,cAtivo as Character)
 
 	//testando api	
 	//	oApiEmpresas := nApiGab.cApiFunctionCompany():New()
-	//	oApiEmpresas := oApiEmpresas:GETConsultaFunctionCompany(' fstartinova ' ,.t.) //testando parametros nomeados ; testando heranca da classe
+	//	oApiEmpresas := oApiEmpresas:getFunctionCompany(' fstartinova ' ,.t.) //testando parametros nomeados ; testando heranca da classe
 
 	if valtype(oEmpresas) == 'J'
-		if len(oEmpresas["empresas"]) > 0
-			//oEmpresas["empresas"][1]:HasProperty("reducedCode")
-			//oEmpresas["empresas"][1]:HasProperty("company")
-			//oEmpresas["empresas"][1]:HasProperty("abbreviation")	
-			//oEmpresas["empresas"][1]:HasProperty("description")	
-			//oEmpresas["empresas"][1]:HasProperty("cnpj")
-			//aPropri := oEmpresas["empresas"][1]:GetNames()
-			//codigoReduzido := oEmpresas["empresas"][1]:GetJsonText("reducedCode")
+		if len(oEmpresas["companies"]) > 0
+			//oEmpresas["companies"][1]:HasProperty("reducedCode")
+			//oEmpresas["companies"][1]:HasProperty("company")
+			//oEmpresas["companies"][1]:HasProperty("abbreviation")	
+			//oEmpresas["companies"][1]:HasProperty("description")	
+			//oEmpresas["companies"][1]:HasProperty("cnpj")
+			//aPropri := oEmpresas["companies"][1]:GetNames()
+			//codigoReduzido := oEmpresas["companies"][1]:GetJsonText("reducedCode")
 			teste := ""
-			for i:= 1 to len(oEmpresas["empresas"])
-				teste +=  oEmpresas["empresas"][i]:GetJsonText("reducedCode") + ";"
+			for i:= 1 to len(oEmpresas["companies"])
+				teste +=  oEmpresas["companies"][i]:GetJsonText("reducedCode") + ";"
 			next
 		endif  
 	endif
