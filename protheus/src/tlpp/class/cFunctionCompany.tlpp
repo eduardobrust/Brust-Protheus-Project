@@ -8,8 +8,8 @@
 	Classe para ler dados de cruzamento de rotinas x empresas de uma tabela(ROTINA_EMPRESA) e devolver um JSON com os dados filtrados pela rotina.
 
 	Para instanciar a classe siga este exemplo:
-	oEmpresas   := nGab.cRotinaEmpresa():New()  //objeto := namespace.classe():construtor()
-    oEmpresas   := oEmpresas:GETConsultaRotinaEmpresa("FSTARTINOVA",.T.,"320101","S","RIOMAIS") 
+	oEmpresas   := nGab.cFunctionCompany():New()  //objeto := namespace.classe():construtor()
+    oEmpresas   := oEmpresas:GETConsultaFunctionCompany("FSTARTINOVA",.T.,"320101","S","RIOMAIS") 
 	FSTARTINOVA = ROTINA A SER PESQUISADA
 	.T. para todas as filiais da empresa; .F. somente a matriz
 	320101 = EMPRESA A SER PESQUISADA
@@ -36,36 +36,36 @@
 //Definindo o namespace para a classe
 namespace nGab
 
-/*/ iRotinaEmpresa
+/*/ iFunctionCompany
 definição de um contrato que uma classe deve implementar
 type Interface
 @version 12.1.2310
 @author eduardo.brust
 @since 28/10/2023
 /*/
-Interface iRotinaEmpresa
+Interface iFunctionCompany
 
-public method GETConsultaRotinaEmpresa(cRotina as Character,lFullEmp as Logical,cEmpresa as Character,cAtivo as Character,cSigla as Character) as json
+public method GETConsultaFunctionCompany(cFunction as Character,lFullEmp as Logical,cCompany as Character,cAtivo as Character,cSigla as Character) as json
 
 EndInterface
 
 
-/*/ cRotinaEmpresa
-Classe que implementa a interface iRotinaEmpresa para consultar as empresas que uma determinada rotina pode rodar.
+/*/ cFunctionCompany
+Classe que implementa a interface iFunctionCompany para consultar as empresas que uma determinada rotina pode rodar.
 @type classe
 @version 12.1.2310
 @author eduardo.brust
 @since 28/10/2023
 /*/
-class cRotinaEmpresa Implements iRotinaEmpresa
+class cFunctionCompany Implements iFunctionCompany
 
 	public method New() as object
 
-	public method GETConsultaRotinaEmpresa(cRotina as Character,lFullEmp as Logical,cEmpresa as Character,cAtivo as Character,cSigla as Character) as json
+	public method GETConsultaFunctionCompany(cFunction as Character,lFullEmp as Logical,cCompany as Character,cAtivo as Character,cSigla as Character) as json
 endclass
 
 
-/*/{Protheus.doc} cRotinaEmpresa::new() as object
+/*/{Protheus.doc} cFunctionCompany::new() as object
 Metodo construtor
 @type method
 @version 12.1.2310
@@ -73,12 +73,12 @@ Metodo construtor
 @since 28/10/2023
 return Self, retorna um objeto
 /*/
-method new() as object class cRotinaEmpresa
+method new() as object class cFunctionCompany
 
 return Self
 
 
-/*/{Protheus.doc} cRotinaEmpresa::GETConsultaRotinaEmpresa(cRotina as Character,lFullEmp as Logical,cEmpresa as Character,cAtivo as Character,cSigla as Character) as json
+/*/{Protheus.doc} cFunctionCompany::GETConsultaFunctionCompany(cFunction as Character,lFullEmp as Logical,cCompany as Character,cAtivo as Character,cSigla as Character) as json
 Consulta as empresas que uma determinada rotina pode rodar. passando o parametro se busca todas as filiais ou somente a matriz.
 @type method
 @version 12.1.2310
@@ -86,7 +86,7 @@ Consulta as empresas que uma determinada rotina pode rodar. passando o parametro
 @since 28/10/2023
 @return json, retorna um objeto json
 /*/
-method GETConsultaRotinaEmpresa(cRotina as Character,lFullEmp as Logical,cEmpresa as Character,cAtivo as Character,cSigla as Character) as json class cRotinaEmpresa
+method GETConsultaFunctionCompany(cFunction as Character,lFullEmp as Logical,cCompany as Character,cAtivo as Character,cSigla as Character) as json class cFunctionCompany
 	Local _cQry 	:= "" 	as Character
 	Local cTrb1				as Character
 	Local cHeader	:= ''	as Character
@@ -97,8 +97,8 @@ method GETConsultaRotinaEmpresa(cRotina as Character,lFullEmp as Logical,cEmpres
 	Local vRet				as Variant
 
 	//protecao de erro
-	DEFAULT cRotina 	:= ''
-	DEFAULT cEmpresa 	:= ''
+	DEFAULT cFunction 	:= ''
+	DEFAULT cCompany 	:= ''
 	DEFAULT lFullEmp 	:= .T.
 	DEFAULT cAtivo 		:= ''
 	DEFAULT cSigla		:= ''
@@ -121,12 +121,12 @@ method GETConsultaRotinaEmpresa(cRotina as Character,lFullEmp as Logical,cEmpres
 
 	_cQry += " WHERE EMPRESA <> ' ' "  										  	  +CRLF
 
-	IF !EMPTY(cRotina)
-		_cQry += " AND UPPER(TRIM(ROTINA)) = '" + UPPER(ALLTRIM(cRotina)) + "'"    +CRLF
+	IF !EMPTY(cFunction)
+		_cQry += " AND UPPER(TRIM(ROTINA)) = '" + UPPER(ALLTRIM(cFunction)) + "'"    +CRLF
 	ENDIF
 
-	IF !EMPTY(cEmpresa)
-		_cQry += " AND TRIM(EMPRESA) = '" + ALLTRIM(cEmpresa) + "'"    			  +CRLF
+	IF !EMPTY(cCompany)
+		_cQry += " AND TRIM(EMPRESA) = '" + ALLTRIM(cCompany) + "'"    			  +CRLF
 	ENDIF
 
 	IF !EMPTY(cAtivo) .AND. ALLTRIM(cAtivo) <> '*'

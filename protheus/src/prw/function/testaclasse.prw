@@ -15,12 +15,12 @@ User Function testaclasse()
 	//testando parametros nomeados chamada via rotinas em advpl não são suportados. somente chamadas via rotinas em tlpp
 
 	//testando a classe
-    oEmpresas   := nGab.cRotinaEmpresa():New()
-    oEmpresas   := oEmpresas:GETConsultaRotinaEmpresa('FSTARTINOVA' ,.t.) //GETConsultaRotinaEmpresa(cRotina as Character,lFullEmp as Logical,cEmpresa as Character,cAtivo as Character)
+    oEmpresas   := nGab.cFunctionCompany():New()
+    oEmpresas   := oEmpresas:GETConsultaFunctionCompany('FSTARTINOVA' ,.t.) //GETConsultaFunctionCompany(cFunction as Character,lFullEmp as Logical,cCompany as Character,cAtivo as Character)
 
 	//testando api	
-	//	oApiEmpresas := nApiGab.cApiRotinaEmpresa():New()
-	//	oApiEmpresas := oApiEmpresas:GETConsultaRotinaEmpresa(' fstartinova ' ,.t.) //testando parametros nomeados ; testando heranca da classe
+	//	oApiEmpresas := nApiGab.cApiFunctionCompany():New()
+	//	oApiEmpresas := oApiEmpresas:GETConsultaFunctionCompany(' fstartinova ' ,.t.) //testando parametros nomeados ; testando heranca da classe
 
 	if valtype(oEmpresas) == 'J'
 		if len(oEmpresas["empresas"]) > 0

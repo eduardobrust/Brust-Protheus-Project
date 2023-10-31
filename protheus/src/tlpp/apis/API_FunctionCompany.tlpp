@@ -7,51 +7,51 @@
 EDUARDO BRUST - HOMOLOGADO NA RELEASE 12.1.2310
 Descrição:
 
-A API nApiGab.cApiRotinaEmpresa expõe a tabela ROTINA_EMPRESA do sistema Protheus. 
+A API nApiGab.cApiFunctionCompany expõe a tabela ROTINA_EMPRESA do sistema Protheus. 
 Retorna um JSON com os dados da tabela, filtrando os resultados de acordo com os parâmetros fornecidos.
 
 Detalhes:
-A API herda a classe nGab.cRotinaEmpresa, que fornece os métodos para acessar os dados da tabela.
-A API implementa um polimorfismo atraves do contrato com a iApiRotinaEmpresa para expor uma nova classe nApiGab.cApiRotinaEmpresa.
+A API herda a classe nGab.cFunctionCompany, que fornece os métodos para acessar os dados da tabela.
+A API implementa um polimorfismo atraves do contrato com a iApiFunctionCompany para expor uma nova classe nApiGab.cApiFunctionCompany.
 Os parâmetros fornecidos na solicitação determinam como os dados da tabela são filtrados.
 
 Exemplos de uso:
 
 Para listar todas as rotinas para todas as empresas, use a seguinte URL:
-https://localhost:porta/tlpp/cfg/v1/cApiRotinaEmpresa
+https://localhost:porta/tlpp/cfg/v1/cApiFunctionCompany
 
 Para listar todas as rotinas para a empresa com o código 330101, use a seguinte URL:
-https://localhost:porta/tlpp/cfg/v1/cApiRotinaEmpresa?empresa=330101
+https://localhost:porta/tlpp/cfg/v1/cApiFunctionCompany?empresa=330101
 
 Para listar todas as rotinas ativas para todas as empresas, use a seguinte URL:
-https://localhost:porta/tlpp/cfg/v1/cApiRotinaEmpresa?ativo=S
+https://localhost:porta/tlpp/cfg/v1/cApiFunctionCompany?ativo=S
 */
 
 //Definindo o namespace para a classe
 namespace nApiGab
 
-Interface iApiRotinaEmpresa
+Interface iApiFunctionCompany
 
-public method GetApiConsultaRotinaEmpresa() as json
-public method PostApiIncluiRotinaEmpresa() as json
-public method PatchApiAlteraRotinaEmpresa() as json
+public method GetApiConsultaFunctionCompany() as json
+public method PostApiIncluiFunctionCompany() as json
+public method PatchApiAlteraFunctionCompany() as json
 
-Private method AlteraRotinaEmpresa() as json
+Private method AlteraFunctionCompany() as json
 
 EndInterface
 
-/*/ cApiRotinaEmpresa
-Classe que herda a clase nGab.cRotinaEmpresa com seus métodos e implementa um polimorfismo expondo uma nova classe nApiGab.cApiRotinaEmpresa
+/*/ cApiFunctionCompany
+Classe que herda a clase nGab.cFunctionCompany com seus métodos e implementa um polimorfismo expondo uma nova classe nApiGab.cApiFunctionCompany
 @type classe
 @version 12.1.2310
 @author eduardo.brust
 @since 10/27/2023
 /*/
-class cApiRotinaEmpresa from nGab.cRotinaEmpresa Implements iApiRotinaEmpresa
+class cApiFunctionCompany from nGab.cFunctionCompany Implements iApiFunctionCompany
 
 	private data cToken 	as Character
-	private data cRotina 	as Character
-	private data cEmpresa 	as Character
+	private data cFunction 	as Character
+	private data cCompany 	as Character
 	private data cFullEmp	as Character
 	private data cAtivo 	as Character
 	private data cSigla 	as Character
@@ -64,21 +64,21 @@ class cApiRotinaEmpresa from nGab.cRotinaEmpresa Implements iApiRotinaEmpresa
 	public method New() as object
 
 	//annotation deve ficar na implementação do metódo da classe e não da interface.
-	@Get(endpoint='tlpp/cfg/v1/cApiRotinaEmpresa',description='Consulta registro na Tabela ROTINA_EMPRESA')
-	public method GetApiConsultaRotinaEmpresa() as json
+	@Get(endpoint='tlpp/cfg/v1/cApiFunctionCompany',description='Consulta registro na Tabela ROTINA_EMPRESA')
+	public method GetApiConsultaFunctionCompany() as json
 
-	@Post(endpoint='tlpp/cfg/v1/cApiRotinaEmpresa',description='Inclui registro na Tabela ROTINA_EMPRESA')
-	public method PostApiIncluiRotinaEmpresa() as json
+	@Post(endpoint='tlpp/cfg/v1/cApiFunctionCompany',description='Inclui registro na Tabela ROTINA_EMPRESA')
+	public method PostApiIncluiFunctionCompany() as json
 
-	@Patch(endpoint='tlpp/cfg/v1/cApiRotinaEmpresa',description='Altera registro na Tabela ROTINA_EMPRESA')
-	public method PatchApiAlteraRotinaEmpresa() as json
+	@Patch(endpoint='tlpp/cfg/v1/cApiFunctionCompany',description='Altera registro na Tabela ROTINA_EMPRESA')
+	public method PatchApiAlteraFunctionCompany() as json
 
-	Private method AlteraRotinaEmpresa()
+	Private method AlteraFunctionCompany()
 
 endclass
 
 
-/*/{Protheus.doc} cApiRotinaEmpresa::new() as object
+/*/{Protheus.doc} cApiFunctionCompany::new() as object
 Metodo construtor
 @type method
 @version 12.1.2310
@@ -86,10 +86,10 @@ Metodo construtor
 @since 10/27/2023
 return Self, retorna um objeto
 /*/
-method new() as object class cApiRotinaEmpresa
+method new() as object class cApiFunctionCompany
 	::cToken		:= ''
-	::cRotina		:= ''
-	::cEmpresa		:= ''
+	::cFunction		:= ''
+	::cCompany		:= ''
 	::cFullEmp		:= ''
 	::cAtivo		:= ''
 	::cSigla		:= ''
@@ -101,7 +101,7 @@ method new() as object class cApiRotinaEmpresa
 return Self
 
 
-/*/{Protheus.doc} cApiRotinaEmpresa::GetApiConsultaRotinaEmpresa() as json
+/*/{Protheus.doc} cApiFunctionCompany::GetApiConsultaFunctionCompany() as json
 Metodo Get para consulta a tabela ROTINA_EMPRESA
 @type method
 @version 12.1.2310
@@ -109,7 +109,7 @@ Metodo Get para consulta a tabela ROTINA_EMPRESA
 @since 10/28/2023
 @return variant, return_um objeto
 /*/
-method GetApiConsultaRotinaEmpresa() as json class cApiRotinaEmpresa
+method GetApiConsultaFunctionCompany() as json class cApiFunctionCompany
 	Local lRet			:= .T. 	as logical
 	Local lFullEmp		:= .T. 	as logical
 
@@ -120,14 +120,14 @@ method GetApiConsultaRotinaEmpresa() as json class cApiRotinaEmpresa
 			::cToken := ''
 		endif
 
-		::cRotina := ::jQuery[ 'cRotina' ]
-		if ( valtype(::cRotina) == 'U' )
-			::cRotina := ''
+		::cFunction := ::jQuery[ 'cFunction' ]
+		if ( valtype(::cFunction) == 'U' )
+			::cFunction := ''
 		endif
 
-		::cEmpresa := ::jQuery[ 'cEmpresa' ]
-		if ( valtype(::cEmpresa) == 'U' )
-			::cEmpresa := ''
+		::cCompany := ::jQuery[ 'cCompany' ]
+		if ( valtype(::cCompany) == 'U' )
+			::cCompany := ''
 		endif
 
 		::cFullEmp := ::jQuery[ 'cFullEmp' ]
@@ -160,7 +160,7 @@ method GetApiConsultaRotinaEmpresa() as json class cApiRotinaEmpresa
 	endif
 
 	if lRet
-		::jRetorno := ::GETConsultaRotinaEmpresa(cRotina = ::cRotina,lFullEmp = lFullEmp ,cEmpresa = ::cEmpresa,cAtivo = ::cAtivo,cSigla = ::cSigla) //usando parametros nomeados
+		::jRetorno := ::GETConsultaFunctionCompany(cFunction = ::cFunction,lFullEmp = lFullEmp ,cCompany = ::cCompany,cAtivo = ::cAtivo,cSigla = ::cSigla) //usando parametros nomeados
 
 		//verifico se recurso foi encontrado.
 		if valtype(::jRetorno) == 'J'
@@ -177,7 +177,7 @@ method GetApiConsultaRotinaEmpresa() as json class cApiRotinaEmpresa
 return oRest:setResponse( ::jRetorno )
 
 
-/*/{Protheus.doc} cApiRotinaEmpresa::PatchApiAlteraRotinaEmpresa() as json
+/*/{Protheus.doc} cApiFunctionCompany::PatchApiAlteraFunctionCompany() as json
 Metodo Patch para atualizacao de registros na tabela ROTINA_EMPRESA
 @type method
 @version 12.1.2310
@@ -185,7 +185,7 @@ Metodo Patch para atualizacao de registros na tabela ROTINA_EMPRESA
 @since 10/29/2023
 @return variant, return_um objeto
 /*/
-method PatchApiAlteraRotinaEmpresa() as json class cApiRotinaEmpresa
+method PatchApiAlteraFunctionCompany() as json class cApiFunctionCompany
 	Local lRet	:= .T. 	as logical
 
 	::jHeader := oRest:getHeaderRequest()
@@ -212,7 +212,7 @@ method PatchApiAlteraRotinaEmpresa() as json class cApiRotinaEmpresa
 	endif
 
 	if lRet
-		::AlteraRotinaEmpresa()
+		::AlteraFunctionCompany()
 	endif
 
 	lRet := oRest:setKeyHeaderResponse("Content-Type", "application/json")
@@ -220,33 +220,33 @@ method PatchApiAlteraRotinaEmpresa() as json class cApiRotinaEmpresa
 return oRest:setResponse( ::jRetorno )
 
 
-/*/{Protheus.doc} cApiRotinaEmpresa::AlteraRotinaEmpresa()
+/*/{Protheus.doc} cApiFunctionCompany::AlteraFunctionCompany()
 Altera registros na tabela ROTINA_EMPRESA
 @type method
 @version 12.1.2310
 @author Eduardo Brust
 @since 10/29/2023
 /*/
-method AlteraRotinaEmpresa() class cApiRotinaEmpresa
+method AlteraFunctionCompany() class cApiFunctionCompany
 	Local cUpdate	:= ""	as character
 	local nStatus	:=	0	as numeric
 	Local i					as numeric
 	local nErro		:=	0	as numeric
-	Local cRotina := cEmpresa := cSigla := cAtivo := "" as character
+	Local cFunction := cCompany := cSigla := cAtivo := "" as character
 
 	FOR I:= 1 TO len(::jBody["itens"])
 
-		cRotina := IIF(::jBody["itens"][I]:GetJsonText("cRotina") == "null",'', ::jBody["itens"][I]:GetJsonText("cRotina"))
-		cEmpresa := IIF(::jBody["itens"][I]:GetJsonText("cEmpresa") == "null",'', ::jBody["itens"][I]:GetJsonText("cEmpresa"))
+		cFunction := IIF(::jBody["itens"][I]:GetJsonText("cFunction") == "null",'', ::jBody["itens"][I]:GetJsonText("cFunction"))
+		cCompany := IIF(::jBody["itens"][I]:GetJsonText("cCompany") == "null",'', ::jBody["itens"][I]:GetJsonText("cCompany"))
 		cSigla := IIF(::jBody["itens"][I]:GetJsonText("cSigla") == "null",'', ::jBody["itens"][I]:GetJsonText("cSigla"))
 		cAtivo := IIF(::jBody["itens"][I]:GetJsonText("cAtivo") == "null",'', ::jBody["itens"][I]:GetJsonText("cAtivo"))
 		
-		cRotina := UPPER(ALLTRIM(cRotina))
-		cEmpresa := ALLTRIM(cEmpresa) 
+		cFunction := UPPER(ALLTRIM(cFunction))
+		cCompany := ALLTRIM(cCompany) 
 		cSigla := UPPER(ALLTRIM(cSigla))
 		cAtivo := UPPER(ALLTRIM(cAtivo))
 
-		IF !EMPTY(cRotina) .AND. !EMPTY(cEmpresa) .AND. (!EMPTY(cSigla) .OR.!EMPTY(cAtivo) )
+		IF !EMPTY(cFunction) .AND. !EMPTY(cCompany) .AND. (!EMPTY(cSigla) .OR.!EMPTY(cAtivo) )
 			cUpdate := ""
 			cUpdate += " UPDATE ROTINA_EMPRESA SET 		"+ CRLF
 			IF !EMPTY(cSigla).AND. !EMPTY(cAtivo) .AND. cAtivo $ 'S/N'
@@ -257,8 +257,8 @@ method AlteraRotinaEmpresa() class cApiRotinaEmpresa
 			ELSEIF !EMPTY(cAtivo)
 				cUpdate += "   ATIVO = '" + cAtivo + "'	"+ CRLF
 			ENDIF
-			cUpdate += " WHERE  UPPER(TRIM(ROTINA)) = '" + cRotina + "' 	"+ CRLF
-			cUpdate += " AND  TRIM(EMPRESA) = '" + cEmpresa + "' 	"+ CRLF
+			cUpdate += " WHERE  UPPER(TRIM(ROTINA)) = '" + cFunction + "' 	"+ CRLF
+			cUpdate += " AND  TRIM(EMPRESA) = '" + cCompany + "' 	"+ CRLF
 
 			nStatus := TCSQLExec(cUpdate)
 			if nStatus < 0

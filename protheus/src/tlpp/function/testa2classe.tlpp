@@ -15,13 +15,13 @@ User Function testa2classe()
 	RpcSetEnv( "99", _cfil, , ,_cModulo,ProcName(),aTables )
 
 	//testando a classe
-	oEmpresas   := nGab.cRotinaEmpresa():New()
-   // oEmpresas   := oEmpresas:GETConsultaRotinaEmpresa(lFullEmp = .T. ,cAtivo = '*',cRotina = 'FSTARTINOVA',cEmpresa = '320101',cSigla = 'RIOMAIS') //GETConsultaRotinaEmpresa(cRotina as Character,lFullEmp as Logical,cEmpresa as Character,cAtivo as Character)
-	oEmpresas   := oEmpresas:GETConsultaRotinaEmpresa(cSigla = 'RIOMAIS')	
+	oEmpresas   := nGab.cFunctionCompany():New()
+   // oEmpresas   := oEmpresas:GETConsultaFunctionCompany(lFullEmp = .T. ,cAtivo = '*',cFunction = 'FSTARTINOVA',cCompany = '320101',cSigla = 'RIOMAIS') //GETConsultaFunctionCompany(cFunction as Character,lFullEmp as Logical,cCompany as Character,cAtivo as Character)
+	oEmpresas   := oEmpresas:GETConsultaFunctionCompany(cSigla = 'RIOMAIS')	
 
 	//testando api
-	//oApiEmpresas := nApiGab.cApiRotinaEmpresa():New()
-	//oApiEmpresas := oApiEmpresas:GETConsultaRotinaEmpresa(lFullEmp = .T. ,cAtivo = '*',cRotina = 'FSTARTINOVA',cEmpresa = '320101',cSigla = 'RIOMAIS') //testando parametros nomeados ; testando heranca da classe
+	//oApiEmpresas := nApiGab.cApiFunctionCompany():New()
+	//oApiEmpresas := oApiEmpresas:GETConsultaFunctionCompany(lFullEmp = .T. ,cAtivo = '*',cFunction = 'FSTARTINOVA',cCompany = '320101',cSigla = 'RIOMAIS') //testando parametros nomeados ; testando heranca da classe
 
 	if valtype(oEmpresas) == 'J'
 		if len(oEmpresas["empresas"]) > 0
