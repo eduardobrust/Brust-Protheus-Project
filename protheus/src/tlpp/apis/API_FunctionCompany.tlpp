@@ -7,7 +7,7 @@
 EDUARDO BRUST - HOMOLOGADO NA RELEASE 12.1.2310
 Descrição:
 
-A API nApiGab.cApiFunctionCompany expõe a tabela ROTINA_EMPRESA do sistema Protheus. 
+A API nApiGab.cApiFunctionCompany expõe a tabelFUNCTION_COMPANYSA do sistema Protheus. 
 Retorna um JSON com os dados da tabela, filtrando os resultados de acordo com os parâmetros fornecidos.
 
 Detalhes:
@@ -64,13 +64,13 @@ class cApiFunctionCompany from nGab.cFunctionCompany Implements iApiFunctionComp
 	public method New() as object
 
 	//annotation deve ficar na implementação do metódo da classe e não da interface.
-	@Get(endpoint='tlpp/cfg/v1/cApiFunctionCompany',description='Consulta registro na Tabela ROTINA_EMPRESA')
+	@Get(endpoint='tlpp/cfg/v1/cApiFunctionCompany',description='Consulta registro na Tabela FUNCTION_COMPANY')
 	public method GetApiConsultaFunctionCompany() as json
 
-	@Post(endpoint='tlpp/cfg/v1/cApiFunctionCompany',description='Inclui registro na Tabela ROTINA_EMPRESA')
+	@Post(endpoint='tlpp/cfg/v1/cApiFunctionCompany',description='Inclui registro na Tabela FUNCTION_COMPANY')
 	public method PostApiIncluiFunctionCompany() as json
 
-	@Patch(endpoint='tlpp/cfg/v1/cApiFunctionCompany',description='Altera registro na Tabela ROTINA_EMPRESA')
+	@Patch(endpoint='tlpp/cfg/v1/cApiFunctionCompany',description='Altera registro na Tabela FUNCTION_COMPANY')
 	public method PatchApiAlteraFunctionCompany() as json
 
 	Private method AlteraFunctionCompany()
@@ -102,7 +102,7 @@ return Self
 
 
 /*/{Protheus.doc} cApiFunctionCompany::GetApiConsultaFunctionCompany() as json
-Metodo Get para consulta a tabela ROTINA_EMPRESA
+Metodo Get para consulta a tabela FUNCTION_COMPANY
 @type method
 @version 12.1.2310
 @author Eduardo Brust
@@ -178,7 +178,7 @@ return oRest:setResponse( ::jRetorno )
 
 
 /*/{Protheus.doc} cApiFunctionCompany::PatchApiAlteraFunctionCompany() as json
-Metodo Patch para atualizacao de registros na tabela ROTINA_EMPRESA
+Metodo Patch para atualizacao de registros na tabela FUNCTION_COMPANY
 @type method
 @version 12.1.2310
 @author Eduardo Brust
@@ -221,7 +221,7 @@ return oRest:setResponse( ::jRetorno )
 
 
 /*/{Protheus.doc} cApiFunctionCompany::AlteraFunctionCompany()
-Altera registros na tabela ROTINA_EMPRESA
+Altera registros na tabela FUNCTION_COMPANY
 @type method
 @version 12.1.2310
 @author Eduardo Brust
@@ -248,7 +248,7 @@ method AlteraFunctionCompany() class cApiFunctionCompany
 
 		IF !EMPTY(cFunction) .AND. !EMPTY(cCompany) .AND. (!EMPTY(cSigla) .OR.!EMPTY(cAtivo) )
 			cUpdate := ""
-			cUpdate += " UPDATE ROTINA_EMPRESA SET 		"+ CRLF
+			cUpdate += " UPDATE FUNCTION_COMPANY SET 		"+ CRLF
 			IF !EMPTY(cSigla).AND. !EMPTY(cAtivo) .AND. cAtivo $ 'S/N'
 				cUpdate += "   ABBREVIATION = '" + cSigla + "', 	"+ CRLF
 				cUpdate += "   ACTIVE = '"+ cAtivo + "' 	"+ CRLF

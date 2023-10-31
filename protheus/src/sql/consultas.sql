@@ -50,7 +50,7 @@ FROM (
 WHERE rn BETWEEN 1 AND 10;
 -----------------------------------------------------------------------------------------------------------------
 SELECT CFUNCTION,COMPANY,ABBREVIATION,M0_NOMECOM,M0_CGC,ACTIVE 
-FROM ROTINA_EMPRESA
+FROM FUNCTION_COMPANY
 INNER JOIN SYS_COMPANY
 ON D_E_L_E_T_ = ' '
 AND M0_CODIGO = '00'

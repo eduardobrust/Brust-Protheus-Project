@@ -5,7 +5,7 @@
 
 /*
 	EDUARDO BRUST - HOMOLOGADO NA RELEASE 12.1.2310
-	Classe para ler dados de cruzamento de rotinas x empresas de uma tabela(ROTINA_EMPRESA) e devolver um JSON com os dados filtrados pela CFUNCTION.
+	Classe para ler dados de cruzamento de rotinas x empresas de uma tabela(FUNCTION_COMPANY) e devolver um JSON com os dados filtrados pela CFUNCTION.
 
 	Para instanciar a classe siga este exemplo:
 	oEmpresas   := nGab.cFunctionCompany():New()  //objeto := namespace.classe():construtor()
@@ -113,7 +113,7 @@ method GETConsultaFunctionCompany(cFunction as Character,lFullEmp as Logical,cCo
 	cTrailer	+= '}'
 
 	_cQry += " SELECT CFUNCTION,COMPANY,ABBREVIATION,M0_NOMECOM,M0_CGC,ACTIVE 				" +CRLF
-	_cQry += " FROM ROTINA_EMPRESA                                 				" +CRLF
+	_cQry += " FROM FUNCTION_COMPANY                                 				" +CRLF
 	_cQry += " LEFT JOIN SYS_COMPANY                               				" +CRLF
 	_cQry += " ON D_E_L_E_T_ = ' '                                 				" +CRLF
 	_cQry += " AND M0_CODIGO = '" + CEMPANT + "'                   				" +CRLF
