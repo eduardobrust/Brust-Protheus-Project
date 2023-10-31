@@ -24,16 +24,16 @@ User Function testaclasse()
 
 	if valtype(oEmpresas) == 'J'
 		if len(oEmpresas["empresas"]) > 0
-			//oEmpresas["empresas"][1]:HasProperty("codigoReduzido")
-			//oEmpresas["empresas"][1]:HasProperty("codigo")
+			//oEmpresas["empresas"][1]:HasProperty("reducedCode")
+			//oEmpresas["empresas"][1]:HasProperty("company")
 			//oEmpresas["empresas"][1]:HasProperty("abbreviation")	
 			//oEmpresas["empresas"][1]:HasProperty("description")	
 			//oEmpresas["empresas"][1]:HasProperty("cnpj")
 			//aPropri := oEmpresas["empresas"][1]:GetNames()
-			//codigoReduzido := oEmpresas["empresas"][1]:GetJsonText("codigoReduzido")
+			//codigoReduzido := oEmpresas["empresas"][1]:GetJsonText("reducedCode")
 			teste := ""
 			for i:= 1 to len(oEmpresas["empresas"])
-				teste +=  oEmpresas["empresas"][i]:GetJsonText("codigoReduzido") + ";"
+				teste +=  oEmpresas["empresas"][i]:GetJsonText("reducedCode") + ";"
 			next
 		endif  
 	endif

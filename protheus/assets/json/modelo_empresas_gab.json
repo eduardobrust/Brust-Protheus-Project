@@ -2,30 +2,30 @@
   "empresas": [
     {
       "cFunction": "FSTARTINOVA",
-      "codigoReduzido": "33",
-      "codigo": "330101",
+      "reducedCode": "33",
+      "company": "330101",
       "abbreviation": "CAIZ",
       "description": "",
       "cnpj": "",
-      "ativo": "N"
+      "active": "N"
     },
     {
       "cFunction": "FSTARTICF",
-      "codigoReduzido": "33",
-      "codigo": "330102",
+      "reducedCode": "33",
+      "company": "330102",
       "abbreviation": "CAIZ",
       "description": "",
       "cnpj": "",
-      "ativo": "N"
+      "active": "N"
     },
     {
       "cFunction": "GABA008",
-      "codigoReduzido": "33",
-      "codigo": "330103",
+      "reducedCode": "33",
+      "company": "330103",
       "abbreviation": "CAIZ",
       "description": "",
       "cnpj": "",
-      "ativo": "S"
+      "active": "Y"
     }
   ]
 }

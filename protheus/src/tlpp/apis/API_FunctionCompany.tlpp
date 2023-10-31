@@ -154,7 +154,7 @@ method GetApiConsultaFunctionCompany() as json class cApiFunctionCompany
 		If .F. // !U_VTOKEN(::cToken) // VALIDO SE TOKEN E VALIDO RETIRAR DEPOIS DOS TESTES
 			lRet := .F.
 
-			::jRetorno := {"erro": "Token inválido", "codigo": 401}
+			::jRetorno := {"erro": "Token inválido""company"o": 401}
 			oRest:setStatusCode( 401 )
 		endif
 	endif
@@ -166,7 +166,7 @@ method GetApiConsultaFunctionCompany() as json class cApiFunctionCompany
 		if valtype(::jRetorno) == 'J'
 			if len(::jRetorno["empresas"]) <= 0
 
-				::jRetorno := {"erro": "Recurso não encontrado", "codigo": 404}
+				::jRetorno := {"erro": "Recurso não encontrado""company"o": 404}
 				oRest:setStatusCode( 404 )
 			endif
 		endif
@@ -196,7 +196,7 @@ method PatchApiAlteraFunctionCompany() as json class cApiFunctionCompany
 	if lRet
 		If .F. // !U_VTOKEN(::cToken) // VALIDO SE TOKEN E VALIDO RETIRAR DEPOIS DOS TESTES
 			lRet := .F.
-			::jRetorno := {"erro": "Token inválido", "codigo": 401}
+			::jRetorno := {"erro": "Token inválido""company"o": 401}
 			oRest:setStatusCode( 401 )
 		endif
 	endif
@@ -206,7 +206,7 @@ method PatchApiAlteraFunctionCompany() as json class cApiFunctionCompany
 		::jBody:fromJson( oRest:GetBodyRequest() )
 		if !( ::jBody:HasProperty("itens") )
 			lRet := .F.
-			::jRetorno := {"erro": "Bad Request", "codigo": 400}
+			::jRetorno := {"erro": "Bad Request", "company": 400}
 			oRest:setStatusCode( 400 )
 		endif
 	endif
@@ -268,10 +268,10 @@ method AlteraFunctionCompany() class cApiFunctionCompany
 	NEXT
 
 	if nErro > 0
-		::jRetorno := {"erro": "Erro ao atualizar registros", "codigo": 500}
+		::jRetorno := {"erro": "Erro ao atualizar registros", "company": 500}
 		oRest:setStatusCode( 500 )
 	else
-		::jRetorno := {"msg": "Sucesso", "codigo": 200}
+		::jRetorno := {"msg": "Sucesso", "company": 200}
 		oRest:setStatusCode( 200 )
 	endif
 return

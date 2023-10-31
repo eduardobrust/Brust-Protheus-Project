@@ -9,7 +9,7 @@
 
 	Para instanciar a classe siga este exemplo:
 	oEmpresas   := nGab.cFunctionCompany():New()  //objeto := namespace.classe():construtor()
-    oEmpresas   := oEmpresas:GETConsultaFunctionCompany("FSTARTINOVA",.T.,"320101","S","RIOMAIS") 
+    oEmpresas   := oEmpresas:GETConsultaFunctionCompany("FSTARTINOVA",.T.,"320101","Y","RIOMAIS") 
 	FSTARTINOVA = CFUNCTION A SER PESQUISADA
 	.T. para todas as filiais da COMPANY; .F. somente a matriz
 	320101 = COMPANY A SER PESQUISADA
@@ -22,8 +22,8 @@
   "empresas": [
     {
       "cFunction": "FSTARTINOVA",
-      "codigoReduzido": "33",
-      "codigo": "330101",
+      "reducedCode": "33",
+      "company": "330101",
       "abbreviation": "CAIZ",
       "description": "",
       "cnpj": "",
@@ -149,12 +149,12 @@ method GETConsultaFunctionCompany(cFunction as Character,lFullEmp as Logical,cCo
 
 		cItens += ' { '
 		cItens += ' "cfunction" : "' + AllTrim((cTrb1)->CFUNCTION) + '", '
-		cItens += ' "codigoReduzido" : "' + SUBSTR(AllTrim((cTrb1)->COMPANY),1,2) + '", '
-		cItens += ' "codigo" : "' + AllTrim((cTrb1)->COMPANY) + '", '
+		cItens += ' "reducedCode" : "' + SUBSTR(AllTrim((cTrb1)->COMPANY),1,2) + '", '
+		cItens += ' "company" : "' + AllTrim((cTrb1)->COMPANY) + '", '
 		cItens += ' "abbreviation" : "' + AllTrim((cTrb1)->ABBREVIATION) + '", '
 		cItens += ' "description" : "' + AllTrim((cTrb1)->M0_NOMECOM) + '", '
 		cItens += ' "cnpj" : "' + AllTrim((cTrb1)->M0_CGC) + '",'
-		cItens += ' "ativo" : "' + AllTrim((cTrb1)->ACTIVE) + '"'
+		cItens += ' "active" : "' + AllTrim((cTrb1)->ACTIVE) + '"'
 		cItens += ' },'
 
 		(cTrb1)->(dbSkip())
