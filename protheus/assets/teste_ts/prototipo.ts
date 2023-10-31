@@ -1,27 +1,27 @@
 class cRotinasEmpresas {
-    private readonly empresas: Empresa[] = [];
+    private readonly empresas: COMPANY[] = [];
 
     constructor() {
     }
 
     /**
-     * Obtém as empresas que são usadas na rotina
+     * Obtém as empresas que são usadas na CFUNCTION
      *
-     * @param rotina O código da rotina
+     * @param CFUNCTION O código da CFUNCTION
      * @param lSomenteMatriz Se verdadeiro, apenas retorna as empresas matrizes
      * @returns Um array de empresas
      */
-    public getEmpresas(rotina: string, lSomenteMatriz: boolean): Empresa[] {
-        const resultado: Empresa[] = [];
+    public getEmpresas(CFUNCTION: string, lSomenteMatriz: boolean): COMPANY[] {
+        const resultado: COMPANY[] = [];
 
-        // Obtém as empresas que são usadas na rotina
-        const empresas = this.getEmpresasDaRotina(rotina);
+        // Obtém as empresas que são usadas na CFUNCTION
+        const empresas = this.getEmpresasDaRotina(CFUNCTION);
 
         // Filtra as filiais
         if (lSomenteMatriz) {
-            for (const empresa of empresas) {
-                if (empresa.nivel === 0) {
-                    resultado.push(empresa);
+            for (const COMPANY of empresas) {
+                if (COMPANY.nivel === 0) {
+                    resultado.push(COMPANY);
                 }
             }
         } else {
@@ -32,12 +32,12 @@ class cRotinasEmpresas {
     }
 
     /**
-     * Obtém as empresas que são usadas na rotina
+     * Obtém as empresas que são usadas na CFUNCTION
      *
-     * @param rotina O código da rotina
-     * @returns Um array de objetos com os dados da empresa
+     * @param CFUNCTION O código da CFUNCTION
+     * @returns Um array de objetos com os dados da COMPANY
      */
-    private getEmpresasDaRotina(rotina: string): Empresa[] {
+    private getEmpresasDaRotina(CFUNCTION: string): COMPANY[] {
         // Conecta ao banco de dados
         const db = new Mysql2();
         db.connect('mysql:host=localhost;dbname=protheus', 'root', '');
@@ -58,14 +58,14 @@ class cRotinasEmpresas {
             ON
                 re.codigoEmpresa = e.codigo
             WHERE
-                re.codigoRotina = :rotina
+                re.codigoRotina = :CFUNCTION
         `;
 
         // Prepara a consulta
         const stmt = db.prepare(sql);
 
         // Passa os parâmetros
-        stmt.bindParam(':rotina', rotina);
+        stmt.bindParam(':CFUNCTION', CFUNCTION);
 
         // Executa a consulta
         stmt.execute();
@@ -74,7 +74,7 @@ class cRotinasEmpresas {
         const resultados = stmt.fetchAll();
 
         // Converte os resultados para objetos
-        const empresas: Empresa[] = resultados.map((resultado: any) => {
+        const empresas: COMPANY[] = resultados.map((resultado: any) => {
             return {
                 codigo: resultado.codigo,
                 codigoReduzido: resultado.codigoReduzido,
@@ -96,11 +96,11 @@ class cRotinasEmpresas {
 //USANDO A CLASSE
 const empresas = new cRotinasEmpresas();
 
-// Obtém as empresas da rotina FSTARTINOVA
+// Obtém as empresas da CFUNCTION FSTARTINOVA
 const resultado = empresas.getEmpresas('FSTARTINOVA', true);
 
 // Imprime as empresas
-for (const empresa of resultado) {
-    console.log(empresa.codigoReduzido);
+for (const COMPANY of resultado) {
+    console.log(COMPANY.codigoReduzido);
 }
 

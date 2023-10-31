@@ -1,14 +1,14 @@
 {
     "itens": [
       {
-        "cFunction": "Rotina 1",
-        "cCompany": "Empresa 1",
+        "cFunction": "CFUNCTION 1",
+        "cCompany": "COMPANY 1",
         "cAtivo": "S",
         "cSigla": "R1"
       },
       {
-        "cFunction": "Rotina 2",
-        "cCompany": "Empresa 2",
+        "cFunction": "CFUNCTION 2",
+        "cCompany": "COMPANY 2",
         "cAtivo": "N",
         "cSigla": "R2"
       }

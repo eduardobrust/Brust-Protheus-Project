@@ -20,8 +20,8 @@ Exemplos de uso:
 Para listar todas as rotinas para todas as empresas, use a seguinte URL:
 https://localhost:porta/tlpp/cfg/v1/cApiFunctionCompany
 
-Para listar todas as rotinas para a empresa com o código 330101, use a seguinte URL:
-https://localhost:porta/tlpp/cfg/v1/cApiFunctionCompany?empresa=330101
+Para listar todas as rotinas para a COMPANY com o código 330101, use a seguinte URL:
+https://localhost:porta/tlpp/cfg/v1/cApiFunctionCompany?COMPANY=330101
 
 Para listar todas as rotinas ativas para todas as empresas, use a seguinte URL:
 https://localhost:porta/tlpp/cfg/v1/cApiFunctionCompany?ativo=S
@@ -257,8 +257,8 @@ method AlteraFunctionCompany() class cApiFunctionCompany
 			ELSEIF !EMPTY(cAtivo)
 				cUpdate += "   ATIVO = '" + cAtivo + "'	"+ CRLF
 			ENDIF
-			cUpdate += " WHERE  UPPER(TRIM(ROTINA)) = '" + cFunction + "' 	"+ CRLF
-			cUpdate += " AND  TRIM(EMPRESA) = '" + cCompany + "' 	"+ CRLF
+			cUpdate += " WHERE  UPPER(TRIM(CFUNCTION)) = '" + cFunction + "' 	"+ CRLF
+			cUpdate += " AND  TRIM(COMPANY) = '" + cCompany + "' 	"+ CRLF
 
 			nStatus := TCSQLExec(cUpdate)
 			if nStatus < 0

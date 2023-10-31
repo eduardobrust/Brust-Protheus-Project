@@ -5,23 +5,23 @@
 
 /*
 	EDUARDO BRUST - HOMOLOGADO NA RELEASE 12.1.2310
-	Classe para ler dados de cruzamento de rotinas x empresas de uma tabela(ROTINA_EMPRESA) e devolver um JSON com os dados filtrados pela rotina.
+	Classe para ler dados de cruzamento de rotinas x empresas de uma tabela(ROTINA_EMPRESA) e devolver um JSON com os dados filtrados pela CFUNCTION.
 
 	Para instanciar a classe siga este exemplo:
 	oEmpresas   := nGab.cFunctionCompany():New()  //objeto := namespace.classe():construtor()
     oEmpresas   := oEmpresas:GETConsultaFunctionCompany("FSTARTINOVA",.T.,"320101","S","RIOMAIS") 
-	FSTARTINOVA = ROTINA A SER PESQUISADA
-	.T. para todas as filiais da empresa; .F. somente a matriz
-	320101 = EMPRESA A SER PESQUISADA
+	FSTARTINOVA = CFUNCTION A SER PESQUISADA
+	.T. para todas as filiais da COMPANY; .F. somente a matriz
+	320101 = COMPANY A SER PESQUISADA
 	S = INDICA SOMENTE REGISTROS ATIVOS ; N = INDICA REGISTROS INATIVOS ; * = INDICA TODOS OS REGISTROS;
 	TODOS OS PARAMETROS SÃO OPCIONAIS FAZENDO COM QUE O JSON RETORNADO SEJA COMPLETO OU FILTRADO CONFORME NECESSIDADE
-	RIOMAIS = SIGLA ATRELADA A EMPRESA
+	RIOMAIS = SIGLA ATRELADA A COMPANY
 
 	ESTRUTURA DO JSON DE RETORNO
 	{
   "empresas": [
     {
-      "Rotina": "FSTARTINOVA",
+      "cFunction": "FSTARTINOVA",
       "codigoReduzido": "33",
       "codigo": "330101",
       "sigla": "CAIZ",
@@ -51,7 +51,7 @@ EndInterface
 
 
 /*/ cFunctionCompany
-Classe que implementa a interface iFunctionCompany para consultar as empresas que uma determinada rotina pode rodar.
+Classe que implementa a interface iFunctionCompany para consultar as empresas que uma determinada CFUNCTION pode rodar.
 @type classe
 @version 12.1.2310
 @author eduardo.brust
@@ -79,7 +79,7 @@ return Self
 
 
 /*/{Protheus.doc} cFunctionCompany::GETConsultaFunctionCompany(cFunction as Character,lFullEmp as Logical,cCompany as Character,cAtivo as Character,cSigla as Character) as json
-Consulta as empresas que uma determinada rotina pode rodar. passando o parametro se busca todas as filiais ou somente a matriz.
+Consulta as empresas que uma determinada CFUNCTION pode rodar. passando o parametro se busca todas as filiais ou somente a matriz.
 @type method
 @version 12.1.2310
 @author Eduardo Brust
@@ -112,21 +112,21 @@ method GETConsultaFunctionCompany(cFunction as Character,lFullEmp as Logical,cCo
 	cTrailer	+= ']
 	cTrailer	+= '}'
 
-	_cQry += " SELECT ROTINA,EMPRESA,SIGLA,M0_NOMECOM,M0_CGC,ATIVO 				" +CRLF
+	_cQry += " SELECT CFUNCTION,COMPANY,SIGLA,M0_NOMECOM,M0_CGC,ATIVO 				" +CRLF
 	_cQry += " FROM ROTINA_EMPRESA                                 				" +CRLF
 	_cQry += " LEFT JOIN SYS_COMPANY                               				" +CRLF
 	_cQry += " ON D_E_L_E_T_ = ' '                                 				" +CRLF
 	_cQry += " AND M0_CODIGO = '" + CEMPANT + "'                   				" +CRLF
-	_cQry += " AND SUBSTR(M0_CODFIL,1,6) = EMPRESA                 				" +CRLF
+	_cQry += " AND SUBSTR(M0_CODFIL,1,6) = COMPANY                 				" +CRLF
 
-	_cQry += " WHERE EMPRESA <> ' ' "  										  	  +CRLF
+	_cQry += " WHERE COMPANY <> ' ' "  										  	  +CRLF
 
 	IF !EMPTY(cFunction)
-		_cQry += " AND UPPER(TRIM(ROTINA)) = '" + UPPER(ALLTRIM(cFunction)) + "'"    +CRLF
+		_cQry += " AND UPPER(TRIM(CFUNCTION)) = '" + UPPER(ALLTRIM(cFunction)) + "'"    +CRLF
 	ENDIF
 
 	IF !EMPTY(cCompany)
-		_cQry += " AND TRIM(EMPRESA) = '" + ALLTRIM(cCompany) + "'"    			  +CRLF
+		_cQry += " AND TRIM(COMPANY) = '" + ALLTRIM(cCompany) + "'"    			  +CRLF
 	ENDIF
 
 	IF !EMPTY(cAtivo) .AND. ALLTRIM(cAtivo) <> '*'
@@ -134,7 +134,7 @@ method GETConsultaFunctionCompany(cFunction as Character,lFullEmp as Logical,cCo
 	ENDIF
 
 	If !lFullEmp
-		_cQry += " AND SUBSTR(EMPRESA,5,2) = '01'                      			" +CRLF  //PEGO SOMENTE A MATRIZ
+		_cQry += " AND SUBSTR(COMPANY,5,2) = '01'                      			" +CRLF  //PEGO SOMENTE A MATRIZ
 	Endif
 
 	IF !EMPTY(cSigla)
@@ -148,9 +148,9 @@ method GETConsultaFunctionCompany(cFunction as Character,lFullEmp as Logical,cCo
 	While (cTrb1)->(!Eof())
 
 		cItens += ' { '
-		cItens += ' "Rotina" : "' + AllTrim((cTrb1)->ROTINA) + '", '
-		cItens += ' "codigoReduzido" : "' + SUBSTR(AllTrim((cTrb1)->EMPRESA),1,2) + '", '
-		cItens += ' "codigo" : "' + AllTrim((cTrb1)->EMPRESA) + '", '
+		cItens += ' "cfunction" : "' + AllTrim((cTrb1)->CFUNCTION) + '", '
+		cItens += ' "codigoReduzido" : "' + SUBSTR(AllTrim((cTrb1)->COMPANY),1,2) + '", '
+		cItens += ' "codigo" : "' + AllTrim((cTrb1)->COMPANY) + '", '
 		cItens += ' "sigla" : "' + AllTrim((cTrb1)->SIGLA) + '", '
 		cItens += ' "descricao" : "' + AllTrim((cTrb1)->M0_NOMECOM) + '", '
 		cItens += ' "cnpj" : "' + AllTrim((cTrb1)->M0_CGC) + '",'
