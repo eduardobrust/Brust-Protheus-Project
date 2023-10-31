@@ -16,7 +16,7 @@ User Function testaclasse()
 
 	//testando a classe
     oEmpresas   := nGab.cFunctionCompany():New()
-    oEmpresas   := oEmpresas:GETConsultaFunctionCompany('FSTARTINOVA' ,.t.) //GETConsultaFunctionCompany(cFunction as Character,lFullEmp as Logical,cCompany as Character,cAtivo as Character)
+    oEmpresas   := oEmpresas:GETConsultaFunctionCompany('FSTARTINOVA' ,.t.) //GETConsultaFunctionCompany(cFunction as Character,lAllBranches as Logical,cCompany as Character,cAtivo as Character)
 
 	//testando api	
 	//	oApiEmpresas := nApiGab.cApiFunctionCompany():New()

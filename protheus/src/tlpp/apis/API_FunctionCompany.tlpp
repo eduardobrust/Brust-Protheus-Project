@@ -52,7 +52,7 @@ class cApiFunctionCompany from nGab.cFunctionCompany Implements iApiFunctionComp
 	private data cToken 	as Character
 	private data cFunction 	as Character
 	private data cCompany 	as Character
-	private data cFullEmp	as Character
+	private data cAllBranches	as Character
 	private data cAtivo 	as Character
 	private data cAbbreviation 	as Character
 	private data jQuery		as json
@@ -90,7 +90,7 @@ method new() as object class cApiFunctionCompany
 	::cToken		:= ''
 	::cFunction		:= ''
 	::cCompany		:= ''
-	::cFullEmp		:= ''
+	::cAllBranches		:= ''
 	::cAtivo		:= ''
 	::cAbbreviation		:= ''
 	::jQuery 		:= Nil
@@ -111,7 +111,7 @@ Metodo Get para consulta a tabela FUNCTION_COMPANY
 /*/
 method GetApiConsultaFunctionCompany() as json class cApiFunctionCompany
 	Local lRet			:= .T. 	as logical
-	Local lFullEmp		:= .T. 	as logical
+	Local lAllBranches		:= .T. 	as logical
 
 	::jQuery := oRest:getQueryRequest()
 	if ( ::jQuery <> Nil )
@@ -130,13 +130,13 @@ method GetApiConsultaFunctionCompany() as json class cApiFunctionCompany
 			::cCompany := ''
 		endif
 
-		::cFullEmp := ::jQuery[ 'cFullEmp' ]
-		if ( valtype(::cFullEmp) == 'U' )
-			lFullEmp := .T.
-		elseif ::cFullEmp == '1'
-			lFullEmp := .T.
-		elseif ::cFullEmp == '0'
-			lFullEmp := .F.
+		::cAllBranches := ::jQuery[ 'cAllBranches' ]
+		if ( valtype(::cAllBranches) == 'U' )
+			lAllBranches := .T.
+		elseif ::cAllBranches == '1'
+			lAllBranches := .T.
+		elseif ::cAllBranches == '0'
+			lAllBranches := .F.
 		endif
 
 		::cAtivo := ::jQuery[ 'cAtivo' ]
@@ -160,7 +160,7 @@ method GetApiConsultaFunctionCompany() as json class cApiFunctionCompany
 	endif
 
 	if lRet
-		::jRetorno := ::GETConsultaFunctionCompany(cFunction = ::cFunction,lFullEmp = lFullEmp ,cCompany = ::cCompany,cAtivo = ::cAtivo,cAbbreviation = ::cAbbreviation) //usando parametros nomeados
+		::jRetorno := ::GETConsultaFunctionCompany(cFunction = ::cFunction,lAllBranches = lAllBranches ,cCompany = ::cCompany,cAtivo = ::cAtivo,cAbbreviation = ::cAbbreviation) //usando parametros nomeados
 
 		//verifico se recurso foi encontrado.
 		if valtype(::jRetorno) == 'J'
