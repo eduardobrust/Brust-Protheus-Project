@@ -26,7 +26,7 @@ User Function testaclasse()
 		if len(oEmpresas["empresas"]) > 0
 			//oEmpresas["empresas"][1]:HasProperty("codigoReduzido")
 			//oEmpresas["empresas"][1]:HasProperty("codigo")
-			//oEmpresas["empresas"][1]:HasProperty("sigla")	
+			//oEmpresas["empresas"][1]:HasProperty("abbreviation")	
 			//oEmpresas["empresas"][1]:HasProperty("descricao")	
 			//oEmpresas["empresas"][1]:HasProperty("cnpj")
 			//aPropri := oEmpresas["empresas"][1]:GetNames()

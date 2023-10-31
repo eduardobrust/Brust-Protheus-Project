@@ -47,7 +47,7 @@ class cRotinasEmpresas {
             SELECT
                 e.codigo,
                 e.codigoReduzido,
-                e.sigla,
+                e.abbreviation,
                 e.descricao,
                 e.cnpj,
                 e.nivel
@@ -78,7 +78,7 @@ class cRotinasEmpresas {
             return {
                 codigo: resultado.codigo,
                 codigoReduzido: resultado.codigoReduzido,
-                sigla: resultado.sigla,
+                abbreviation: resultado.abbreviation,
                 descricao: resultado.descricao,
                 cnpj: resultado.cnpj,
                 nivel: resultado.nivel,

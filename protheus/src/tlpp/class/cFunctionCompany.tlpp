@@ -15,7 +15,7 @@
 	320101 = COMPANY A SER PESQUISADA
 	S = INDICA SOMENTE REGISTROS ATIVOS ; N = INDICA REGISTROS INATIVOS ; * = INDICA TODOS OS REGISTROS;
 	TODOS OS PARAMETROS SÃO OPCIONAIS FAZENDO COM QUE O JSON RETORNADO SEJA COMPLETO OU FILTRADO CONFORME NECESSIDADE
-	RIOMAIS = SIGLA ATRELADA A COMPANY
+	RIOMAIS = ABBREVIATION ATRELADA A COMPANY
 
 	ESTRUTURA DO JSON DE RETORNO
 	{
@@ -24,7 +24,7 @@
       "cFunction": "FSTARTINOVA",
       "codigoReduzido": "33",
       "codigo": "330101",
-      "sigla": "CAIZ",
+      "abbreviation": "CAIZ",
       "descricao": "",
       "cnpj": "",
       "ativo": "N"
@@ -112,7 +112,7 @@ method GETConsultaFunctionCompany(cFunction as Character,lFullEmp as Logical,cCo
 	cTrailer	+= ']
 	cTrailer	+= '}'
 
-	_cQry += " SELECT CFUNCTION,COMPANY,SIGLA,M0_NOMECOM,M0_CGC,ATIVO 				" +CRLF
+	_cQry += " SELECT CFUNCTION,COMPANY,ABBREVIATION,M0_NOMECOM,M0_CGC,ACTIVE 				" +CRLF
 	_cQry += " FROM ROTINA_EMPRESA                                 				" +CRLF
 	_cQry += " LEFT JOIN SYS_COMPANY                               				" +CRLF
 	_cQry += " ON D_E_L_E_T_ = ' '                                 				" +CRLF
@@ -130,7 +130,7 @@ method GETConsultaFunctionCompany(cFunction as Character,lFullEmp as Logical,cCo
 	ENDIF
 
 	IF !EMPTY(cAtivo) .AND. ALLTRIM(cAtivo) <> '*'
-		_cQry += " AND ATIVO = '" + UPPER(ALLTRIM(cAtivo)) + "'"    			+CRLF
+		_cQry += " AND ACTIVE = '" + UPPER(ALLTRIM(cAtivo)) + "'"    			+CRLF
 	ENDIF
 
 	If !lFullEmp
@@ -138,7 +138,7 @@ method GETConsultaFunctionCompany(cFunction as Character,lFullEmp as Logical,cCo
 	Endif
 
 	IF !EMPTY(cSigla)
-		_cQry += " AND UPPER(TRIM(SIGLA)) = '" + UPPER(ALLTRIM(cSigla)) + "'"    +CRLF
+		_cQry += " AND UPPER(TRIM(ABBREVIATION)) = '" + UPPER(ALLTRIM(cSigla)) + "'"    +CRLF
 	ENDIF
 
 	_cQry += " ORDER BY 1,2                                          			" +CRLF
@@ -151,10 +151,10 @@ method GETConsultaFunctionCompany(cFunction as Character,lFullEmp as Logical,cCo
 		cItens += ' "cfunction" : "' + AllTrim((cTrb1)->CFUNCTION) + '", '
 		cItens += ' "codigoReduzido" : "' + SUBSTR(AllTrim((cTrb1)->COMPANY),1,2) + '", '
 		cItens += ' "codigo" : "' + AllTrim((cTrb1)->COMPANY) + '", '
-		cItens += ' "sigla" : "' + AllTrim((cTrb1)->SIGLA) + '", '
+		cItens += ' "abbreviation" : "' + AllTrim((cTrb1)->ABBREVIATION) + '", '
 		cItens += ' "descricao" : "' + AllTrim((cTrb1)->M0_NOMECOM) + '", '
 		cItens += ' "cnpj" : "' + AllTrim((cTrb1)->M0_CGC) + '",'
-		cItens += ' "ativo" : "' + AllTrim((cTrb1)->ATIVO) + '"'
+		cItens += ' "ativo" : "' + AllTrim((cTrb1)->ACTIVE) + '"'
 		cItens += ' },'
 
 		(cTrb1)->(dbSkip())

@@ -250,12 +250,12 @@ method AlteraFunctionCompany() class cApiFunctionCompany
 			cUpdate := ""
 			cUpdate += " UPDATE ROTINA_EMPRESA SET 		"+ CRLF
 			IF !EMPTY(cSigla).AND. !EMPTY(cAtivo) .AND. cAtivo $ 'S/N'
-				cUpdate += "   SIGLA = '" + cSigla + "', 	"+ CRLF
-				cUpdate += "   ATIVO = '"+ cAtivo + "' 	"+ CRLF
+				cUpdate += "   ABBREVIATION = '" + cSigla + "', 	"+ CRLF
+				cUpdate += "   ACTIVE = '"+ cAtivo + "' 	"+ CRLF
 			ELSEIF !EMPTY(cSigla)
-				cUpdate += "   SIGLA = '" + cSigla + "'	"+ CRLF
+				cUpdate += "   ABBREVIATION = '" + cSigla + "'	"+ CRLF
 			ELSEIF !EMPTY(cAtivo)
-				cUpdate += "   ATIVO = '" + cAtivo + "'	"+ CRLF
+				cUpdate += "   ACTIVE = '" + cAtivo + "'	"+ CRLF
 			ENDIF
 			cUpdate += " WHERE  UPPER(TRIM(CFUNCTION)) = '" + cFunction + "' 	"+ CRLF
 			cUpdate += " AND  TRIM(COMPANY) = '" + cCompany + "' 	"+ CRLF
