@@ -25,9 +25,9 @@
       "codigoReduzido": "33",
       "codigo": "330101",
       "abbreviation": "CAIZ",
-      "descricao": "",
+      "description": "",
       "cnpj": "",
-      "ativo": "N"
+      "active": "N"
     }
   ]
 }
@@ -152,7 +152,7 @@ method GETConsultaFunctionCompany(cFunction as Character,lFullEmp as Logical,cCo
 		cItens += ' "codigoReduzido" : "' + SUBSTR(AllTrim((cTrb1)->COMPANY),1,2) + '", '
 		cItens += ' "codigo" : "' + AllTrim((cTrb1)->COMPANY) + '", '
 		cItens += ' "abbreviation" : "' + AllTrim((cTrb1)->ABBREVIATION) + '", '
-		cItens += ' "descricao" : "' + AllTrim((cTrb1)->M0_NOMECOM) + '", '
+		cItens += ' "description" : "' + AllTrim((cTrb1)->M0_NOMECOM) + '", '
 		cItens += ' "cnpj" : "' + AllTrim((cTrb1)->M0_CGC) + '",'
 		cItens += ' "ativo" : "' + AllTrim((cTrb1)->ACTIVE) + '"'
 		cItens += ' },'
