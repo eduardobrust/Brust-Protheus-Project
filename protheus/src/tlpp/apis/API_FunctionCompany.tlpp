@@ -141,7 +141,7 @@ method GetApiConsultaFunctionCompany() as json class cApiFunctionCompany
 
 		::cAtivo := ::jQuery[ 'cAtivo' ]
 		if ( valtype(::cAtivo) == 'U' )
-			::cAtivo := 'S'
+			::cAtivo := 'Y'
 		endif
 
 		::cSigla := ::jQuery[ 'cSigla' ]
