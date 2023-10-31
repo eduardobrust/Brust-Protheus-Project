@@ -54,7 +54,7 @@ class cApiFunctionCompany from nGab.cFunctionCompany Implements iApiFunctionComp
 	private data cCompany 	as Character
 	private data cFullEmp	as Character
 	private data cAtivo 	as Character
-	private data cSigla 	as Character
+	private data cAbbreviation 	as Character
 	private data jQuery		as json
 	private data jHeader	as json
 	private data jBody		as json
@@ -92,7 +92,7 @@ method new() as object class cApiFunctionCompany
 	::cCompany		:= ''
 	::cFullEmp		:= ''
 	::cAtivo		:= ''
-	::cSigla		:= ''
+	::cAbbreviation		:= ''
 	::jQuery 		:= Nil
 	::jHeader		:= Nil
 	::jBody			:= Nil
@@ -144,9 +144,9 @@ method GetApiConsultaFunctionCompany() as json class cApiFunctionCompany
 			::cAtivo := 'Y'
 		endif
 
-		::cSigla := ::jQuery[ 'cSigla' ]
-		if ( valtype(::cSigla) == 'U' )
-			::cSigla := ''
+		::cAbbreviation := ::jQuery[ 'cAbbreviation' ]
+		if ( valtype(::cAbbreviation) == 'U' )
+			::cAbbreviation := ''
 		endif
 	endif
 
@@ -160,7 +160,7 @@ method GetApiConsultaFunctionCompany() as json class cApiFunctionCompany
 	endif
 
 	if lRet
-		::jRetorno := ::GETConsultaFunctionCompany(cFunction = ::cFunction,lFullEmp = lFullEmp ,cCompany = ::cCompany,cAtivo = ::cAtivo,cSigla = ::cSigla) //usando parametros nomeados
+		::jRetorno := ::GETConsultaFunctionCompany(cFunction = ::cFunction,lFullEmp = lFullEmp ,cCompany = ::cCompany,cAtivo = ::cAtivo,cAbbreviation = ::cAbbreviation) //usando parametros nomeados
 
 		//verifico se recurso foi encontrado.
 		if valtype(::jRetorno) == 'J'
@@ -232,28 +232,28 @@ method AlteraFunctionCompany() class cApiFunctionCompany
 	local nStatus	:=	0	as numeric
 	Local i					as numeric
 	local nErro		:=	0	as numeric
-	Local cFunction := cCompany := cSigla := cAtivo := "" as character
+	Local cFunction := cCompany := cAbbreviation := cAtivo := "" as character
 
 	FOR I:= 1 TO len(::jBody["itens"])
 
 		cFunction := IIF(::jBody["itens"][I]:GetJsonText("cFunction") == "null",'', ::jBody["itens"][I]:GetJsonText("cFunction"))
 		cCompany := IIF(::jBody["itens"][I]:GetJsonText("cCompany") == "null",'', ::jBody["itens"][I]:GetJsonText("cCompany"))
-		cSigla := IIF(::jBody["itens"][I]:GetJsonText("cSigla") == "null",'', ::jBody["itens"][I]:GetJsonText("cSigla"))
+		cAbbreviation := IIF(::jBody["itens"][I]:GetJsonText("cAbbreviation") == "null",'', ::jBody["itens"][I]:GetJsonText("cAbbreviation"))
 		cAtivo := IIF(::jBody["itens"][I]:GetJsonText("cAtivo") == "null",'', ::jBody["itens"][I]:GetJsonText("cAtivo"))
 		
 		cFunction := UPPER(ALLTRIM(cFunction))
 		cCompany := ALLTRIM(cCompany) 
-		cSigla := UPPER(ALLTRIM(cSigla))
+		cAbbreviation := UPPER(ALLTRIM(cAbbreviation))
 		cAtivo := UPPER(ALLTRIM(cAtivo))
 
-		IF !EMPTY(cFunction) .AND. !EMPTY(cCompany) .AND. (!EMPTY(cSigla) .OR.!EMPTY(cAtivo) )
+		IF !EMPTY(cFunction) .AND. !EMPTY(cCompany) .AND. (!EMPTY(cAbbreviation) .OR.!EMPTY(cAtivo) )
 			cUpdate := ""
 			cUpdate += " UPDATE FUNCTION_COMPANY SET 		"+ CRLF
-			IF !EMPTY(cSigla).AND. !EMPTY(cAtivo) .AND. cAtivo $ 'S/N'
-				cUpdate += "   ABBREVIATION = '" + cSigla + "', 	"+ CRLF
+			IF !EMPTY(cAbbreviation).AND. !EMPTY(cAtivo) .AND. cAtivo $ 'S/N'
+				cUpdate += "   ABBREVIATION = '" + cAbbreviation + "', 	"+ CRLF
 				cUpdate += "   ACTIVE = '"+ cAtivo + "' 	"+ CRLF
-			ELSEIF !EMPTY(cSigla)
-				cUpdate += "   ABBREVIATION = '" + cSigla + "'	"+ CRLF
+			ELSEIF !EMPTY(cAbbreviation)
+				cUpdate += "   ABBREVIATION = '" + cAbbreviation + "'	"+ CRLF
 			ELSEIF !EMPTY(cAtivo)
 				cUpdate += "   ACTIVE = '" + cAtivo + "'	"+ CRLF
 			ENDIF

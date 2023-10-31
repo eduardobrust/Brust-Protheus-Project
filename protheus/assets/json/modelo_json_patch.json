@@ -4,13 +4,13 @@
         "cFunction": "CFUNCTION 1",
         "cCompany": "COMPANY 1",
         "cAtivo": "Y",
-        "cSigla": "R1"
+        "cAbbreviation": "R1"
       },
       {
         "cFunction": "CFUNCTION 2",
         "cCompany": "COMPANY 2",
         "cAtivo": "N",
-        "cSigla": "R2"
+        "cAbbreviation": "R2"
       }
     ]
   }
