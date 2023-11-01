@@ -5,7 +5,7 @@ import { PoMenuItem } from '@po-ui/ng-components';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
 
@@ -14,7 +14,7 @@ export class AppComponent {
   ];
 
   private onClick() {
-    alert('Clicked in menu item')
+    alert('Voce clicou no botão menu- Brust')
   }
 
 }
