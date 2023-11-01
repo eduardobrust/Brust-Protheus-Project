@@ -1,9 +1,6 @@
 # Brust-Protheus-Project
 Repository for developing TL++ and POUI projects for the Totvs Protheus environment.
 
-# projectsPOUI
-Projetos desenvolvidos em POUI para uso no Protheus.
-
 Versões globais inicio do projeto
 
 Angular CLI: 16.2.8
