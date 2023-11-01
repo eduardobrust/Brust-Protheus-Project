@@ -57,7 +57,7 @@ para atualiazar o angular : npm update
 1. passos para instalação do PO UI
 ng new po-proj-routine-company --skip-install
 
-1.1. verificar as dependencias do angular no arquivo package.json [rxjs sempre dá problema]
+1.1. verificar as dependencias do angular no arquivo package.json [rxjs]
 
 npm version @angular/rxjs 
 npm install rxjs@~7.5.5 --save
@@ -100,21 +100,21 @@ Gerar a build de produção da aplicação web
 Compactar a pasta que a build gerou e renomear para que a extensão fique como .app
 Compilar o arquivo compactado .app no RPO, basta compilá-lo normalmente, ele será compilado como resource e ficará no RPO.
 Criar um fonte com uma função, que será a rotina de menu
-Nesse fonte, você utilizará a função FWCallApp para chamar a aplicação gerada, sendo que o parâmetro principal da FWCallApp é exatamente o nome do arquivo .app que você compilou como resource no RPO (my-po-project)
+Nesse fonte, você utilizará a função FWCallApp para chamar a aplicação gerada, sendo que o parâmetro principal da FWCallApp é exatamente o nome do arquivo .app que você compilou como resource no RPO (po-proj-function-company)
 
 6. para Gerar atualização da rotina no protheus.
-    excluir rotina do rpo my-po-project
+    excluir rotina do rpo po-proj-function-company
     apagar a pasta dist do projeto angular PO UI.
     fazer as alterações no projeto e gerar novo build
     zipar a pasta gerada na pasta dist 
     mudar a extensão de zip para app
-    copiar o arquivo  my-po-project.app para a pasta do protheus onde existe a function tlpp que chamará o app.
+    copiar o arquivo  po-proj-function-company.app para a pasta do protheus onde existe a function tlpp que chamará o app.
     compilar no rpo do protheus os 2 arquivos.
-    apagar a pasta(my-po-project) em \Protheus_Data\http-root\app-root
+    apagar a pasta(po-proj-function-company) em \Protheus_Data\http-root\app-root
     chamar rotina pelo protheus para gerar a pasta novamente
     
 7. para criar um novo componente
-    entrar na pasta raiz do projeto : my-po-project
+    entrar na pasta raiz do projeto : po-proj-function-company
     rodar o comando :
     ng g c nome-componente
     ir no arquivo app.module.ts e importar o componente se necessário de acordo com a documentação do PO UI
