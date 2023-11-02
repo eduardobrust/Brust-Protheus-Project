@@ -137,24 +137,24 @@ O layout da aplicação segue o padrão do PO UI Totvs Protheus
 
 #### ⚙️ [ Publicação no Protheus ]
 
-[x] Criar a aplicação web.
-[x] Gerar a build de produção da aplicação web.
-[x] Compactar a pasta que a build gerou e renomear para que a extensão fique como .app .
-[x] Compilar o arquivo compactado .app no RPO. Basta compilá-lo normalmente, ele será compilado como resource e ficará no RPO.
-[x] Criar um fonte com uma função, que será a rotina de menu.
-[x] Nesse fonte, você utilizará a função FWCallApp para chamar a aplicação gerada, sendo que o parâmetro principal da FWCallApp é exatamente o nome do arquivo .app que você compilou como resource no RPO (po-proj-function-company).
+- Criar a aplicação web.
+- Gerar a build de produção da aplicação web.
+- Compactar a pasta que a build gerou e renomear para que a extensão fique como .app .
+- Compilar o arquivo compactado .app no RPO. Basta compilá-lo normalmente, ele será compilado como resource e ficará no RPO.
+- Criar um fonte com uma função, que será a rotina de menu.
+- Nesse fonte, você utilizará a função FWCallApp para chamar a aplicação gerada, sendo que o parâmetro principal da FWCallApp é exatamente o nome do arquivo .app que você compilou como resource no RPO (po-proj-function-company).
 
 #### ⚙️ [ Atualizando a Rotina no Protheus ]
 
-[x] Excluir rotina do rpo: po-proj-function-company.
-[x] Apagar a pasta dist do projeto angular PO UI.
-[x] Fazer as alterações no projeto e gerar novo build
-[x] Zipar a pasta gerada na pasta dist
-[x] Mudar a extensão de zip para app
-[x] Copiar o arquivo po-proj-function-company.app para a pasta do protheus onde existe a function tlpp que chamará o app.
-[x] Compilar no rpo do protheus os 2 arquivos.
-[x] Apagar a pasta(po-proj-function-company) em \Protheus_Data\http-root\app-root
-[x] Chamar rotina pelo protheus para gerar a pasta novamente
+- Excluir rotina do rpo: po-proj-function-company.
+- Apagar a pasta dist do projeto angular PO UI.
+- Fazer as alterações no projeto e gerar novo build
+- Zipar a pasta gerada na pasta dist
+- Mudar a extensão de zip para app
+- Copiar o arquivo po-proj-function-company.app para a pasta do protheus onde existe a function tlpp que chamará o app.
+- Compilar no rpo do protheus os 2 arquivos.
+- Apagar a pasta(po-proj-function-company) em \Protheus_Data\http-root\app-root
+- Chamar rotina pelo protheus para gerar a pasta novamente
 
 #### Licença
 
