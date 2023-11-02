@@ -6,8 +6,7 @@ let config = {
         use: [
           'style-loader',
           'css-loader',
-          'resolve-url-loader',
-          'sass-loader'
+          'resolve-url-loader'
         ]
       }
     ]
