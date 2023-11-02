@@ -163,7 +163,3 @@ O layout da aplicação segue o padrão do PO UI Totvs Protheus
 ## Licença
 
 Este projeto está sob a licença MIT. Consulte o arquivo [LICENSE](./LICENSE) para obter mais detalhes.
-
-# Brust-Protheus-Project
-
-[![Brust Protheus Project](https://img.shields.io/badge/Brust-Protheus%20Project-blue.svg)](https://github.com/SeuUsuario/SeuRepositório)
