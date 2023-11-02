@@ -1,4 +1,4 @@
-# Brust-Protheus-Project
+# Brust-Protheus-Project-TLPP-PO-UI
 Repository for developing TL++ and POUI projects for the Totvs Protheus environment.
 
 ![Brust-Protheus-Project](./poui/Brust-Protheus-Project/src/assets/images/logo.svg)
