@@ -4,7 +4,7 @@
 
 Repository for developing TL++ and POUI projects for the Totvs Protheus environment.
 
-![Logotipo do Brust-Protheus-Project](./assets/images/logo.svg)
+![Logotipo do Brust-Protheus-Project](./assets/images/Brust-Protheus-Project.png)
 
 ## 🛠️  Projeto em fase de construção  🛠️
 
