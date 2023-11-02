@@ -1,7 +1,9 @@
 # Brust-Protheus-Project
 Repository for developing TL++ and POUI projects for the Totvs Protheus environment.
 
-Versões globais inicio do projeto
+![Brust-Protheus-Project](./poui/Brust-Protheus-Project/src/assets/images/logo.svg)
+
+## 📖 Versões globais inicio do projeto
 
 Angular CLI: 16.2.8
 Node: 18.18.0
@@ -24,7 +26,7 @@ rxjs                            7.5.7
 typescript                      5.1.6
 zone.js                         0.13.3
 
-Estrutura sugerida para o projeto :
+### Estrutura sugerida para o projeto :
 
 app
 |-- componentes
@@ -43,81 +45,105 @@ app
 |   |   |-- api.service.ts (Serviço genérico para chamadas HTTP)
 |-- app.module.ts
 
+## 🎨 Layout
 
-[Instalando o PO UI]
+O layout da aplicação segue o padrão do PO UI Totvs Protheus
 
-https://po-ui.io/guides/getting-started
+## ⚙️ [ Instalando o PO UI ]
 
-0. Verificar versão do angular atual compativel com o POUI
-para atualiazar o angular : npm update
+[Site Oficial PO UI - https://po-ui.io/guides/getting-started](https://po-ui.io/guides/getting-started)
 
-1. passos para instalação do PO UI
-ng new po-proj-routine-company --skip-install
+1. Verificar versão do angular atual compativel com o POUI:
+```bash
+  npm update
+```
 
-1.1. verificar as dependencias do angular no arquivo package.json [rxjs]
+2. Passos para instalação do PO UI:
+```bash
+  ng new po-proj-routine-company --skip-install
+```
 
-npm version @angular/rxjs 
-npm install rxjs@~7.5.5 --save
-npm list rxjs
+3. Verificar as dependencias do angular no arquivo package.json:
+```bash
+  npm version @angular/rxjs 
+  npm install rxjs@~7.5.5 --save
+  npm list rxjs
+```
 
-1.2. executar o comando na pasta raiz do projeto
-npm install
+4. Executar o comando na pasta raiz do projeto:
+```bash
+  npm install
+```
 
-2. Adiconando o pacote @po-ui/ng-components
-ng add @po-ui/ng-components
+5. Adiconando o pacote @po-ui/ng-components:
+```bash
+  ng add @po-ui/ng-components
+```
 
-* tive que voltar a versão do meu   "rxjs": "~7.8.0" para "rxjs": "~7.5.5"
+6. Rode o seu projeto:
+```bash
+  ng serve
+```
 
-3. Rode o seu projeto
-ng serve
+7. Instalando po-page-login, po-modal-password-recovery, po-page-blocked-user, po-page-dynamic-table:
+```bash
+  ng add @po-ui/ng-templates
+```
 
-4. Instalando po-page-login, po-modal-password-recovery, po-page-blocked-user, po-page-dynamic-table 
-ng add @po-ui/ng-templates
+8. Gerar a build do projeto - Será criada uma pasta chamada dist na raiz do projeto "build de produção" ou "build de release".:
+```bash
+  ng build --configuration=production
+```
 
-5. Gerar a build do projeto - Será criada uma pasta chamada dist na raiz do projeto "build de produção" ou "build de release".
-ng build --configuration=production
+## ⚙️ [ Atualizando o PO UI ]
 
-[ATUALIZANDO O ANGULAR GLOBALMENTE]
-1. ir para a pasta raiz do projeto e rodar o comando
-npm update -g @angular/cli
+1. Entrar na raiz do projeto e atualizar:
+```bash
+  ng update @po-ui/ng-components@15.9.2 --allow-dirty --force
+```
 
+2. Entrar na raiz do projeto e atualizar:
+```bash
+  ng update @po-ui/ng-templates@15.9.2 --allow-dirty --force
+```
 
-[ATUALIZANDO O PO UI]
+## ⚙️ [ Criando no PO UI ]
 
-entrar na raiz do projeto
-rodar comando abaixo:
-ng update @po-ui/ng-components@15.9.2 --allow-dirty --force
-ng update @po-ui/ng-templates@15.9.2 --allow-dirty --force
+1. para criar um novo componente. Entrar na pasta raiz do projeto(po-proj-function-company) :
+```bash
+  ng g c nome-componente
+```
 
-
-passos para publicar no protheus
-
-Criar a aplicação web
-Gerar a build de produção da aplicação web
-Compactar a pasta que a build gerou e renomear para que a extensão fique como .app
-Compilar o arquivo compactado .app no RPO, basta compilá-lo normalmente, ele será compilado como resource e ficará no RPO.
-Criar um fonte com uma função, que será a rotina de menu
-Nesse fonte, você utilizará a função FWCallApp para chamar a aplicação gerada, sendo que o parâmetro principal da FWCallApp é exatamente o nome do arquivo .app que você compilou como resource no RPO (po-proj-function-company)
-
-6. para Gerar atualização da rotina no protheus.
-    excluir rotina do rpo po-proj-function-company
-    apagar a pasta dist do projeto angular PO UI.
-    fazer as alterações no projeto e gerar novo build
-    zipar a pasta gerada na pasta dist 
-    mudar a extensão de zip para app
-    copiar o arquivo  po-proj-function-company.app para a pasta do protheus onde existe a function tlpp que chamará o app.
-    compilar no rpo do protheus os 2 arquivos.
-    apagar a pasta(po-proj-function-company) em \Protheus_Data\http-root\app-root
-    chamar rotina pelo protheus para gerar a pasta novamente
-    
-7. para criar um novo componente
-    entrar na pasta raiz do projeto : po-proj-function-company
-    rodar o comando :
-    ng g c nome-componente
-    ir no arquivo app.module.ts e importar o componente se necessário de acordo com a documentação do PO UI
+2. Ir no arquivo app.module.ts e importar o componente se necessário de acordo com a documentação do PO UI
     pegar no arquivo .ts do componente o conteudo da propriedade do selector para poder instanciar no html que será mostrado.
-    colocar na chamada do componente a class css padrao
+    Colocar na chamada do componente a class css padrão
 
-8. criar um serviço 
-    navegar ate a pasta app
-    ng generate service services/sample-po-service ou ng g s services/sample-po-service
+3. Criar um serviço:
+navegar ate a pasta app
+```bash
+ ng generate service services/sample-po-service
+```
+
+## ⚙️ [ Publicação no Protheus ]
+
+[x] Criar a aplicação web.
+[x] Gerar a build de produção da aplicação web.
+[x] Compactar a pasta que a build gerou e renomear para que a extensão fique como .app .
+[x] Compilar o arquivo compactado .app no RPO. Basta compilá-lo normalmente, ele será compilado como resource e ficará no RPO.
+[x] Criar um fonte com uma função, que será a rotina de menu.
+[x] Nesse fonte, você utilizará a função FWCallApp para chamar a aplicação gerada, sendo que o parâmetro principal da FWCallApp é exatamente o nome do arquivo .app que você compilou como resource no RPO (po-proj-function-company).
+
+## ⚙️ [ Atualizando a Rotina no Protheus ]
+
+[x] Excluir rotina do rpo: po-proj-function-company.
+[x] Apagar a pasta dist do projeto angular PO UI.
+[x] Fazer as alterações no projeto e gerar novo build
+[x] Zipar a pasta gerada na pasta dist
+[x] Mudar a extensão de zip para app
+[x] Copiar o arquivo  po-proj-function-company.app para a pasta do protheus onde existe a function tlpp que chamará o app.
+[x] Compilar no rpo do protheus os 2 arquivos.
+[x] Apagar a pasta(po-proj-function-company) em \Protheus_Data\http-root\app-root
+[x] Chamar rotina pelo protheus para gerar a pasta novamente
+
+## Licença
+Este projeto está sob a licença MIT. Consulte o arquivo [LICENSE](./LICENSE) para obter mais detalhes.
