@@ -31,7 +31,6 @@
             ],
             "styles": [
               "./node_modules/@po-ui/style/css/po-theme-default.min.css",
-              "./node_modules/@po-ui/style/scss/po-theme-default.min.scss",
               "src/styles.css"
             ],
             "scripts": []
