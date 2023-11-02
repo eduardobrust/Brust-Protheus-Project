@@ -4,9 +4,11 @@
 
 Repository for developing TL++ and POUI projects for the Totvs Protheus environment.
 
-![Brust-Protheus-Project](./poui/Brust-Protheus-Project/src/assets/images/logo.svg)
+![Logotipo do Brust-Protheus-Project](./assets/images/logo.svg)
 
-## 📖 Versões globais inicio do projeto
+## 🛠️  Projeto em fase de construção  🛠️
+
+### :books: Versões globais inicio do projeto
 
 Angular CLI: 16.2.8
 Node: 18.18.0
@@ -17,7 +19,7 @@ Angular: 16.2.11
 ... animations, common, compiler, compiler-cli, core, forms
 ... platform-browser, platform-browser-dynamic, router
 
-## Package Version
+### :package: Package Version
 
 @angular-devkit/architect 0.1602.8
 @angular-devkit/build-angular 16.2.8
@@ -32,27 +34,26 @@ zone.js 0.13.3
 ### Estrutura sugerida para o projeto :
 
 app
-|-- componentes
-| |-- componente1
-| | |-- componente1.component.ts
-| | |-- componente1.component.html
-| | |-- componente1.component.css
-| | |-- componente1.service.ts (Serviço relacionado ao Componente 1)
-| |-- componente2
-| | |-- componente2.component.ts
-| | |-- componente2.component.html
-| | |-- componente2.component.css
-| | |-- componente2.service.ts (Serviço relacionado ao Componente 2)
-|-- shared
-| |-- services
-| | |-- api.service.ts (Serviço genérico para chamadas HTTP)
-|-- app.module.ts
+├── componentes
+│   ├── componente1
+│   │   ├── componente1.component.ts
+│   │   ├── componente1.component.html
+│   │   ├── componente1.component.css
+│   │   └── componente1.service.ts (Serviço relacionado ao Componente 1)
+│   └── componente2
+│       ├── componente2.component.ts
+│       ├── componente2.component.html
+│       ├── componente2.component.css
+│       └── componente2.service.ts (Serviço relacionado ao Componente 2)
+└── shared
+    └── services
+        └── api.service.ts (Serviço genérico para chamadas HTTP)
 
-## 🎨 Layout
+### 🎨 Layout
 
 O layout da aplicação segue o padrão do PO UI Totvs Protheus
 
-## ⚙️ [ Instalando o PO UI ]
+#### ⚙️ [ Instalando o PO UI ]
 
 [Site Oficial PO UI - https://po-ui.io/guides/getting-started](https://po-ui.io/guides/getting-started)
 
@@ -106,7 +107,7 @@ O layout da aplicação segue o padrão do PO UI Totvs Protheus
   ng build --configuration=production
 ```
 
-## ⚙️ [ Atualizando o PO UI ]
+#### ⚙️ [ Atualizando o PO UI ]
 
 1. Entrar na raiz do projeto e atualizar:
 
@@ -120,7 +121,7 @@ O layout da aplicação segue o padrão do PO UI Totvs Protheus
   ng update @po-ui/ng-templates@15.9.2 --allow-dirty --force
 ```
 
-## ⚙️ [ Criando no PO UI ]
+#### ⚙️ [ Criando no PO UI ]
 
 1. para criar um novo componente. Entrar na pasta raiz do projeto(po-proj-function-company) :
 
@@ -139,7 +140,7 @@ O layout da aplicação segue o padrão do PO UI Totvs Protheus
  ng generate service services/sample-po-service
 ```
 
-## ⚙️ [ Publicação no Protheus ]
+#### ⚙️ [ Publicação no Protheus ]
 
 [x] Criar a aplicação web.
 [x] Gerar a build de produção da aplicação web.
@@ -148,7 +149,7 @@ O layout da aplicação segue o padrão do PO UI Totvs Protheus
 [x] Criar um fonte com uma função, que será a rotina de menu.
 [x] Nesse fonte, você utilizará a função FWCallApp para chamar a aplicação gerada, sendo que o parâmetro principal da FWCallApp é exatamente o nome do arquivo .app que você compilou como resource no RPO (po-proj-function-company).
 
-## ⚙️ [ Atualizando a Rotina no Protheus ]
+#### ⚙️ [ Atualizando a Rotina no Protheus ]
 
 [x] Excluir rotina do rpo: po-proj-function-company.
 [x] Apagar a pasta dist do projeto angular PO UI.
@@ -160,6 +161,7 @@ O layout da aplicação segue o padrão do PO UI Totvs Protheus
 [x] Apagar a pasta(po-proj-function-company) em \Protheus_Data\http-root\app-root
 [x] Chamar rotina pelo protheus para gerar a pasta novamente
 
-## Licença
+
+#### Licença
 
 Este projeto está sob a licença MIT. Consulte o arquivo [LICENSE](./LICENSE) para obter mais detalhes.
