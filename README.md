@@ -31,21 +31,7 @@ zone.js 0.13.3
 
 ### Estrutura sugerida para o projeto :
 
-app
-├── componentes
-│   ├── componente1
-│   │   ├── componente1.component.ts
-│   │   ├── componente1.component.html
-│   │   ├── componente1.component.css
-│   │   └── componente1.service.ts (Serviço relacionado ao Componente 1)
-│   └── componente2
-│       ├── componente2.component.ts
-│       ├── componente2.component.html
-│       ├── componente2.component.css
-│       └── componente2.service.ts (Serviço relacionado ao Componente 2)
-└── shared
-    └── services
-        └── api.service.ts (Serviço genérico para chamadas HTTP)
+![arvore_projeto](./assets/images/arvore_projeto.png)
 
 ### 🎨 Layout
 
