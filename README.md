@@ -1,10 +1,8 @@
-[![Brust Protheus Project](https://img.shields.io/badge/Brust-Protheus%20Project-blue.svg)](https://github.com/eduardobrust/Brust-Protheus-Project)
+![Logotipo do Brust-Protheus-Project](./assets/images/Brust-Protheus-Project.png)
 
-# Brust-Protheus-Project-TLPP-PO-UI
+# Protheus-Project-TLPP-PO-UI
 
 Repository for developing TL++ and POUI projects for the Totvs Protheus environment.
-
-![Logotipo do Brust-Protheus-Project](./assets/images/Brust-Protheus-Project.png)
 
 ## 🛠️  Projeto em fase de construção  🛠️
 
