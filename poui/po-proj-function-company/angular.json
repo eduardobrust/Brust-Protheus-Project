@@ -7,7 +7,7 @@
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
-          "style": "scss"
+          "style": "css"
         }
       },
       "root": "",
@@ -24,14 +24,15 @@
               "zone.js"
             ],
             "tsConfig": "tsconfig.app.json",
-            "inlineStyleLanguage": "scss",
+            "inlineStyleLanguage": "css",
             "assets": [
               "src/favicon.ico",
               "src/assets"
             ],
             "styles": [
               "./node_modules/@po-ui/style/css/po-theme-default.min.css",
-              "src/styles.scss"
+              "./node_modules/@po-ui/style/scss/po-theme-default.min.scss",
+              "src/styles.css"
             ],
             "scripts": []
           },
@@ -88,14 +89,14 @@
               "zone.js/testing"
             ],
             "tsConfig": "tsconfig.spec.json",
-            "inlineStyleLanguage": "scss",
+            "inlineStyleLanguage": "css",
             "assets": [
               "src/favicon.ico",
               "src/assets"
             ],
             "styles": [
               "./node_modules/@po-ui/style/css/po-theme-default.min.css",
-              "src/styles.scss"
+              "src/styles.css"
             ],
             "scripts": []
           }
