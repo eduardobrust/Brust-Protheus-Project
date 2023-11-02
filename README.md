@@ -4,9 +4,20 @@
 
 Repository for developing TL++ and POUI projects for the Totvs Protheus environment.
 
-## 🛠️  Projeto em fase de construção  🛠️
+## 🛠️ Projeto em fase de construção 🛠️
 
-### :books: Versões globais inicio do projeto
+### :bookmark: Tecnologias
+
+O projeto é desenvolvido em:
+
+-   [Front-end - Framework - Angular 16](https://angular.io/)
+
+-   [Front-end - Biblioteca - PO UI v16.5](https://po-ui.io/)
+
+-   [Back-end - ERP Protheus Release 12.1.2310](https://tdn.totvs.com/pages/releaseview.action?pageId=744479921)
+-   [API Rest - TLPP](https://tdn.totvs.com/display/tec/TLPP)
+
+### :books: Versões globais início do projeto
 
 Angular CLI: 16.2.8
 Node: 18.18.0
@@ -29,7 +40,7 @@ rxjs 7.5.7
 typescript 5.1.6
 zone.js 0.13.3
 
-### Estrutura sugerida para o projeto :
+### :deciduous_tree: Estrutura de pastas sugerida para o projeto :
 
 ![arvore_projeto](./assets/images/arvore_projeto.png)
 
@@ -144,7 +155,6 @@ O layout da aplicação segue o padrão do PO UI Totvs Protheus
 [x] Compilar no rpo do protheus os 2 arquivos.
 [x] Apagar a pasta(po-proj-function-company) em \Protheus_Data\http-root\app-root
 [x] Chamar rotina pelo protheus para gerar a pasta novamente
-
 
 #### Licença
 
