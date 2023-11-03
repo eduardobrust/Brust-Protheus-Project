@@ -1,7 +1,10 @@
-import { Component, Inject, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { PoPageLogin } from '@po-ui/ng-templates';
-import { LoginService } from './login.service';
+import { LoginService } from './../login/login.service';
+import { Component, OnInit } from '@angular/core';
+import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router } from '@angular/router';
+import { Observable } from 'rxjs';
+import {
+  PoPageLogin
+} from '@po-ui/ng-templates';
 
 @Component({
   selector: 'app-login',
@@ -10,26 +13,30 @@ import { LoginService } from './login.service';
 })
 export class LoginComponent implements OnInit {
 
-  @Inject(LoginService)
-  private loginService!: LoginService;
-
-  constructor(private router: Router) {}
+  constructor(public router: Router,
+    private loginService: LoginService,
+  ) { }
 
   ngOnInit() {
-    console.log('Init');
+    console.log('Init')
   }
 
   async loginSubmit(formData: PoPageLogin) {
-    const login = formData.login;
-    const password = formData.password;
+    let login = formData.login
+    let password = formData.password
 
-    const retorno = await this.loginService.login(login, password).toPromise();
-
+    const retorno = await this.loginService.login(login, password).toPromise()
+    console.log(retorno)
     if (retorno) {
-      sessionStorage.setItem('refreshtoken', retorno['refresh_token'] ?? '');
-      sessionStorage.setItem('access_token', retorno['access_token'] ?? '');
-      this.loginService.setNextDataRefreshToken(retorno['expires_in'] ?? 0);
+      sessionStorage.setItem('refreshtoken', retorno['refresh_token']);
+      sessionStorage.setItem('access_token', retorno['access_token']);
+      this.loginService.setNextDataRefreshToken(retorno['expires_in'])
       this.router.navigate(['/home']);
     }
+
   }
+
+
+
+
 }
