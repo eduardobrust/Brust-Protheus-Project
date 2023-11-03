@@ -12,7 +12,7 @@ constructor(private router: Router, private activatedRoute: ActivatedRoute, priv
 
 canActivate(): boolean {
   type DataWithUser = {
-    user: string;
+    user: boolean;
   };
 
   const user = this.activatedRoute.data as Observable<DataWithUser>;
