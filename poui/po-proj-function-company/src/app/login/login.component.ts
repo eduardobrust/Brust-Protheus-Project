@@ -1,12 +1,12 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { PoPageLogin } from '@po-ui/ng-templates';
-import { LoginService } from './../login/app-login.service';
+import { LoginService } from './login.service';
 
 @Component({
   selector: 'app-login',
-  templateUrl: './app-login.component.html',
-  styleUrls: ['./app-login.component.css']
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
 
