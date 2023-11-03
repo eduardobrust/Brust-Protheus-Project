@@ -1,3 +1,4 @@
 {
-    "hostRest": "http://localhost:8003/rest"
+    "HostRest": "http://localhost:8003/rest",
+    "baseUrl": "http://localhost:8003/rest"
   }

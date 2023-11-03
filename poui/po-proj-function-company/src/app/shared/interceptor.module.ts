@@ -32,10 +32,10 @@ export class HttpsRequestInterceptor implements HttpInterceptor {
     request: HttpRequest<any>,
     next: HttpHandler,
   ): Observable<HttpSentEvent | HttpHeaderResponse | HttpProgressEvent | HttpResponse<any> | HttpUserEvent<any> | any> {
-    //console.log(request)
+    console.log(request)
     // Adiciona o HOST na URL para utilizar um arquivo config.json quando fazer o build do projeto
     request = request.clone({ url: `${this.configService.getHostRest()}/${request.url}` });
-    //console.log(request.url)
+    console.log(request.url)
 
     let dataAtual = new Date()
     let dataExpire = new Date(sessionStorage.getItem('expires_date') || "")
