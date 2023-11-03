@@ -7,12 +7,12 @@ import { PoModule } from '@po-ui/ng-components';
 import { HttpClientModule } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import { PoTemplatesModule } from '@po-ui/ng-templates';
-import { AppLoginComponent } from './login/app-login.component';
+import { LoginComponent } from './login/app-login.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    AppLoginComponent
+    LoginComponent
   ],
   imports: [
     BrowserModule,
