@@ -1,20 +1,23 @@
-import { ConfigService } from './config.service';
-import { Router } from '@angular/router';
-import { LoginService } from '../login/login.service';
-import { Injectable, NgModule, } from '@angular/core';
-import { Observable, throwError } from 'rxjs';
-import { switchMap, catchError, take, finalize, mergeMap } from 'rxjs/operators';
 import {
-  HttpRequest, HttpHandler, HttpSentEvent,
-  HttpHeaderResponse,
-  HttpProgressEvent,
-  HttpResponse,
+  HTTP_INTERCEPTORS,
   HttpErrorResponse,
-  HttpUserEvent,
-  HttpInterceptor
+  HttpHandler,
+  HttpHeaderResponse,
+  HttpInterceptor,
+  HttpProgressEvent,
+  HttpRequest,
+  HttpResponse,
+  HttpSentEvent,
+  HttpUserEvent
 } from '@angular/common/http';
-import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { Injectable, NgModule, } from '@angular/core';
+import { Router } from '@angular/router';
 import { PoNotificationService } from '@po-ui/ng-components';
+import { Observable, throwError } from 'rxjs';
+import { catchError, finalize, switchMap, take } from 'rxjs/operators';
+import { LoginService } from '../login/login.service';
+import config from './config.json';
+import { ConfigService } from './config.service';
 
 @Injectable()
 
@@ -35,10 +38,11 @@ export class HttpsRequestInterceptor implements HttpInterceptor {
     console.log(request)
     // Adiciona o HOST na URL para utilizar um arquivo config.json quando fazer o build do projeto
     request = request.clone({ url: `${this.configService.getHostRest()}/${request.url}` });
-    console.log(request.url)
+    console.log(this.configService.getHostRest)
 
     let dataAtual = new Date()
     let dataExpire = new Date(sessionStorage.getItem('expires_date') || "")
+    const HostRest = config.HostRest;
 
     // Caso venceu o token faz o refresh
     if (!request.url.includes('/assets/config.json') && !this.isRefreshingToken && dataAtual >= dataExpire && sessionStorage.getItem('access_token')) {

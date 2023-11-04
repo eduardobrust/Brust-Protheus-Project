@@ -1,7 +1,8 @@
-import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot } from '@angular/router';
 import { Observable } from 'rxjs';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +12,9 @@ export class LoginService {
   constructor(
     private http: HttpClient,
     public router: Router
-  ) { }
+  ) { 
+    console.log('login.service.ts ->');
+  }
   private headers = {
     'X-Portinari-No-Count-Pending-Requests': 'false',
     'X-Portinari-Screen-Lock': 'true'
@@ -29,7 +32,9 @@ export class LoginService {
   }
 
   login(username: string, password: string) {
-    return this.http.post<any>(`api/oauth2/v1/token`,
+    console.log('login.service.ts ->' + environment.baseUrl);
+    return this.http.post<any>(
+      `${environment.baseUrl}/api/oauth2/v1/token`,
       {},
       {
         headers: this.headers,
@@ -38,7 +43,8 @@ export class LoginService {
           password: password,
           username: username
         }
-      })
+      }
+    );
   }
 
   setNextDataRefreshToken(secondsExpire: number) {

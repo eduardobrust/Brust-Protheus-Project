@@ -5,7 +5,9 @@ import { Injectable } from '@angular/core';
 })
 export class GlobalsService {
 
-  constructor() { }
+  constructor() { 
+    console.log('globals.service.ts ->' );
+  }
 
 
 
