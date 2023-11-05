@@ -22,7 +22,12 @@ export class LoginService {
 
 
   public isLogged() {
-    return sessionStorage.getItem('access_token');
+    let lret: boolean = true;
+
+    if(sessionStorage.getItem('access_token') === null || sessionStorage.getItem('access_token') === ''){
+      lret = false;
+    }
+    return lret;
   }
 
   logout() {
@@ -68,6 +73,7 @@ export class LoginService {
       this.router.navigate(['/login']);
       return false;
     }
+    this.router.navigate(['/home']);
     return true;
   }
 }

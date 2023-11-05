@@ -18,6 +18,7 @@ canActivate(): boolean {
   const user = this.activatedRoute.data as Observable<DataWithUser>;
 
 if (user) {
+  this.router.navigate(['/home']);
   return true;
 } else {
   this.router.navigate(['/login']);

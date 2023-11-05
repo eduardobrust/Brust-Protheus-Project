@@ -1,10 +1,9 @@
-import { LoginService } from './../login/login.service';
 import { Component, OnInit } from '@angular/core';
-import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router } from '@angular/router';
-import { Observable } from 'rxjs';
+import { Router } from '@angular/router';
 import {
   PoPageLogin
 } from '@po-ui/ng-templates';
+import { LoginService } from './../login/login.service';
 
 @Component({
   selector: 'app-login',
@@ -28,7 +27,9 @@ export class LoginComponent implements OnInit {
     let password = formData.password
 
     const retorno = await this.loginService.login(login, password).toPromise()
+    console.log('login.component.ts(loginSubmit)->'+ retorno);
     console.log(retorno)
+    
     if (retorno) {
       sessionStorage.setItem('refreshtoken', retorno['refresh_token']);
       sessionStorage.setItem('access_token', retorno['access_token']);
