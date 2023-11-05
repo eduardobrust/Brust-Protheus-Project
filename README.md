@@ -159,3 +159,32 @@ O layout da aplicação segue o padrão do PO UI Totvs Protheus
 #### Licença
 
 Este projeto está sob a licença MIT. Consulte o arquivo [LICENSE](./LICENSE) para obter mais detalhes.
+
+--------------------------------------------------------------------------------------------------------------
+
+ng new po-function-company --skip-install
+
+Would you like to add Angular routing?(y)
+
+Which stylesheet format would you like to use? (Use arrow keys)
+> CSS 
+
+Verificando dependências do PO UI
+
+downgrade para "rxjs": "~7.5.5"
+
+update para "typescript": "~5.1.6"
+
+add package @po-ui/ng-components 
+
+add package @po-ui/ng-templates
+
+add module controllers
+ng generate module controllers
+
+add component dynamic table
+
+definindo as rotas
+
+
+
