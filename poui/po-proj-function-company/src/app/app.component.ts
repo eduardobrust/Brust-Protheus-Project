@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 
 import { PoMenuItem } from '@po-ui/ng-components';
 import { Router } from '@angular/router';
+import { homeComponent } from './home/home.component';
 
 @Component({
   selector: 'app-root',
@@ -13,8 +14,8 @@ export class AppComponent {
   constructor(private _router: Router) { }
 
   readonly menus: Array<PoMenuItem> = [
-    { label: 'Home', action: this.onClick },
-    { label: 'Login', link: '\login' }
+    { label: 'Home', link: '/home' },
+    { label: 'Login', link: '/login' }
   ];
 
   private onClick(): void {
@@ -25,11 +26,11 @@ export class AppComponent {
 
     if (lret) {
       console.log('app.component.ts->logado')
-      //this._router.navigate(['/home']);
+      this._router.navigate(['/home']);
     } else {
       console.log('app.component.ts->nao logado')
       alert('Você não está logado. Por favor, faça login para acessar esta página.');
-      //this._router.navigate(['/login']);
+      this._router.navigate(['/login']);
     }
   }
 }

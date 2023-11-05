@@ -1,9 +1,10 @@
 <div class="po-wrapper">
-  <po-toolbar p-title="po-toolbar-title-Brust"></po-toolbar>
+  <po-toolbar p-title="Brust - Project"></po-toolbar>
 
-  <po-menu [p-menus]="menus"></po-menu>
-
-  <po-page-default p-title="Pagina Principal">
-    <router-outlet></router-outlet>
-  </po-page-default>
+  <po-menu
+    [p-menus]="menus"
+    [p-collapsed]="true"
+  >
+  </po-menu>
+  <router-outlet></router-outlet>
 </div>

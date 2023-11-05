@@ -1,51 +1,25 @@
-<po-page-default p-title="Dashboard" [p-actions]="actions" [p-breadcrumb]="breadcrumb">
-  <div class="po-row">
-    <po-widget class="po-md-6 po-lg-4 po-mb-2" p-title="Daily visitors">
-      <div class="po-font-subtitle po-text-center">540</div>
-      <div class="po-text-center sample-widget-text-subtitle">www.po.com.br</div>
-    </po-widget>
+<po-page-dynamic-table
+  #dynamicTable
+  [p-auto-router]="true"
+  [p-concat-filters]="true"
+  [p-keep-filters]="true"
+  p-title="Users"
+  [p-actions]="actions"
+  [p-actions-right]="actionsRight"
+  [p-page-custom-actions]="pageCustomActions"
+  [p-table-custom-actions]="tableCustomActions"
+  [p-breadcrumb]="breadcrumb"
+  [p-fields]="fields"
+  [p-service-api]="serviceApi"
+  [p-quick-search-width]="quickSearchWidth"
+  [p-load]="onLoad.bind(this)"
+>
+</po-page-dynamic-table>
 
-    <po-widget class="po-md-6 po-lg-4 po-mb-2" p-title="Most viewed page">
-      <div class="po-font-subtitle po-text-center">300 views</div>
-      <div class="po-text-center sample-widget-text-subtitle">https://po-ui.io</div>
-    </po-widget>
+<po-modal #userDetailModal p-title="User Detail">
+  <po-dynamic-view [p-fields]="detailFields" [p-value]="detailedUser"> </po-dynamic-view>
+</po-modal>
 
-    <po-widget class="po-md-6 po-lg-4 po-mb-2" p-title="Website status">
-      <div class="po-font-subtitle po-text-center">Online</div>
-      <div class="po-text-center sample-widget-text-subtitle">28 days</div>
-    </po-widget>
-
-    <po-widget class="po-md-6 po-lg-4 po-mb-2" p-title="NPM downloads">
-      <div class="po-font-subtitle po-text-center">266</div>
-      <div class="po-text-center sample-widget-text-subtitle">@po-ui/ng-components - 1.10.1</div>
-    </po-widget>
-
-    <po-widget class="po-md-6 po-lg-4 po-mb-2" p-title="Devforum PO questions">
-      <div class="po-font-subtitle po-text-center">800 questions</div>
-      <div class="po-text-center sample-widget-text-subtitle">https://devforum.po.com.br</div>
-    </po-widget>
-
-    <po-widget class="po-md-6 po-lg-4 po-mb-2" p-title="Angular versions supported">
-      <div class="po-font-subtitle po-text-center">AngularJS - Angular 6</div>
-      <div class="po-text-center sample-widget-text-subtitle">Angular 6 most downloaded</div>
-    </po-widget>
-  </div>
-
-  <hr />
-
-  <po-table [p-columns]="columns" [p-items]="items" [p-hide-table-search]="false"> </po-table>
-</po-page-default>
-
-<po-modal p-title="Share webpage" [p-primary-action]="shareAction" [p-secondary-action]="cancelAction">
-  <form #formShare="ngForm">
-    <po-email
-      class="po-lg-12"
-      name="email"
-      [(ngModel)]="email"
-      p-clean
-      p-label="Type an e-mail for sharing webpage: http://www.po.com.br"
-      p-required
-    >
-    </po-email>
-  </form>
+<po-modal #dependentsModal p-title="Dependents">
+  <po-table [p-items]="dependents" [p-hide-table-search]="false"> </po-table>
 </po-modal>

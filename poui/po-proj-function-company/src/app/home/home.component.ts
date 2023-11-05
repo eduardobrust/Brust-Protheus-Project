@@ -1,36 +1,46 @@
 import { Injectable } from '@angular/core';
-
-import { PoTableColumn } from '@po-ui/ng-components';
-
-import { Component } from '@angular/core';
-/*
-@Component({
-  selector: 'app-home',
-  templateUrl: './home.component.html',
-  styleUrls: ['./home.component.css']
-})
-*/
+import { HttpClient } from '@angular/common/http';
 
 @Injectable()
-export class SampleDashboardService {
-  getColumns(): Array<PoTableColumn> {
-    return [
-      { property: 'cities', label: 'Cities that most downloaded PO' },
-      { property: 'package', label: 'Package version' },
-      { property: 'downloads', label: 'Downloads' }
-    ];
+export class homeComponent {
+  constructor(public http: HttpClient) {}
+
+  downloadCsv(endpoint: any) {
+    this.http.get(endpoint).subscribe((data: any) => {
+      const csvStr = this.parseJsonToCsv(data['items']);
+      const dataUri = 'data:text/csv;charset=utf-8,' + csvStr;
+
+      const exportFileDefaultName = 'data.csv';
+
+      const linkElement = document.createElement('a');
+      linkElement.setAttribute('href', dataUri);
+      linkElement.setAttribute('download', exportFileDefaultName);
+      linkElement.click();
+    });
   }
 
-  getItems() {
-    return [
-      { cities: 'São Paulo', package: '2.0.0-beta.2', downloads: '2000' },
-      { cities: 'Joinville', package: '1.9.1', downloads: '1000' },
-      { cities: 'Rio de Janeiro', package: '2.0.0-beta.2', downloads: '250' },
-      { cities: 'Santa Catarina', package: '1.9.1', downloads: '100' },
-      { cities: 'Curitiba', package: '2.0.0-beta.2', downloads: '1040' },
-      { cities: 'Goiania', package: '1.9.1', downloads: '250' },
-      { cities: 'Londrina', package: '1.9.1', downloads: '35' },
-      { cities: 'Belo Horizonte', package: '1.9.1', downloads: '1100' }
-    ];
+  parseJsonToCsv(jsonData = []) {
+    if (!jsonData.length) {
+      return '';
+    }
+
+    const keys = Object.keys(jsonData[0]);
+    const columnDelimiter = ',';
+    const lineDelimiter = '\n';
+    const csvColumnHeader = keys.join(columnDelimiter);
+
+    const csvStr = jsonData.reduce((accCsvStr, currentItem) => {
+      keys.forEach((key, index) => {
+        if (index && index < keys.length - 1) {
+          accCsvStr += columnDelimiter;
+        }
+
+        accCsvStr += currentItem[key];
+      });
+
+      return accCsvStr + lineDelimiter;
+    }, csvColumnHeader + lineDelimiter);
+
+    return encodeURIComponent(csvStr);
   }
 }
