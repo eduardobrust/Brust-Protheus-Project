@@ -11,11 +11,6 @@ export class AppComponent {
 
   readonly menus: Array<PoMenuItem> = [
     { label: 'Home', link: '/' },
-    { label: 'Controller-Function-Company', link: '/controllers' }
+    { label: 'Controller-Function-Company', link: 'controllers' }
   ];
-
-  private onClick() {
-    alert('Clicked in menu item')
-  }
-
 }

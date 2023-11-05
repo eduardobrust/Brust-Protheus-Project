@@ -1,9 +1,11 @@
 <div class="po-wrapper">
-  <po-toolbar p-title="po-toolbar"></po-toolbar>
-
-  <po-menu [p-menus]="menus"></po-menu>
-
-  <po-page-default p-title="po-page-default">
-    <p> Pagina de Entrada </p>
-  </po-page-default>
-</div>
+    <po-toolbar p-title="Controller-Function-Company"></po-toolbar>
+  
+    <po-menu
+      [p-menus]="menus"
+      [p-collapsed]="true"
+    >
+    </po-menu>
+    <router-outlet></router-outlet>
+  </div>
+  
