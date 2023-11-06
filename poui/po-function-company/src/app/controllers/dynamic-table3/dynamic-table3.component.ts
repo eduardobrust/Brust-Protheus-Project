@@ -20,9 +20,14 @@ export class DynamicTable3Component implements OnInit {
   @ViewChild('userDetailModal') userDetailModal!: PoModalComponent;
   @ViewChild('dependentsModal') dependentsModal!: PoModalComponent;
 
+  //property definition
+
   readonly serviceApi = 'https://po-sample-api.fly.dev/v1/people';
   //readonly serviceApi = 'http://localhost:8003/rest/tlpp/cfg/v1/cApiFunctionCompany?cToken=tokenteste';
 
+  /**
+   Os campos a serem exibidos na tabela.
+   */
   actionsRight = false;
   detailedUser: any;
   dependents: any;
@@ -48,6 +53,7 @@ export class DynamicTable3Component implements OnInit {
     { value: 'Osasco', label: 'Osasco' }
   ];
 
+  //fields definition
   fields: Array<any> = [
     { property: 'id', key: true, visible: false, filter: true },
     { property: 'name', label: 'Name', filter: true, gridColumns: 6 },
