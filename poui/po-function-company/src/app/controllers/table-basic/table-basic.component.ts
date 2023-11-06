@@ -3,17 +3,17 @@ import { PoTableColumn } from '@po-ui/ng-components';
 import { TableBasicService } from '../services/table-basic.service';
 
 @Component({
-  selector: 'app-sample-po-table-basic',
+  selector: 'app-table-basic',
   template: `
     <po-table [p-columns]="columns" [p-items]="items">
-      <ng-template po-table-column name="FKX_CODIGO" label="Código" let-item>
-        {{ item.FKX_CODIGO }}
+      <ng-template po-table-column name="cfunction" label="Function" let-item>
+        {{ item.cfunction }}
       </ng-template>
-      <ng-template po-table-column name="FKX_DESCR" label="Descrição" let-item>
-        {{ item.FKX_DESCR }}
+      <ng-template po-table-column name="reducedCode" label="reducedCode" let-item>
+        {{ item.reducedCode }}
       </ng-template>
-      <ng-template po-table-column name="FKX_FCI" label="FCI" let-item>
-        {{ item.FKX_FCI }}
+      <ng-template po-table-column name="company" label="company" let-item>
+        {{ item.company }}
       </ng-template>
     </po-table>
   `,
@@ -31,22 +31,30 @@ export class TableBasicComponent implements OnInit {
   }
 
   loadItems() {
-    this.TableBasicService.list().subscribe({
+    const data = this.TableBasicService.list().subscribe({
       next: (data: any) => {
-        this.items = data;
+        if (Array.isArray(data)) {
+          this.items = data;
+        } else {
+          this.items = data.companies;
+        }
       },
       error: (error: any) => {
         console.error('Error retrieving data:', error);
       }
     });
   }
-  
 
   initializeColumns() {
     this.columns = [
-      { property: 'FKX_CODIGO', label: 'Código' },
-      { property: 'FKX_DESCR', label: 'Descrição' },
-      { property: 'FKX_FCI', label: 'FCI' }
+      { property: 'cfunction', label: 'Function' },
+      { property: 'reducedCode', label: 'Reduced Code' },
+      { property: 'company', label: 'Company' }
     ];
   }
+
+  ngAfterViewInit() {
+    console.log(this.items);
+  }
+
 }
