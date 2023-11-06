@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { PoTableColumn } from '@po-ui/ng-components';
-import { tab}
+import { TableBasicService } from '../services/table-basic.service';
 
 @Component({
   selector: 'app-sample-po-table-basic',
