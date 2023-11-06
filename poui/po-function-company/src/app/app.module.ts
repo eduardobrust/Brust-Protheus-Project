@@ -1,18 +1,20 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
-import { AppRoutingModule } from './app-routing.module';
-import { AppComponent } from './app.component';
-import { PoModule } from '@po-ui/ng-components';
 import { HttpClientModule } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
-import { PoTemplatesModule } from '@po-ui/ng-templates';
+import { PoModule } from '@po-ui/ng-components';
+import { PoPageDynamicTableModule, PoTemplatesModule } from '@po-ui/ng-templates';
+import { AppRoutingModule } from './app-routing.module';
+import { AppComponent } from './app.component';
+import { DynamicTableComponent } from './controllers/dynamic-table/dynamic-table.component';
 import { HomeComponent } from './controllers/home/home.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    HomeComponent
+    HomeComponent,
+    DynamicTableComponent
   ],
   imports: [
     BrowserModule,
@@ -20,7 +22,8 @@ import { HomeComponent } from './controllers/home/home.component';
     PoModule,
     HttpClientModule,
     RouterModule.forRoot([]),
-    PoTemplatesModule
+    PoTemplatesModule,
+    PoPageDynamicTableModule
   ],
   providers: [],
   bootstrap: [AppComponent]
