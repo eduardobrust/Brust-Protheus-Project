@@ -9,12 +9,14 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { DynamicTableComponent } from './controllers/dynamic-table/dynamic-table.component';
 import { HomeComponent } from './controllers/home/home.component';
+import { DynamicTable2Component } from './controllers/dynamic-table2/dynamic-table2.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     HomeComponent,
-    DynamicTableComponent
+    DynamicTableComponent,
+    DynamicTable2Component
   ],
   imports: [
     BrowserModule,

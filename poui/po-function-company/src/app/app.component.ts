@@ -11,6 +11,7 @@ export class AppComponent {
 
   readonly menus: Array<PoMenuItem> = [
     { label: 'Home', link: '/controllers/home' },
-    { label: 'Manager', link: '/controllers/dynamic-table' }
+    { label: 'Manager', link: '/controllers/dynamic-table' },
+    { label: 'Manager2', link: '/controllers/dynamic-table2' }
   ];
 }
