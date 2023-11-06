@@ -21,6 +21,7 @@ export class DynamicTable2Component implements OnInit {
   @ViewChild('dependentsModal') dependentsModal!: PoModalComponent;
 
   readonly serviceApi = 'https://po-sample-api.fly.dev/v1/people';
+  //readonly serviceApi = 'http://localhost:8003/rest/tlpp/cfg/v1/cApiFunctionCompany?cToken=tokenteste';
 
   actionsRight = false;
   detailedUser: any;
@@ -35,7 +36,7 @@ export class DynamicTable2Component implements OnInit {
   };
 
   readonly breadcrumb: PoBreadcrumb = {
-    items: [{ label: 'Home', link: '/' }, { label: 'People' }]
+    items: [{ label: 'Home', link: '/' }, { label: 'Manager2' }]
   };
 
   readonly cityOptions: Array<object> = [
