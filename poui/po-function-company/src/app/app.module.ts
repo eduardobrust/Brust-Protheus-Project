@@ -10,13 +10,15 @@ import { AppComponent } from './app.component';
 import { DynamicTableComponent } from './controllers/dynamic-table/dynamic-table.component';
 import { HomeComponent } from './controllers/home/home.component';
 import { DynamicTable2Component } from './controllers/dynamic-table2/dynamic-table2.component';
+import { DynamicTable3Component } from './controllers/dynamic-table3/dynamic-table3.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     HomeComponent,
     DynamicTableComponent,
-    DynamicTable2Component
+    DynamicTable2Component,
+    DynamicTable3Component
   ],
   imports: [
     BrowserModule,
