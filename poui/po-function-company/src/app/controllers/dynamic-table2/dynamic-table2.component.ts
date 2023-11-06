@@ -9,7 +9,7 @@ import {
   PoPageDynamicTableOptions
 } from '@po-ui/ng-templates';
 
-import { DynamicTable2Service } from '../dynamic-table2.service';
+import { DynamicTable2Service } from '../services/dynamic-table2.service';
 
 @Component({
   selector: 'app-DynamicTable2Component',
