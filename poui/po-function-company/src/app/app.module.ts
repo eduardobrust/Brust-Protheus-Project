@@ -11,6 +11,7 @@ import { DynamicTableComponent } from './controllers/dynamic-table/dynamic-table
 import { HomeComponent } from './controllers/home/home.component';
 import { DynamicTable2Component } from './controllers/dynamic-table2/dynamic-table2.component';
 import { DynamicTable3Component } from './controllers/dynamic-table3/dynamic-table3.component';
+import { TableTransportComponent } from './controllers/table-transport/table-transport.component';
 
 @NgModule({
   declarations: [
@@ -18,7 +19,8 @@ import { DynamicTable3Component } from './controllers/dynamic-table3/dynamic-tab
     HomeComponent,
     DynamicTableComponent,
     DynamicTable2Component,
-    DynamicTable3Component
+    DynamicTable3Component,
+    TableTransportComponent
   ],
   imports: [
     BrowserModule,
