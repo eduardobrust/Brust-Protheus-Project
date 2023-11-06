@@ -1,0 +1,6 @@
+#table-container {
+    position: relative;
+    width: 80%; /* Ajuste a largura conforme necessário */
+    margin: 0 auto; /* Centralize a tabela */
+    top: 50px; /* Ajuste a posição superior conforme necessário */
+  }
