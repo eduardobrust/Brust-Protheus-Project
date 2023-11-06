@@ -1,0 +1,11 @@
+<po-table [p-columns]="columns" [p-items]="items">
+    <ng-template po-table-column name="FKX_CODIGO" label="Código" let-item>
+      {{ item.FKX_CODIGO }}
+    </ng-template>
+    <ng-template po-table-column name="FKX_DESCR" label="Descrição" let-item>
+      {{ item.FKX_DESCR }}
+    </ng-template>
+    <ng-template po-table-column name="FKX_FCI" label="FCI" let-item>
+      {{ item.FKX_FCI }}
+    </ng-template>
+  </po-table>

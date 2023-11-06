@@ -4,6 +4,7 @@ import { DynamicTableComponent } from './controllers/dynamic-table/dynamic-table
 import { DynamicTable2Component } from './controllers/dynamic-table2/dynamic-table2.component';
 import { DynamicTable3Component } from './controllers/dynamic-table3/dynamic-table3.component';
 import { HomeComponent } from './controllers/home/home.component';
+import { TableBasicComponent } from './controllers/table-basic/table-basic.component';
 import { TableTransportComponent } from './controllers/table-transport/table-transport.component';
 
 const routes: Routes = [
@@ -12,7 +13,8 @@ const routes: Routes = [
   { path: 'controllers/dynamic-table', component: DynamicTableComponent },
   { path: 'controllers/dynamic-table2', component: DynamicTable2Component },
   { path: 'controllers/dynamic-table3', component: DynamicTable3Component },
-  { path: 'controllers/table-transport', component: TableTransportComponent }
+  { path: 'controllers/table-transport', component: TableTransportComponent },
+  { path: 'controllers/table-basic', component: TableBasicComponent }
 ];
 
 @NgModule({
