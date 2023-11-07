@@ -1,20 +1,20 @@
-<po-page-default p-title="Function x Company">
-  <div>
-  <po-table 
-  [p-columns]="columns" [p-items]="items"
-  [p-header-height]="headerHeight"
-  [p-header-style]="{height: '50px'}"
-  >
-    <ng-template p-table-row-template let-rowItem let-i="rowIndex" [p-table-row-template-show]="isUndelivered"
-      po-table-column name="cfunction" label="Function" let-item>
-      {{ item.cfunction }}
-    </ng-template>
-    <ng-template po-table-column name="reducedCode" label="Reduced Code" let-item>
-      {{ item.reducedCode }}
-    </ng-template>
-    <ng-template po-table-column name="company" label="Company" let-item>
-      {{ item.company }}
-    </ng-template>
-  </po-table>
-</div>
-</po-page-default>
+<po-page-dynamic-search
+    [p-actions]="pageActions"
+    p-title="Function x Company"
+    [p-breadcrumb]="breadcrumb"
+    [p-concat-filters]="true"
+>
+    <po-table
+        [p-selectable]="true"
+        p-container="shadow"
+        [p-sort]="true"
+        [p-striped]="true"
+        [p-columns]="tableColumns"
+        [p-items]="items"
+        [p-actions]="tableActions"
+        [p-draggable]="true"
+        [p-infinite-scroll]="false"
+    >
+    </po-table>
+
+</po-page-dynamic-search>

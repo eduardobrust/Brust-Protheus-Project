@@ -1,6 +1,6 @@
-import { Component,OnInit } from '@angular/core';
-import { PoPageDynamicTableActions } from '@po-ui/ng-templates';
+import { Component, OnInit } from '@angular/core';
 import { PoBreadcrumb } from '@po-ui/ng-components';
+import { PoPageDynamicTableActions, PoPageDynamicTableOptions } from '@po-ui/ng-templates';
 
 @Component({
   selector: 'app-dynamic-table',
@@ -13,22 +13,33 @@ export class DynamicTableComponent  implements OnInit {
 
   readonly actions: PoPageDynamicTableActions = {
     new: '/documentation/po-page-dynamic-edit',
-    remove: true,
+    edit: '/documentation/po-page-dynamic-edit',
     removeAll: true
   };
 
   readonly breadcrumb: PoBreadcrumb = {
-    items: [{ label: 'Home', link: '/' }, { label: 'Manager5 - Table-Basic' }]
+    items: [{ label: 'Home', link: '/' }, { label: 'Manager - Function x Company' }]
   };
 
   //fields definition
   fields: Array<any> = [
-    { property: 'cfunction', key: true,  filter: true },
-    { property: 'reducedCode', label: 'reducedCode', filter: true},
-    { property: 'company', label: 'company', filter: true },
-    { property: 'abbreviation',label: 'abbreviation', filter: true },
+    { property: 'cfunction', label: 'Function',key: true,  filter: true },
+    { property: 'reducedCode', label: 'Reduce Code', filter: true},
+    { property: 'company', label: 'Company', filter: true },
+    { property: 'abbreviation',label: 'Abbreviation', filter: true }
     
   ];
+
+  onLoad(): PoPageDynamicTableOptions {
+    return {
+      fields: [
+        { property: 'cfunction', label: 'Function',key: true,  filter: true },
+        { property: 'reducedCode', label: 'Reduce Code', filter: true},
+        { property: 'company', label: 'Company', filter: true },
+        { property: 'abbreviation',label: 'Abbreviation', filter: true }
+      ]
+    };
+  }
 
   ngOnInit(): void {
     // Inicialize sua classe aqui
