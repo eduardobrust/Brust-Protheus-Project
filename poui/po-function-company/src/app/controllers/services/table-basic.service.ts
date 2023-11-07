@@ -13,26 +13,4 @@ export class TableBasicService {
     return this.httpClient.get<any>(this.API);
   }
 
-  loadById(id: string) {
-    return this.httpClient.get<any>(`${this.API}/${id}`);
-  }
-
-  save(record: Partial<any>) {
-    if (record['id']) {
-      return this.update(record);
-    }
-    return this.create(record);
-  }
-
-  private create(record: Partial<any>) {
-    return this.httpClient.post<any>(this.API, record);
-  }
-
-  private update(record: Partial<any>) {
-    return this.httpClient.put<any>(`${this.API}/${record['id']}`, record);
-  }
-
-  remove(id: string) {
-    return this.httpClient.delete(`${this.API}/${id}`);
-  }
 }

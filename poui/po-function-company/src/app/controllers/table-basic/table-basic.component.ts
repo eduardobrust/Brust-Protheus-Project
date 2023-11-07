@@ -52,9 +52,4 @@ export class TableBasicComponent implements OnInit {
       { property: 'company', label: 'Company' }
     ];
   }
-
-  ngAfterViewInit() {
-    console.log(this.items);
-  }
-
 }
