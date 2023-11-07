@@ -1,2 +1,12 @@
-<po-page-dynamic-table p-title="Po Page Dynamic Table" p-service-api="https://po-sample-api.fly.dev/v1/people">
+<po-page-dynamic-table 
+p-title="Po Page Dynamic Table" 
+p-service-api="http://localhost:8003/rest/tlpp/cfg/v1/cApiFunctionCompany?cToken=tokenteste"
+#dynamicTable
+[p-auto-router]="true"
+[p-concat-filters]="true"
+[p-keep-filters]="true"
+p-title="Function x Company"
+[p-actions]="actions"
+[p-breadcrumb]="breadcrumb"
+>
 </po-page-dynamic-table>

@@ -1,27 +1,18 @@
 {
-  "empresas": [
+  "companies": [
     {
-      "cFunction": "FSTARTINOVA",
+      "cfunction": "FSTARTICF",
+      "reducedCode": "32",
+      "company": "320101",
+      "abbreviation": "RIOMAIS",
+      "description": "",
+      "cnpj": "",
+      "active": "Y"
+    },
+    {
+      "cfunction": "FSTARTINOVA",
       "reducedCode": "33",
       "company": "330101",
-      "abbreviation": "CAIZ",
-      "description": "",
-      "cnpj": "",
-      "active": "N"
-    },
-    {
-      "cFunction": "FSTARTICF",
-      "reducedCode": "33",
-      "company": "330102",
-      "abbreviation": "CAIZ",
-      "description": "",
-      "cnpj": "",
-      "active": "N"
-    },
-    {
-      "cFunction": "GABA008",
-      "reducedCode": "33",
-      "company": "330103",
       "abbreviation": "CAIZ",
       "description": "",
       "cnpj": "",
@@ -29,42 +20,3 @@
     }
   ]
 }
-
-#PROPOSTA DE IMPLEMENTAÇÃO VIA CLASSE/TABELA
-1. CRIAR UMA TABELA DE RELACIONAMENTO ROTINAS X EMPRESAS
-  NOME: FUNCTION_COMPANY
-  CAMPOS: CFUNCTION,COMPANY
-  RELACIONAMENTO: N X N
-  CHAVE PK: CFUNCTION,COMPANY
-
-2. CRIAR UMA CLASSE QUE LEIA ESSA TABELA FILTRANDO A CFUNCTION PASSADA POR PARAMETRO PARA A CLASSE
-  CLASSE TLPP : cRotinasEmpresas
-  METODO DA CLASSE: getEmpresas(CFUNCTION as char,lSomenteMatriz as logical)
-
-3. USANDO A CLASSE
-EM CADA CFUNCTION QUE QUEIRA PROCESSAR PARA DETERMINADAS EMPRESAS
-oEmpresas = cRotinasEmpresas.new()
-jEmpresas = oEmpresas.getEmpresas("FSTARTINOVA",.T.)
-
-4. INCLUIR NOVA COMPANY NO CENÁRIO
-  opcaoA : hotfix de insert na tabela
-  SELECT DISTINCT CFUNCTION FROM ROTINA_X_EMPRESA;
-  CURSOR
-  insert into ROTINA_X_EMPRESA (CFUNCTION,COMPANY) values "ROTINA_CURSOR","NOVA_EMPRESA";
-
-  opcaoB : Tela para manutenção do cadastro.
-
-  PROS: DEPOIS DE DESENVOLVIDO A MANUTENCAO SERÁ PEQUENA E ATENDERÁ TODOS OS CENÁRIOS EM QUE CHAMAR A CLASSE
-  CONTRA: MAIS COMPLEXO DE DESENVOLVER
-
-#PROPOSTA VIA INI DO JOB
-1. PARA CADA CFUNCTION CHAMADA NO JOB, INCLUIR AS EMPRESAS QUE VÃO RODAR NELA
-
-PRO: MAIS SIMPLES DE IMPLEMENTAR
-
-CONTRA: NAO TEMOS SO INI DE JOB
-ATENDERIA SOMENTE PARA CHAMADAS VIA JOB, VIA MENU QUANDO PRECISA RODAR DE VÁRIAS EMPRESAS NAO ATENDERIA
-VAMOS PRECISAR RECPLICAR PARA CADA CFUNCTION DO JOB O ARRAY DE EMPRESAS
-SE CRESCER MUITO AS ROTINAS E AS EMPRESAS O INI DO JOB PODE FICAR MUITO GRANDE. 
-
-

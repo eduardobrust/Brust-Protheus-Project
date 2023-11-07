@@ -13,6 +13,7 @@ import { DynamicTable3Component } from './controllers/dynamic-table3/dynamic-tab
 import { HomeComponent } from './controllers/home/home.component';
 import { TableTransportComponent } from './controllers/table-transport/table-transport.component';
 import { TableBasicComponent } from './controllers/table-basic/table-basic.component';
+import { PoPageModule } from '@po-ui/ng-components';
 
 @NgModule({
   declarations: [
@@ -32,7 +33,8 @@ import { TableBasicComponent } from './controllers/table-basic/table-basic.compo
     RouterModule.forRoot([]),
     PoTemplatesModule,
     PoPageDynamicTableModule,
-    PoTableModule
+    PoTableModule,
+    PoPageModule
   ],
   providers: [],
   bootstrap: [AppComponent]
