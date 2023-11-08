@@ -16,9 +16,8 @@ export class TableTransportComponent implements OnInit {
   items: Array<any> = [];
 
   readonly statusOptions: Array<PoSelectOption> = [
-    { label: 'Delivered', value: 'delivered' },
-    { label: 'Transport', value: 'transport' },
-    { label: 'Production', value: 'production' }
+    { label: 'Ativo', value: 'Y' },
+    { label: 'Bloqueado', value: 'N' }
   ];
 
   constructor(private transportService: TableTransportService) {}

@@ -14,7 +14,7 @@ export class AppComponent {
   //  { label: 'Manager - Function x Company', link: '/controllers/dynamic-table' },
   //  { label: 'Manager2 - Dynamic-users', link: '/controllers/dynamic-table2' },
   //  { label: 'Manager3 - Dynamic-Brust', link: '/controllers/dynamic-table3' },
-    { label: 'Manager4 - Table-transport', link: '/controllers/table-transport' },
-    { label: 'Function x Company', link: '/controllers/table-basic',icon: "po-icon po-icon-company" }
+    { label: 'Rotina x Empresa - (transport)', link: '/controllers/table-transport',icon: "po-icon po-icon-company" },
+    { label: 'Rotina x Empresa - (basic)', link: '/controllers/table-basic',icon: "po-icon po-icon-company" }
   ];
 }

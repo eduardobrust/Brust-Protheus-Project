@@ -18,10 +18,8 @@ export class TableTransportService {
         type: 'label',
         width: '8%',
         labels: [
-          { value: 'delivered', color: 'green', label: 'Delivered',icon: 'po-icon po-icon-lock-off'  },
-          { value: 'transport', label: 'Transport', type: PoTagType.Success },
-          { value: 'production', color: ' #745678', label: 'Production' },
-          { value: 'stock', color: 'rgb(201, 53, 125)', label: 'Stock', icon: 'po-icon po-icon-lock' }
+          { value: 'Y', color: 'green', label: 'Ativo',icon: 'po-icon po-icon-lock-off'  },
+          { value: 'N', color: 'rgb(201, 53, 125)', label: 'Bloqueado', icon: 'po-icon po-icon-lock' }
         ]
       }
     ];
@@ -37,7 +35,7 @@ export class TableTransportService {
         icms: 1500,
         exit_forecast: this.generateRandomDate(),
         time_since_purchase: this.generateRandomTime(),
-        status: 'delivered',
+        status: 'Y',
         license_plate: 'MDJD9191',
         batch_product: 18041822,
         driver: 'José Oliveira'
@@ -50,7 +48,7 @@ export class TableTransportService {
         icms: 50,
         exit_forecast: this.generateRandomDate(),
         time_since_purchase: this.generateRandomTime(),
-        status: 'transport',
+        status: 'N',
         license_plate: 'XXA5454',
         batch_product: 18041821,
         driver: 'Francisco Pereira'
@@ -63,7 +61,7 @@ export class TableTransportService {
         icms: 2045,
         exit_forecast: this.generateRandomDate(),
         time_since_purchase: this.generateRandomTime(),
-        status: 'transport',
+        status: 'Y',
         license_plate: 'QEW5779',
         batch_product: 18041820,
         driver: 'Pedro da Costa'
@@ -76,7 +74,7 @@ export class TableTransportService {
         icms: 15005,
         exit_forecast: this.generateRandomDate(),
         time_since_purchase: this.generateRandomTime(),
-        status: 'production',
+        status: 'Y',
         license_plate: 'WWW1247',
         batch_product: 18041819,
         driver: 'João da Silva'
@@ -89,7 +87,7 @@ export class TableTransportService {
         icms: 1110,
         exit_forecast: this.generateRandomDate(),
         time_since_purchase: this.generateRandomTime(),
-        status: 'production',
+        status: 'N',
         license_plate: 'XXI2312',
         batch_product: 18041825,
         driver: 'Antonio Lima'
@@ -102,7 +100,7 @@ export class TableTransportService {
         icms: 1119,
         exit_forecast: this.generateRandomDate(),
         time_since_purchase: this.generateRandomTime(),
-        status: 'stock',
+        status: 'Y',
         license_plate: 'XXI2359',
         batch_product: 18041888,
         driver: 'Vitoria Felix'
