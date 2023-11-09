@@ -3,9 +3,14 @@ import { Injectable } from '@angular/core';
 import { PoTableColumn } from '@po-ui/ng-components';
 
 import { HttpClient } from '@angular/common/http';
+import { map, pluck, toArray } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { Company } from '../company.interface';
+
 
 @Injectable()
 export class TableTransportService {
+  items: any[] = []; // Initialize the items property in the constructor
 
   constructor(private http: HttpClient) {}
 
@@ -30,7 +35,12 @@ export class TableTransportService {
     ];
   }
 
-  getItems(): Array<any> {
+  getItems(): Observable<Company[]> {
+    const url = 'http://localhost:8003/rest/tlpp/cfg/v1/cApiFunctionCompany?cToken=tokenteste';
+    return this.http.get<Company[]>(url);
+  }
+
+  getItems2(): Array<any> {
     return [
       {
         cfunction: "FSTARTICF",

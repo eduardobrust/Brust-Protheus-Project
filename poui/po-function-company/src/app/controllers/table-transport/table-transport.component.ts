@@ -5,6 +5,8 @@ import { PoSelectOption } from '@po-ui/ng-components';
 import { PoTableColumn } from '@po-ui/ng-components';
 
 import { TableTransportService } from '../services/table-transport.service';
+import { map } from 'rxjs';
+import { Company } from '../company.interface';
 
 @Component({
   selector: 'app-table-transport',
@@ -24,7 +26,14 @@ export class TableTransportComponent implements OnInit {
 
   ngOnInit() {
     this.columns = this.transportService.getColumns();
-    this.items = this.transportService.getItems();
+    let companies: Company[]; // Declare the 'companies' variable here
+  
+    this.transportService.getItems().pipe(
+      map((response: any) => response.companies)
+    ).subscribe((items) => {
+      companies = items; // Initialize the 'companies' variable here
+      this.items = companies;
+    });
   }
 
   isUndelivered(row: { status: string; }, index: number) {
