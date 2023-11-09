@@ -8,10 +8,9 @@
   [p-draggable]="true"
   [p-hide-columns-manager]="true"
   [p-hide-table-search]="false"
-  [p-auto-collapse]="true"
+  [p-auto-collapse]="false"
   [p-sort]="true"
   [p-striped]="true"
-  [p-draggable]="true"
   [p-infinite-scroll]="false"
   [p-loading-show-more]="true"
   [p-show-more-disabled]="true"
@@ -22,11 +21,6 @@
   (p-delete-items)="deleteItems($event)"
   [p-actions]="actions"
 >
-  <ng-template
-    p-table-row-template
-    let-rowItem
-    let-i="rowIndex"
-  >
-  </ng-template>
+
 </po-table>
 </po-page-default>
