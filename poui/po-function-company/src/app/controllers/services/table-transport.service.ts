@@ -3,7 +3,6 @@ import { Injectable } from '@angular/core';
 import { PoTableColumn } from '@po-ui/ng-components';
 
 import { HttpClient } from '@angular/common/http';
-import { map, pluck, toArray } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { Company } from '../company.interface';
 
@@ -36,7 +35,7 @@ export class TableTransportService {
   }
 
   getItems(): Observable<Company[]> {
-    const url = 'http://localhost:8003/rest/tlpp/cfg/v1/cApiFunctionCompany?cToken=tokenteste';
+    const url = 'http://localhost:8003/rest/tlpp/cfg/v1/cApiFunctionCompany?cToken=tokenteste&cActive=*';
     return this.http.get<Company[]>(url);
   }
 

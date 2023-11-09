@@ -45,7 +45,7 @@ type Interface
 /*/
 Interface iFunctionCompany
 
-public method getFunctionCompany(cFunction as Character,lAllBranches as Logical,cCompany as Character,cAtivo as Character,cAbbreviation as Character) as json
+public method getFunctionCompany(cFunction as Character,lAllBranches as Logical,cCompany as Character,cActive as Character,cAbbreviation as Character) as json
 
 EndInterface
 
@@ -61,7 +61,7 @@ class cFunctionCompany Implements iFunctionCompany
 
 	public method New() as object
 
-	public method getFunctionCompany(cFunction as Character,lAllBranches as Logical,cCompany as Character,cAtivo as Character,cAbbreviation as Character) as json
+	public method getFunctionCompany(cFunction as Character,lAllBranches as Logical,cCompany as Character,cActive as Character,cAbbreviation as Character) as json
 endclass
 
 
@@ -78,7 +78,7 @@ method new() as object class cFunctionCompany
 return Self
 
 
-/*/{Protheus.doc} cFunctionCompany::getFunctionCompany(cFunction as Character,lAllBranches as Logical,cCompany as Character,cAtivo as Character,cAbbreviation as Character) as json
+/*/{Protheus.doc} cFunctionCompany::getFunctionCompany(cFunction as Character,lAllBranches as Logical,cCompany as Character,cActive as Character,cAbbreviation as Character) as json
 Consulta as empresas que uma determinada CFUNCTION pode rodar. passando o parametro se busca todas as filiais ou somente a matriz.
 @type method
 @version 12.1.2310
@@ -86,7 +86,7 @@ Consulta as empresas que uma determinada CFUNCTION pode rodar. passando o parame
 @since 28/10/2023
 @return json, retorna um objeto json
 /*/
-method getFunctionCompany(cFunction as Character,lAllBranches as Logical,cCompany as Character,cAtivo as Character,cAbbreviation as Character) as json class cFunctionCompany
+method getFunctionCompany(cFunction as Character,lAllBranches as Logical,cCompany as Character,cActive as Character,cAbbreviation as Character) as json class cFunctionCompany
 	Local _cQry 	:= "" 	as Character
 	Local cTrb1				as Character
 	Local cHeader	:= ''	as Character
@@ -100,7 +100,7 @@ method getFunctionCompany(cFunction as Character,lAllBranches as Logical,cCompan
 	DEFAULT cFunction 	:= ''
 	DEFAULT cCompany 	:= ''
 	DEFAULT lAllBranches 	:= .T.
-	DEFAULT cAtivo 		:= ''
+	DEFAULT cActive 		:= ''
 	DEFAULT cAbbreviation		:= ''
 
 	//monto o json padrão
@@ -129,8 +129,8 @@ method getFunctionCompany(cFunction as Character,lAllBranches as Logical,cCompan
 		_cQry += " AND TRIM(COMPANY) = '" + ALLTRIM(cCompany) + "'"    			  +CRLF
 	ENDIF
 
-	IF !EMPTY(cAtivo) .AND. ALLTRIM(cAtivo) <> '*'
-		_cQry += " AND ACTIVE = '" + UPPER(ALLTRIM(cAtivo)) + "'"    			+CRLF
+	IF !EMPTY(cActive) .AND. ALLTRIM(cActive) <> '*'
+		_cQry += " AND ACTIVE = '" + UPPER(ALLTRIM(cActive)) + "'"    			+CRLF
 	ENDIF
 
 	If !lAllBranches
