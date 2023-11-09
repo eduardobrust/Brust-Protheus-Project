@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 
-import { PoSelectOption } from '@po-ui/ng-components';
+import { PoSelectOption, PoTableAction } from '@po-ui/ng-components';
 
 import { PoTableColumn } from '@po-ui/ng-components';
 
+import { PoBreadcrumb } from '@po-ui/ng-components';
 import { map } from 'rxjs';
 import { Company } from '../company.interface';
 import { TableTransportService } from '../services/table-transport.service';
@@ -16,6 +17,23 @@ import { TableTransportService } from '../services/table-transport.service';
 export class TableTransportComponent implements OnInit {
   columns: Array<PoTableColumn> = [];
   items: Array<any> = [];
+
+  public readonly breadcrumb: PoBreadcrumb = {
+    items: [{ label: 'Home', link: '/' }, { label: 'Configurar:' }]
+  };
+
+  actions: Array<PoTableAction> = [
+    { action: this.update.bind(this), icon: 'po-icon po-icon-edit', label: 'Editar' }	
+  ];
+  poTable: any;
+
+  update(item: { [key: string]: any }) {
+    this.poTable.updateItem(item)
+  }
+
+  deleteItems(items: Array<any>) {
+    this.items = items;
+  }
 
   readonly statusOptions: Array<PoSelectOption> = [
     { label: 'Ativo', value: 'Y' },
