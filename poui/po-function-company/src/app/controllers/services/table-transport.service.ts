@@ -1,20 +1,25 @@
 import { Injectable } from '@angular/core';
 
-import { PoTableColumn, PoTagType } from '@po-ui/ng-components';
+import { PoTableColumn } from '@po-ui/ng-components';
+
+import { HttpClient } from '@angular/common/http';
 
 @Injectable()
 export class TableTransportService {
+
+  constructor(private http: HttpClient) {}
+
+
   getColumns(): Array<PoTableColumn> {
     return [
-      { property: 'code', type: 'number', width: '8%' },
-      { property: 'product' },
-      { property: 'customer' },
-      { property: 'exit_forecast', label: 'Exit forecast', type: 'dateTime' },
-      { property: 'time_since_purchase', label: 'Time since purchase', type: 'time', visible: false },
-      { property: 'quantity', label: 'Quantity (Tons)', type: 'number', width: '15%', visible: false },
-      { property: 'icms', label: 'ICMS', type: 'number', format: '1.2-5', visible: false },
+      { property: 'cfunction', label: 'Rotina',visible: true },
+      { property: 'reducedCode', label: 'Cod.Reduzido',visible: true },
+      { property: 'company', label: 'Filial',visible: true },
+      { property: 'abbreviation', label: 'Sigla',visible: true },
+      { property: 'description', label: 'Nome Comercial',visible: true },
+      { property: 'cnpj', label: 'CNPJ',visible: true },
       {
-        property: 'status',
+        property: 'active',
         type: 'label',
         width: '8%',
         labels: [
@@ -28,101 +33,500 @@ export class TableTransportService {
   getItems(): Array<any> {
     return [
       {
-        code: 1200,
-        product: 'Rice',
-        customer: 'Angeloni',
-        quantity: 3,
-        icms: 1500,
-        exit_forecast: this.generateRandomDate(),
-        time_since_purchase: this.generateRandomTime(),
-        status: 'Y',
-        license_plate: 'MDJD9191',
-        batch_product: 18041822,
-        driver: 'José Oliveira'
-      },
-      {
-        code: 1355,
-        product: 'Margarine',
-        customer: 'Giassi',
-        quantity: 1,
-        icms: 50,
-        exit_forecast: this.generateRandomDate(),
-        time_since_purchase: this.generateRandomTime(),
-        status: 'N',
-        license_plate: 'XXA5454',
-        batch_product: 18041821,
-        driver: 'Francisco Pereira'
-      },
-      {
-        code: 1496,
-        product: 'Wheat flour',
-        customer: 'Walmart',
-        quantity: 5,
-        icms: 2045,
-        exit_forecast: this.generateRandomDate(),
-        time_since_purchase: this.generateRandomTime(),
-        status: 'Y',
-        license_plate: 'QEW5779',
-        batch_product: 18041820,
-        driver: 'Pedro da Costa'
-      },
-      {
-        code: 1712,
-        product: 'Milk',
-        customer: 'Carrefour',
-        quantity: 10,
-        icms: 15005,
-        exit_forecast: this.generateRandomDate(),
-        time_since_purchase: this.generateRandomTime(),
-        status: 'Y',
-        license_plate: 'WWW1247',
-        batch_product: 18041819,
-        driver: 'João da Silva'
-      },
-      {
-        code: 1881,
-        product: 'Oil',
-        customer: 'Carrefour',
-        quantity: 1,
-        icms: 1110,
-        exit_forecast: this.generateRandomDate(),
-        time_since_purchase: this.generateRandomTime(),
-        status: 'N',
-        license_plate: 'XXI2312',
-        batch_product: 18041825,
-        driver: 'Antonio Lima'
-      },
-      {
-        code: 1551,
-        product: 'Cream cheese',
-        customer: 'Barbosa',
-        quantity: 15,
-        icms: 1119,
-        exit_forecast: this.generateRandomDate(),
-        time_since_purchase: this.generateRandomTime(),
-        status: 'Y',
-        license_plate: 'XXI2359',
-        batch_product: 18041888,
-        driver: 'Vitoria Felix'
-      }
+        cfunction: "FSTARTICF",
+        reducedCode: "32",
+        company: "320101",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTICF",
+        reducedCode: "32",
+        company: "320102",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTICF",
+        reducedCode: "32",
+        company: "320103",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "N"
+    },
+    {
+        cfunction: "FSTARTICF",
+        reducedCode: "32",
+        company: "320104",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "N"
+    },
+    {
+        cfunction: "FSTARTICF",
+        reducedCode: "32",
+        company: "320105",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTICF",
+        reducedCode: "32",
+        company: "320106",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTICF",
+        reducedCode: "32",
+        company: "320108",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTICF",
+        reducedCode: "32",
+        company: "320109",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTICF",
+        reducedCode: "32",
+        company: "320110",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTICF",
+        reducedCode: "32",
+        company: "320111",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTICF",
+        reducedCode: "32",
+        company: "320112",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTICF",
+        reducedCode: "32",
+        company: "320113",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTICF",
+        reducedCode: "32",
+        company: "320114",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTICF",
+        reducedCode: "32",
+        company: "320116",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTICF",
+        reducedCode: "32",
+        company: "320117",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTICF",
+        reducedCode: "32",
+        company: "320118",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTICF",
+        reducedCode: "32",
+        company: "320119",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTICF",
+        reducedCode: "32",
+        company: "320120",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTICF",
+        reducedCode: "32",
+        company: "320121",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTICF",
+        reducedCode: "32",
+        company: "320123",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "01",
+        company: "010101",
+        abbreviation: "CAN",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "02",
+        company: "020101",
+        abbreviation: "CAJ",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "02",
+        company: "020102",
+        abbreviation: "CAJ",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "02",
+        company: "020103",
+        abbreviation: "CAJ",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "06",
+        company: "060101",
+        abbreviation: "CAP",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "08",
+        company: "080101",
+        abbreviation: "CAI",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "10",
+        company: "100101",
+        abbreviation: "CAAN",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "13",
+        company: "130101",
+        abbreviation: "CANF",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "19",
+        company: "190101",
+        abbreviation: "CAA",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "21",
+        company: "210101",
+        abbreviation: "CAV",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "23",
+        company: "230101",
+        abbreviation: "CAPY",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "25",
+        company: "250101",
+        abbreviation: "CAJA",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "26",
+        company: "260101",
+        abbreviation: "CAPAM",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "30",
+        company: "300101",
+        abbreviation: "CAC",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "32",
+        company: "320101",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "32",
+        company: "320102",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "32",
+        company: "320103",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "32",
+        company: "320104",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "32",
+        company: "320105",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "32",
+        company: "320106",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "32",
+        company: "320108",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "32",
+        company: "320109",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "32",
+        company: "320110",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "32",
+        company: "320111",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "32",
+        company: "320112",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "32",
+        company: "320113",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "32",
+        company: "320114",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "32",
+        company: "320116",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "32",
+        company: "320117",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "32",
+        company: "320118",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "32",
+        company: "320119",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "32",
+        company: "320120",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "32",
+        company: "320121",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "32",
+        company: "320123",
+        abbreviation: "RIOMAIS",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    },
+    {
+        cfunction: "FSTARTINOVA",
+        reducedCode: "33",
+        company: "330101",
+        abbreviation: "CAIZ",
+        description: "Grupo Aguas do Brasil",
+        cnpj: "111.111.111.111-11",
+        active: "Y"
+    }
     ];
-  }
-
-  private generateRandomDate() {
-    const hour = Math.floor(Math.random() * 20);
-    const minutes = Math.floor(Math.random() * 59);
-    const seconds = Math.floor(Math.random() * 59);
-
-    return new Date(2018, 10, 23, hour, minutes, seconds);
-  }
-
-  private generateRandomTime() {
-    const minutes = Math.floor(Math.random() * 59);
-    const seconds = Math.floor(Math.random() * 59);
-
-    const minutesValid = minutes < 10 ? '0' + minutes.toString() : minutes.toString();
-    const secondsValid = seconds < 10 ? '0' + seconds.toString() : seconds.toString();
-
-    return `00:${minutesValid}:${secondsValid}`;
   }
 }
