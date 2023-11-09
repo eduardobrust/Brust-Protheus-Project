@@ -31,10 +31,6 @@ export class TableTransportComponent implements OnInit {
     this.poTable.updateItem(item)
   }
 
-  deleteItems(items: Array<any>) {
-    this.items = items;
-  }
-
   readonly statusOptions: Array<PoSelectOption> = [
     { label: 'Ativo', value: 'Y' },
     { label: 'Bloqueado', value: 'N' }
