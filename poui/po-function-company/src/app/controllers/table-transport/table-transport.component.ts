@@ -4,9 +4,9 @@ import { PoSelectOption } from '@po-ui/ng-components';
 
 import { PoTableColumn } from '@po-ui/ng-components';
 
-import { TableTransportService } from '../services/table-transport.service';
 import { map } from 'rxjs';
 import { Company } from '../company.interface';
+import { TableTransportService } from '../services/table-transport.service';
 
 @Component({
   selector: 'app-table-transport',
@@ -34,9 +34,5 @@ export class TableTransportComponent implements OnInit {
       companies = items; // Initialize the 'companies' variable here
       this.items = companies;
     });
-  }
-
-  isUndelivered(row: { status: string; }, index: number) {
-    return row.status !== 'delivered';
   }
 }
