@@ -17,18 +17,18 @@ export class TableTransportService {
   getColumns(): Array<PoTableColumn> {
     return [
       { property: 'cfunction', label: 'Rotina',visible: true },
-      { property: 'reducedCode', label: 'Cod.Reduzido',visible: true },
-      { property: 'company', label: 'Filial',visible: true },
-      { property: 'abbreviation', label: 'Sigla',visible: true },
-      { property: 'description', label: 'Nome Comercial',visible: true },
-      { property: 'cnpj', label: 'CNPJ',visible: true },
+      { property: 'reducedCode', label: 'Cod.Reduzido',width: '1%',visible: true },
+      { property: 'company', label: 'Filial',width: '1%',visible: true },
+      { property: 'abbreviation', label: 'Sigla',width: '1%',visible: true },
+      { property: 'description', label: 'Nome Comercial',width: '10%',visible: true },
+      { property: 'cnpj', label: 'CNPJ',width: '5%',visible: true },
       {
         property: 'active',
         type: 'label',
         width: '8%',
         labels: [
           { value: 'Y', color: 'green', label: 'Ativo',icon: 'po-icon po-icon-lock-off'  },
-          { value: 'N', color: 'rgb(201, 53, 125)', label: 'Bloqueado', icon: 'po-icon po-icon-lock' }
+          { value: 'N', color: 'red', label: 'Bloqueado', icon: 'po-icon po-icon-lock' }
         ]
       }
     ];
