@@ -21,6 +21,10 @@ export class TableTransportComponent implements OnInit {
   items: Array<any> = [];
   poTable: any;
   valueFields: any;
+  cfunction: any;
+  company: any;
+  abbreviation:any;
+  active:any;
   
   public readonly breadcrumb: PoBreadcrumb = {
     items: [{ label: 'Home', link: '/' }, { label: 'Configurar:' }]
@@ -35,8 +39,12 @@ export class TableTransportComponent implements OnInit {
   ];
 
   private onClickUpdModal(fields: any) {
-    
+        
     this.valueFields = fields;
+    this.cfunction = this.valueFields['cfunction'];
+    this.company = this.valueFields['company'];
+    this.abbreviation = this.valueFields['abbreviation'];
+    this.active = this.valueFields['active'];
     this.updateModal.open();
   }
 
