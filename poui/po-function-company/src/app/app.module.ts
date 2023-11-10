@@ -15,6 +15,7 @@ import { HomeComponent } from './controllers/home/home.component';
 import { TableBasicComponent } from './controllers/table-basic/table-basic.component';
 import { TableTransportComponent } from './controllers/table-transport/table-transport.component';
 
+
 @NgModule({
   declarations: [
     AppComponent,

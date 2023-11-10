@@ -1,6 +1,7 @@
 <po-page-default p-title="Rotina x Empresa"
 [p-breadcrumb]="breadcrumb"
 >  
+<div>
 <po-table
   [p-columns]="columns"
   [p-items]="items"
@@ -19,6 +20,7 @@
   [p-actions]="actions"
 >
 </po-table>
+</div>
 </po-page-default>
 
 <po-modal #updateModal p-title="Alteração">
@@ -28,11 +30,12 @@
     <po-input class="po-modal-fields" name="company" [(ngModel)]="company" p-clean p-icon="po-icon po-icon-company" p-label="Empresa:" p-disabled="true"> </po-input>
   </div>
   <div class="po-row"> 
-    <po-input class="po-modal-fields" name="abbreviation" [(ngModel)]="abbreviation" p-clean p-icon="po-icon po-icon-company" p-label="Sigla:"> </po-input>
+    <po-input class="po-modal-fields" name="abbreviation" [(ngModel)]="abbreviation" p-clean p-icon="po-icon po-icon-company" p-label="Sigla:" p-clean="true" > </po-input>
   </div>
   <div class="po-row">
     <po-switch name="active" [(ngModel)]="active" p-label ="Status" p-label-on="Ativo" p-label-off="Inativo" p-format-model="true" p-help="Ativa/Inativa a rotina na empresa"> </po-switch> 
   </div>
 </form>
+
 </po-modal>
 

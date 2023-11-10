@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 
-import { PoSelectOption, PoTableAction } from '@po-ui/ng-components';
+import { PoModalAction, PoSelectOption, PoTableAction } from '@po-ui/ng-components';
 
 import { PoTableColumn } from '@po-ui/ng-components';
 
@@ -8,6 +8,7 @@ import { PoBreadcrumb, PoDynamicViewField, PoModalComponent } from '@po-ui/ng-co
 import { map } from 'rxjs';
 import { Company } from '../company.interface';
 import { TableTransportService } from '../services/table-transport.service';
+import { NgForm } from '@angular/forms';
 
 @Component({
   selector: 'app-table-transport',
@@ -15,7 +16,12 @@ import { TableTransportService } from '../services/table-transport.service';
   providers: [TableTransportService]
 })
 export class TableTransportComponent implements OnInit {
+  proccessOrder() {
+    throw new Error('Method not implemented.');
+  }
   @ViewChild('updateModal') updateModal!: PoModalComponent;
+  @ViewChild('optionsForm', { static: true }) form: NgForm | undefined;
+  @ViewChild(PoModalComponent, { static: true }) poModal: PoModalComponent | undefined;
 
   columns: Array<PoTableColumn> = [];
   items: Array<any> = [];
@@ -25,6 +31,21 @@ export class TableTransportComponent implements OnInit {
   company: any;
   abbreviation:any;
   active:any;
+
+  close: PoModalAction = {
+    action: () => {
+      this.closeModal();
+    },
+    label: 'Close',
+    danger: true
+  };
+
+  confirm: PoModalAction = {
+    action: () => {
+      this.proccessOrder();
+    },
+    label: 'Confirm'
+  };
   
   public readonly breadcrumb: PoBreadcrumb = {
     items: [{ label: 'Home', link: '/' }, { label: 'Configurar:' }]
@@ -59,14 +80,15 @@ export class TableTransportComponent implements OnInit {
 
   ngOnInit() {
     this.columns = this.transportService.getColumns();
-    let companies: Company[]; // Declara a variável 'companies' aqui
+    let companies: Company[]; 
 
     this.transportService.getItems().pipe(
       map((response: any) => response.companies)
     ).subscribe((items) => {
-      companies = items; // Inicializa a variável 'companies' aqui
+      companies = items; 
       this.items = companies;
     });
+
   }
 
   readonly updateFields: Array<PoDynamicViewField> = [
@@ -78,4 +100,9 @@ export class TableTransportComponent implements OnInit {
     { property: 'cnpj' },
     { property: 'active' }
   ];
+
+  closeModal() {
+    this.form?.reset();
+    this.poModal?.close();
+  }
 }
