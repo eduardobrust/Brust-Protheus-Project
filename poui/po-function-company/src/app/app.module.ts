@@ -13,7 +13,6 @@ import { DynamicTable3Component } from './controllers/dynamic-table3/dynamic-tab
 import { HomeComponent } from './controllers/home/home.component';
 import { TableBasicComponent } from './controllers/table-basic/table-basic.component';
 import { TableTransportComponent } from './controllers/table-transport/table-transport.component';
-import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -39,8 +38,7 @@ import { FormsModule } from '@angular/forms';
     PoPageDynamicSearchModule,
     PoFieldModule,
     PoDynamicModule,
-    PoModalModule,
-    FormsModule
+    PoModalModule
   ],
   providers: [],
   bootstrap: [AppComponent]
