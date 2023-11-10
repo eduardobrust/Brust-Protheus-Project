@@ -18,8 +18,8 @@ export class TableTransportService {
       { property: 'reducedCode', label: 'Cod.Reduzido',width: '1%',visible: true },
       { property: 'company', label: 'Filial',width: '1%',visible: true },
       { property: 'abbreviation', label: 'Sigla',width: '1%',visible: true },
-      { property: 'description', label: 'Nome Comercial',width: '10%',visible: true },
-      { property: 'cnpj', label: 'CNPJ',width: '5%',visible: true },
+      { property: 'description', label: 'Nome Comercial',width: '25%',visible: true },
+      { property: 'cnpj', label: 'CNPJ',width: '10%',visible: true },
       {
         property: 'active',
         type: 'label',
