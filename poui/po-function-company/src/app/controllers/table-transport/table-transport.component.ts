@@ -9,6 +9,7 @@ import { PoBreadcrumb, PoDynamicViewField, PoModalComponent } from '@po-ui/ng-co
 import { map } from 'rxjs';
 import { Company } from '../company.interface';
 import { TableTransportService } from '../services/table-transport.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-table-transport',
@@ -48,7 +49,7 @@ export class TableTransportComponent implements OnInit {
   };
 
   //metodos
-  constructor(private transportService: TableTransportService) {
+  constructor(private router: Router,private transportService: TableTransportService) {
     // Não chame o método `document.querySelector('po-modal')` no construtor.
   }
   
@@ -109,8 +110,24 @@ export class TableTransportComponent implements OnInit {
 
   confirmUpdate() {
     console.log('confirmUpdate');
+    const json = {
+      itens: [
+        {
+          cFunction: this.cfunction,
+          cCompany: this.company,
+          cActive: this.active ? 'Y' : 'N'
+        }
+      ]
+    };
+    console.log(json);
     this.form?.reset();
     this.poModal?.close();
+
+    this.transportService.patchItems(json).subscribe(() => {
+      alert('A alteração foi realizada com sucesso!');
+      // Refresh da tela
+      this.router.navigate(['controllers/table-transport']);
+    });
   }
 }
 

@@ -36,4 +36,9 @@ export class TableTransportService {
     const url = 'http://localhost:8003/rest/tlpp/cfg/v1/cApiFunctionCompany?cToken=tokenteste&cActive=*';
     return this.http.get<Company[]>(url);
   }
+
+  patchItems(json: any): Observable<any> {
+    const url = 'http://localhost:8003/rest/tlpp/cfg/v1/cApiFunctionCompany';
+    return this.http.patch(url, json);
+  }
 }
