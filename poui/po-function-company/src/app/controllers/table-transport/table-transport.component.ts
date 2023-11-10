@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 
 import { PoSelectOption, PoTableAction } from '@po-ui/ng-components';
 
@@ -8,6 +8,7 @@ import { PoBreadcrumb } from '@po-ui/ng-components';
 import { map } from 'rxjs';
 import { Company } from '../company.interface';
 import { TableTransportService } from '../services/table-transport.service';
+import { PoDynamicViewField } from '@po-ui/ng-components';
 import { PoModalComponent } from '@po-ui/ng-components';
 
 @Component({
@@ -16,15 +17,23 @@ import { PoModalComponent } from '@po-ui/ng-components';
   providers: [TableTransportService]
 })
 export class TableTransportComponent implements OnInit {
+  @ViewChild('userDetailModal') userDetailModal!: PoModalComponent;
+
   columns: Array<PoTableColumn> = [];
   items: Array<any> = [];
   poTable: any;
-
+  detailedUser: any;
+  
   public readonly breadcrumb: PoBreadcrumb = {
     items: [{ label: 'Home', link: '/' }, { label: 'Configurar:' }]
   };
 
   actions: Array<PoTableAction> = [
+    {
+      label: 'Details',
+      action: this.onClickUserDetail.bind(this),
+      icon: 'po-icon-user'
+    },
     {
       action: (row: any) => {
         console.log(row); 
@@ -33,6 +42,12 @@ export class TableTransportComponent implements OnInit {
       label: 'Editar',
     },
   ];
+
+  private onClickUserDetail(user: any) {
+    this.detailedUser = user;
+
+    this.userDetailModal.open();
+  }
 
   update(item: { [key: string]: any }) {
     this.poTable.updateItem(item);
@@ -58,4 +73,16 @@ export class TableTransportComponent implements OnInit {
       this.items = companies;
     });
   }
+
+  readonly detailFields: Array<PoDynamicViewField> = [
+    { property: 'status', tag: true, gridLgColumns: 4, divider: 'Personal Data' },
+    { property: 'name', gridLgColumns: 4 },
+    { property: 'nickname', label: 'User name', gridLgColumns: 4 },
+    { property: 'email', gridLgColumns: 4 },
+    { property: 'birthdate', gridLgColumns: 4, type: 'date' },
+    { property: 'genre', gridLgColumns: 4, gridSmColumns: 6 },
+    { property: 'cityName', label: 'City', divider: 'Address' },
+    { property: 'state' },
+    { property: 'country' }
+  ];
 }

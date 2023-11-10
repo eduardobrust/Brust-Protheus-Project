@@ -6,7 +6,6 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Company } from '../company.interface';
 
-
 @Injectable()
 export class TableTransportService {
   items: any[] = []; // Initialize the items property in the constructor
@@ -37,5 +36,4 @@ export class TableTransportService {
     const url = 'http://localhost:8003/rest/tlpp/cfg/v1/cApiFunctionCompany?cToken=tokenteste&cActive=*';
     return this.http.get<Company[]>(url);
   }
-
 }
