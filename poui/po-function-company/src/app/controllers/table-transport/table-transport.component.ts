@@ -5,8 +5,8 @@ import { PoModalAction, PoSelectOption, PoTableAction } from '@po-ui/ng-componen
 import { PoTableColumn } from '@po-ui/ng-components';
 
 import { NgForm } from '@angular/forms';
-import { NavigationExtras, Router } from '@angular/router';
-import { PoBreadcrumb, PoDynamicViewField, PoModalComponent } from '@po-ui/ng-components';
+import { NavigationExtras } from '@angular/router';
+import { PoBreadcrumb, PoDynamicViewField, PoModalComponent, PoNotificationService } from '@po-ui/ng-components';
 import { map } from 'rxjs';
 import { Company } from '../company.interface';
 import { TableTransportService } from '../services/table-transport.service';
@@ -53,7 +53,7 @@ export class TableTransportComponent implements OnInit {
   };
 
   //metodos
-  constructor(private router: Router,private transportService: TableTransportService) {
+  constructor(private transportService: TableTransportService,private poNotification: PoNotificationService) {
     // Não chame o método `document.querySelector('po-modal')` no construtor.
   }
   
@@ -76,6 +76,9 @@ export class TableTransportComponent implements OnInit {
     this.company = this.valueFields['company'];
     this.abbreviation = this.valueFields['abbreviation'];
     this.active = this.valueFields['active'];
+    this.active = this.valueFields['active'] === 'Y' ? true : false
+    console.log('onClickUpdModal - ' + this.valueFields['active'])
+    console.log('onClickUpdModal - ' + this.active)
     this.updateModal.open();
   }
 
@@ -119,23 +122,22 @@ export class TableTransportComponent implements OnInit {
         {
           cFunction: this.cfunction,
           cCompany: this.company,
-          abbreviation:this.abbreviation,
+          cAbbreviation:  this.abbreviation,
           cActive: this.active ? 'Y' : 'N'         
         }
       ]
     };
+    console.log('confirmUpdate - ' + this.active)
     console.log(json);
     this.form?.reset();
     this.poModal?.close();
 
     this.transportService.patchItems(json).subscribe(() => {
-      alert('A alteração foi realizada com sucesso!');
-      
-     // Refresh da tela
-     const extras: ExtendedNavigationExtras = {
-      reload: true
-    };
-    this.router.navigate(['/controllers/table-transport'], extras);
+      // O patch foi concluído com sucesso.
+      this.poNotification.success('Alteração realizada com sucesso!');
+    }, (error) => {
+      // O patch não foi concluído com sucesso.
+      this.poNotification.error('Erro ao realizar a alteração.');
     });
   }
 }
