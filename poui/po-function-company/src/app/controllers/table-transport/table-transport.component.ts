@@ -8,6 +8,7 @@ import { PoBreadcrumb } from '@po-ui/ng-components';
 import { map } from 'rxjs';
 import { Company } from '../company.interface';
 import { TableTransportService } from '../services/table-transport.service';
+import { PoModalComponent } from '@po-ui/ng-components';
 
 @Component({
   selector: 'app-table-transport',
@@ -17,18 +18,24 @@ import { TableTransportService } from '../services/table-transport.service';
 export class TableTransportComponent implements OnInit {
   columns: Array<PoTableColumn> = [];
   items: Array<any> = [];
+  poTable: any;
 
   public readonly breadcrumb: PoBreadcrumb = {
     items: [{ label: 'Home', link: '/' }, { label: 'Configurar:' }]
   };
 
   actions: Array<PoTableAction> = [
-    { action: this.update.bind(this), icon: 'po-icon po-icon-edit', label: 'Editar' }	
+    {
+      action: (row: any) => {
+        console.log(row); 
+      },
+      icon: 'po-icon po-icon-edit',
+      label: 'Editar',
+    },
   ];
-  poTable: any;
 
   update(item: { [key: string]: any }) {
-    this.poTable.updateItem(item)
+    this.poTable.updateItem(item);
   }
 
   readonly statusOptions: Array<PoSelectOption> = [
@@ -36,16 +43,18 @@ export class TableTransportComponent implements OnInit {
     { label: 'Bloqueado', value: 'N' }
   ];
 
-  constructor(private transportService: TableTransportService) {}
+  constructor(private transportService: TableTransportService) {
+    // Não chame o método `document.querySelector('po-modal')` no construtor.
+  }
 
   ngOnInit() {
     this.columns = this.transportService.getColumns();
-    let companies: Company[]; // Declare the 'companies' variable here
-  
+    let companies: Company[]; // Declara a variável 'companies' aqui
+
     this.transportService.getItems().pipe(
       map((response: any) => response.companies)
     ).subscribe((items) => {
-      companies = items; // Initialize the 'companies' variable here
+      companies = items; // Inicializa a variável 'companies' aqui
       this.items = companies;
     });
   }

@@ -13,7 +13,6 @@ export class TableTransportService {
 
   constructor(private http: HttpClient) {}
 
-
   getColumns(): Array<PoTableColumn> {
     return [
       { property: 'cfunction', label: 'Rotina',visible: true },
