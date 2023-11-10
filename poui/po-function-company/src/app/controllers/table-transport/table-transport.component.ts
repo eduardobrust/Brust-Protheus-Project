@@ -4,12 +4,10 @@ import { PoSelectOption, PoTableAction } from '@po-ui/ng-components';
 
 import { PoTableColumn } from '@po-ui/ng-components';
 
-import { PoBreadcrumb } from '@po-ui/ng-components';
+import { PoBreadcrumb, PoDynamicViewField, PoModalComponent } from '@po-ui/ng-components';
 import { map } from 'rxjs';
 import { Company } from '../company.interface';
 import { TableTransportService } from '../services/table-transport.service';
-import { PoDynamicViewField } from '@po-ui/ng-components';
-import { PoModalComponent } from '@po-ui/ng-components';
 
 @Component({
   selector: 'app-table-transport',
@@ -17,12 +15,12 @@ import { PoModalComponent } from '@po-ui/ng-components';
   providers: [TableTransportService]
 })
 export class TableTransportComponent implements OnInit {
-  @ViewChild('userDetailModal') userDetailModal!: PoModalComponent;
+  @ViewChild('updateModal') updateModal!: PoModalComponent;
 
   columns: Array<PoTableColumn> = [];
   items: Array<any> = [];
   poTable: any;
-  detailedUser: any;
+  valueFields: any;
   
   public readonly breadcrumb: PoBreadcrumb = {
     items: [{ label: 'Home', link: '/' }, { label: 'Configurar:' }]
@@ -30,27 +28,18 @@ export class TableTransportComponent implements OnInit {
 
   actions: Array<PoTableAction> = [
     {
-      label: 'Details',
-      action: this.onClickUserDetail.bind(this),
-      icon: 'po-icon-user'
-    },
-    {
-      action: (row: any) => {
-        console.log(row); 
-      },
-      icon: 'po-icon po-icon-edit',
       label: 'Editar',
-    },
+      action: this.onClickUpdModal.bind(this),
+      icon: 'po-icon po-icon-edit'
+    }
   ];
 
-  private onClickUserDetail(user: any) {
-    this.detailedUser = user;
-
-    this.userDetailModal.open();
-  }
-
-  update(item: { [key: string]: any }) {
-    this.poTable.updateItem(item);
+  private onClickUpdModal(user: any) {
+    
+    this.valueFields = user;
+    console.log('onClickUpdModal-this.valueFields');
+    console.log(this.valueFields);
+    this.updateModal.open();
   }
 
   readonly statusOptions: Array<PoSelectOption> = [
@@ -74,15 +63,13 @@ export class TableTransportComponent implements OnInit {
     });
   }
 
-  readonly detailFields: Array<PoDynamicViewField> = [
-    { property: 'status', tag: true, gridLgColumns: 4, divider: 'Personal Data' },
-    { property: 'name', gridLgColumns: 4 },
-    { property: 'nickname', label: 'User name', gridLgColumns: 4 },
-    { property: 'email', gridLgColumns: 4 },
-    { property: 'birthdate', gridLgColumns: 4, type: 'date' },
-    { property: 'genre', gridLgColumns: 4, gridSmColumns: 6 },
-    { property: 'cityName', label: 'City', divider: 'Address' },
-    { property: 'state' },
-    { property: 'country' }
+  readonly updateFields: Array<PoDynamicViewField> = [
+    { property: 'cfunction' },
+    { property: 'reducedCode' },
+    { property: 'company' },
+    { property: 'abbreviation' },
+    { property: 'description' },
+    { property: 'cnpj' },
+    { property: 'active' }
   ];
 }
