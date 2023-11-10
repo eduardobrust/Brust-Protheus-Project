@@ -34,11 +34,9 @@ export class TableTransportComponent implements OnInit {
     }
   ];
 
-  private onClickUpdModal(user: any) {
+  private onClickUpdModal(fields: any) {
     
-    this.valueFields = user;
-    console.log('onClickUpdModal-this.valueFields');
-    console.log(this.valueFields);
+    this.valueFields = fields;
     this.updateModal.open();
   }
 
