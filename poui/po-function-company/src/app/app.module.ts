@@ -2,9 +2,10 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
 import { HttpClientModule } from '@angular/common/http';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { PoDynamicModule, PoFieldModule, PoModalModule, PoModule, PoPageModule, PoTableModule } from '@po-ui/ng-components';
-import { PoPageDynamicSearchModule, PoPageDynamicTableModule, PoTemplatesModule } from '@po-ui/ng-templates';
+import { PoPageDynamicEditModule, PoPageDynamicSearchModule, PoPageDynamicTableModule, PoTemplatesModule } from '@po-ui/ng-templates';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { DynamicTableComponent } from './controllers/dynamic-table/dynamic-table.component';
@@ -13,7 +14,6 @@ import { DynamicTable3Component } from './controllers/dynamic-table3/dynamic-tab
 import { HomeComponent } from './controllers/home/home.component';
 import { TableBasicComponent } from './controllers/table-basic/table-basic.component';
 import { TableTransportComponent } from './controllers/table-transport/table-transport.component';
-import { PoPageDynamicEditModule } from '@po-ui/ng-templates';
 
 @NgModule({
   declarations: [
@@ -40,7 +40,9 @@ import { PoPageDynamicEditModule } from '@po-ui/ng-templates';
     PoFieldModule,
     PoDynamicModule,
     PoModalModule,
-    PoPageDynamicEditModule
+    PoPageDynamicEditModule,
+    FormsModule,
+    ReactiveFormsModule
   ],
   providers: [],
   bootstrap: [AppComponent]
