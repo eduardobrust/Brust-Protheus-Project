@@ -5,11 +5,15 @@ import { PoModalAction, PoSelectOption, PoTableAction } from '@po-ui/ng-componen
 import { PoTableColumn } from '@po-ui/ng-components';
 
 import { NgForm } from '@angular/forms';
+import { NavigationExtras, Router } from '@angular/router';
 import { PoBreadcrumb, PoDynamicViewField, PoModalComponent } from '@po-ui/ng-components';
 import { map } from 'rxjs';
 import { Company } from '../company.interface';
 import { TableTransportService } from '../services/table-transport.service';
-import { Router } from '@angular/router';
+
+interface ExtendedNavigationExtras extends NavigationExtras {
+  reload: boolean;
+}
 
 @Component({
   selector: 'app-table-transport',
@@ -115,7 +119,8 @@ export class TableTransportComponent implements OnInit {
         {
           cFunction: this.cfunction,
           cCompany: this.company,
-          cActive: this.active ? 'Y' : 'N'
+          abbreviation:this.abbreviation,
+          cActive: this.active ? 'Y' : 'N'         
         }
       ]
     };
@@ -125,8 +130,12 @@ export class TableTransportComponent implements OnInit {
 
     this.transportService.patchItems(json).subscribe(() => {
       alert('A alteração foi realizada com sucesso!');
-      // Refresh da tela
-      this.router.navigate(['controllers/table-transport']);
+      
+     // Refresh da tela
+     const extras: ExtendedNavigationExtras = {
+      reload: true
+    };
+    this.router.navigate(['/controllers/table-transport'], extras);
     });
   }
 }
