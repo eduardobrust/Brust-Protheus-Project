@@ -135,9 +135,11 @@ export class TableTransportComponent implements OnInit {
     this.transportService.patchItems(json).subscribe(() => {
       // O patch foi concluído com sucesso.
       this.poNotification.success('Alteração realizada com sucesso!');
+      window.location.reload();
     }, (error) => {
       // O patch não foi concluído com sucesso.
       this.poNotification.error('Erro ao realizar a alteração.');
+      window.location.reload();
     });
   }
 }
