@@ -24,7 +24,7 @@
 <po-modal #updateModal p-title="Alteração">
   <po-dynamic-view [p-fields]="updateFields" [p-value]="valueFields"> </po-dynamic-view>
   <div class="po-row">
-    <po-input class="po-modal-fields" formControlName="cfunction" p-clean p-icon="po-icon po-icon-document-filled" p-label="Rotina:" p-disabled="true"> </po-input>
+    <po-input class="po-modal-fields" formControlName="cfunction" p-clean p-icon="po-icon po-icon-document-filled" p-label="Rotina:" p-disabled="true" value = "teste"> </po-input>
     <po-input class="po-modal-fields" formControlName="company" p-clean p-icon="po-icon po-icon-company" p-label="Empresa:" p-disabled="true"> </po-input>
     <po-input class="po-modal-fields" formControlName="reducedCode" p-clean p-icon="po-icon po-icon-company" p-label="Cod.Reduzido:" p-disabled="true"> </po-input>
   </div>
@@ -37,3 +37,4 @@
     <po-switch name="active" p-label="Ativo"> </po-switch> 
   </div>
 </po-modal>
+
