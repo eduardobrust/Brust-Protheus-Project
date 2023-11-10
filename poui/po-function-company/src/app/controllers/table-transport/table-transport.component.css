@@ -4,3 +4,7 @@
     margin: 0 auto; /* Centralize a tabela */
     top: 50px; /* Ajuste a posição superior conforme necessário */
   }
+
+  .po-modal-fields {
+    margin: 0 10px;
+  }
