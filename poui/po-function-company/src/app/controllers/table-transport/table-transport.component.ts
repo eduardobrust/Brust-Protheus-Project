@@ -4,11 +4,11 @@ import { PoModalAction, PoSelectOption, PoTableAction } from '@po-ui/ng-componen
 
 import { PoTableColumn } from '@po-ui/ng-components';
 
+import { NgForm } from '@angular/forms';
 import { PoBreadcrumb, PoDynamicViewField, PoModalComponent } from '@po-ui/ng-components';
 import { map } from 'rxjs';
 import { Company } from '../company.interface';
 import { TableTransportService } from '../services/table-transport.service';
-import { NgForm } from '@angular/forms';
 
 @Component({
   selector: 'app-table-transport',
@@ -16,9 +16,8 @@ import { NgForm } from '@angular/forms';
   providers: [TableTransportService]
 })
 export class TableTransportComponent implements OnInit {
-  proccessOrder() {
-    throw new Error('Method not implemented.');
-  }
+  
+  //propriedades da classe
   @ViewChild('updateModal') updateModal!: PoModalComponent;
   @ViewChild('optionsForm', { static: true }) form: NgForm | undefined;
   @ViewChild(PoModalComponent, { static: true }) poModal: PoModalComponent | undefined;
@@ -42,10 +41,16 @@ export class TableTransportComponent implements OnInit {
 
   confirm: PoModalAction = {
     action: () => {
-      this.proccessOrder();
+      this.confirmUpdate();
+      console.log('confirm');
     },
     label: 'Confirm'
   };
+
+  //metodos
+  constructor(private transportService: TableTransportService) {
+    // Não chame o método `document.querySelector('po-modal')` no construtor.
+  }
   
   public readonly breadcrumb: PoBreadcrumb = {
     items: [{ label: 'Home', link: '/' }, { label: 'Configurar:' }]
@@ -74,10 +79,6 @@ export class TableTransportComponent implements OnInit {
     { label: 'Bloqueado', value: 'N' }
   ];
 
-  constructor(private transportService: TableTransportService) {
-    // Não chame o método `document.querySelector('po-modal')` no construtor.
-  }
-
   ngOnInit() {
     this.columns = this.transportService.getColumns();
     let companies: Company[]; 
@@ -105,4 +106,12 @@ export class TableTransportComponent implements OnInit {
     this.form?.reset();
     this.poModal?.close();
   }
+
+  confirmUpdate() {
+    console.log('confirmUpdate');
+    this.form?.reset();
+    this.poModal?.close();
+  }
 }
+
+
