@@ -66,24 +66,19 @@ export class TableTransportComponent implements OnInit {
   actions: Array<PoTableAction> = [
     {
       label: 'Editar',
-      action: this.onClickUpdModal.bind(this),
+      action: this.onClickEditdModal.bind(this),
       icon: 'po-icon po-icon-edit'
     }
   ];
 
-  private onClickUpdModal(fields: any) {
+  private onClickEditdModal(fields: any) {
     const label = this.actions[0].label;
-    console.log('onClickUpdModal ' + label);
     this.title = label
     this.disabled = this.title === 'Editar' ? true : false;
     this.valueFields = fields;
     this.cfunction = this.valueFields['cfunction']; 
     this.company = this.valueFields['company'];
     this.abbreviation = this.valueFields['abbreviation'];
-
-    console.log('onClickUpdModal ' + this.title);
-    console.log('onClickUpdModal ' + this.cfunction);
-    console.log('onClickUpdModal ' + this.company);
 
     if (this.title === 'Editar') {
       this.active = this.valueFields['active'] === 'Y' ? 'Ativo' : 'Inativo';
