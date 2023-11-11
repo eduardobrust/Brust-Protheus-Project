@@ -249,7 +249,7 @@ method UpdateFunctionCompany() class cApiFunctionCompany
 		IF !EMPTY(cFunction) .AND. !EMPTY(cCompany) .AND. (!EMPTY(cAbbreviation) .OR.!EMPTY(cActive) )
 			cUpdate := ""
 			cUpdate += " UPDATE FUNCTION_COMPANY SET 		"+ CRLF
-			IF !EMPTY(cAbbreviation).AND. !EMPTY(cActive) .AND. cActive $ 'S/N'
+			IF !EMPTY(cAbbreviation).AND. !EMPTY(cActive) .AND. cActive $ 'Y/N'
 				cUpdate += "   ABBREVIATION = '" + cAbbreviation + "', 	"+ CRLF
 				cUpdate += "   ACTIVE = '"+ cActive + "' 	"+ CRLF
 			ELSEIF !EMPTY(cAbbreviation)

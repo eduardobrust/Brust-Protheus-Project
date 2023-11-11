@@ -33,7 +33,16 @@
     <po-input class="po-modal-fields" name="abbreviation" [(ngModel)]="abbreviation" p-clean p-icon="po-icon po-icon-company" p-label="Sigla:" p-clean="true" > </po-input>
   </div>
   <div class="po-row">
-    <po-switch name="active" [(ngModel)]="active" p-label ="Status" p-label-on="Ativo" p-label-off="Bloqueado" p-format-model="true" p-help="Ativa/Inativa a rotina na empresa"> </po-switch> 
+    <po-switch
+  name="active"
+  [(ngModel)]="active"
+  p-label="Status"
+  p-label-off="Bloqueado"
+  p-label-on="Ativo"
+  p-format-model="true"
+  (p-change)="changeSwitch()"
+>
+</po-switch>
   </div>
 </form>
 <po-modal-footer [p-disabled-align]="false">

@@ -35,7 +35,7 @@ export class TableTransportComponent implements OnInit {
   company: any;
   abbreviation:any;
   active:any;
-
+  
   close: PoModalAction = {
     action: () => {
       this.closeModal();
@@ -75,10 +75,9 @@ export class TableTransportComponent implements OnInit {
     this.cfunction = this.valueFields['cfunction'];
     this.company = this.valueFields['company'];
     this.abbreviation = this.valueFields['abbreviation'];
-    this.active = this.valueFields['active'];
-    this.active = this.valueFields['active'] === 'Y' ? true : false
-    console.log('onClickUpdModal - ' + this.valueFields['active'])
-    console.log('onClickUpdModal - ' + this.active)
+    this.active = this.valueFields['active'] === 'Y' ? 'Ativo' : 'Bloqueado';
+    console.log('onClickUpdModal - ' + this.valueFields['active']);
+    console.log('onClickUpdModal - ' + this.active);
     this.updateModal.open();
   }
 
@@ -115,6 +114,10 @@ export class TableTransportComponent implements OnInit {
     this.poModal?.close();
   }
 
+  changeSwitch() {
+    console.log('changeSwitch - ' + this.active);
+  }
+
   confirmUpdate() {
     console.log('confirmUpdate');
     const json = {
@@ -123,12 +126,13 @@ export class TableTransportComponent implements OnInit {
           cFunction: this.cfunction,
           cCompany: this.company,
           cAbbreviation:  this.abbreviation,
-          cActive: this.active ? 'Y' : 'N'         
+          cActive: this.active === 'Ativo' ? 'Y' : 'N'         
         }
       ]
     };
-    console.log('confirmUpdate - ' + this.active)
+    console.log('confirmUpdate - ' + this.active);
     console.log(json);
+    this.active = undefined;
     this.form?.reset();
     this.poModal?.close();
 
@@ -136,7 +140,7 @@ export class TableTransportComponent implements OnInit {
       next: () => {
         // O patch foi concluído com sucesso.
         this.poNotification.success('Alteração realizada com sucesso!');
-        window.location.reload();
+        setTimeout(this.refresh, 3000);      
       },
       error: (error) => {
         // O patch não foi concluído com sucesso.
@@ -144,7 +148,11 @@ export class TableTransportComponent implements OnInit {
         window.location.reload();
       }
     });
-    
+   
+  }
+
+  refresh(){
+    window.location.reload();
   }
 }
 
