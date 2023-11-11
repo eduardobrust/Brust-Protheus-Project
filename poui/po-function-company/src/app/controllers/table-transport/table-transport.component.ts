@@ -47,7 +47,6 @@ export class TableTransportComponent implements OnInit {
   confirm: PoModalAction = {
     action: () => {
       this.confirmUpdate();
-      console.log('confirm');
     },
     label: 'Confirm'
   };
@@ -76,8 +75,6 @@ export class TableTransportComponent implements OnInit {
     this.company = this.valueFields['company'];
     this.abbreviation = this.valueFields['abbreviation'];
     this.active = this.valueFields['active'] === 'Y' ? 'Ativo' : 'Bloqueado';
-    console.log('onClickUpdModal - ' + this.valueFields['active']);
-    console.log('onClickUpdModal - ' + this.active);
     this.updateModal.open();
   }
 
@@ -114,12 +111,7 @@ export class TableTransportComponent implements OnInit {
     this.poModal?.close();
   }
 
-  changeSwitch() {
-    console.log('changeSwitch - ' + this.active);
-  }
-
   confirmUpdate() {
-    console.log('confirmUpdate');
     const json = {
       itens: [
         {
@@ -130,8 +122,7 @@ export class TableTransportComponent implements OnInit {
         }
       ]
     };
-    console.log('confirmUpdate - ' + this.active);
-    console.log(json);
+
     this.active = undefined;
     this.form?.reset();
     this.poModal?.close();
@@ -140,7 +131,7 @@ export class TableTransportComponent implements OnInit {
       next: () => {
         // O patch foi concluído com sucesso.
         this.poNotification.success('Alteração realizada com sucesso!');
-        setTimeout(this.refresh, 3000);      
+        setTimeout(this.refresh, 2000);      
       },
       error: (error) => {
         // O patch não foi concluído com sucesso.
