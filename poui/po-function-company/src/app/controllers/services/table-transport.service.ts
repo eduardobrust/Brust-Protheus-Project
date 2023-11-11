@@ -26,7 +26,7 @@ export class TableTransportService {
         width: '8%',
         labels: [
           { value: 'Y', color: 'green', label: 'Ativo',icon: 'po-icon po-icon-lock-off'  },
-          { value: 'N', color: 'red', label: 'Bloqueado', icon: 'po-icon po-icon-lock' }
+          { value: 'N', color: 'red', label: 'Inativo', icon: 'po-icon po-icon-lock' }
         ]
       }
     ];
