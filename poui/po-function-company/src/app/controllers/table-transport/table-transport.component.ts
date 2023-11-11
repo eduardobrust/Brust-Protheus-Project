@@ -39,6 +39,10 @@ export class TableTransportComponent implements OnInit {
   title: any;
   disabled: any;
 
+  public readonly PageActions: Array<PoPageAction> = [
+    { label: 'Incluir', action: this.onClickInsertModal.bind(this), icon: 'po-icon po-icon-plus' },
+  ];
+
   close: PoModalAction = {
     action: () => {
       this.closeModal();
@@ -101,9 +105,16 @@ export class TableTransportComponent implements OnInit {
 
   }
 
+  private onClickInsertModal(obj:any){
+    this.title = "Incluir";
+    this.disabled = false;
+    this.active = 'Ativo';
+    this.pageModal.open();
+  }
+
   private onClickEditdModal(fields: any) {
     const label = this.actions[0].label;
-    this.title = label
+    this.title = label;
     this.disabled = this.title === 'Editar' ? true : false;
     this.valueFields = fields;
     this.cfunction = this.valueFields['cfunction']; 
