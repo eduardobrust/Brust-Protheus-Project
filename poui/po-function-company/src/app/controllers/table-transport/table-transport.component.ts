@@ -54,10 +54,20 @@ export class TableTransportComponent implements OnInit {
     label: 'Confirm'
   };
 
-  //metodos
-  constructor(private transportService: TableTransportService, private poNotification: PoNotificationService) {
-    // Não chame o método `document.querySelector('po-modal')` no construtor.
-  }
+  readonly statusOptions: Array<PoSelectOption> = [
+    { label: 'Ativo', value: 'Y' },
+    { label: 'Inativo', value: 'N' }
+  ];
+
+  readonly updateFields: Array<PoDynamicViewField> = [
+    { property: 'cfunction' },
+    { property: 'reducedCode' },
+    { property: 'company' },
+    { property: 'abbreviation' },
+    { property: 'description' },
+    { property: 'cnpj' },
+    { property: 'active' }
+  ];
 
   public readonly breadcrumb: PoBreadcrumb = {
     items: [{ label: 'Home', link: '/' }, { label: 'Configurar:' }]
@@ -70,6 +80,26 @@ export class TableTransportComponent implements OnInit {
       icon: 'po-icon po-icon-edit'
     }
   ];
+
+  //metodos
+  constructor(private transportService: TableTransportService, private poNotification: PoNotificationService) {
+    // Não chame o método `document.querySelector('po-modal')` no construtor.
+  }
+
+  ngOnInit() {
+    this.title = 'teste';
+    this.disabled = true;
+    this.columns = this.transportService.getColumns();
+    let companies: Company[];
+
+    this.transportService.getItems().pipe(
+      map((response: any) => response.companies)
+    ).subscribe((items) => {
+      companies = items;
+      this.items = companies;
+    });
+
+  }
 
   private onClickEditdModal(fields: any) {
     const label = this.actions[0].label;
@@ -87,41 +117,6 @@ export class TableTransportComponent implements OnInit {
     }
 
     this.pageModal.open();
-  }
-
-  readonly statusOptions: Array<PoSelectOption> = [
-    { label: 'Ativo', value: 'Y' },
-    { label: 'Inativo', value: 'N' }
-  ];
-
-  ngOnInit() {
-    this.title = 'teste';
-    this.disabled = true;
-    this.columns = this.transportService.getColumns();
-    let companies: Company[];
-
-    this.transportService.getItems().pipe(
-      map((response: any) => response.companies)
-    ).subscribe((items) => {
-      companies = items;
-      this.items = companies;
-    });
-
-  }
-
-  readonly updateFields: Array<PoDynamicViewField> = [
-    { property: 'cfunction' },
-    { property: 'reducedCode' },
-    { property: 'company' },
-    { property: 'abbreviation' },
-    { property: 'description' },
-    { property: 'cnpj' },
-    { property: 'active' }
-  ];
-
-  closeModal() {
-    this.form?.reset();
-    this.poModal?.close();
   }
 
   confirmModal() {
@@ -142,10 +137,6 @@ export class TableTransportComponent implements OnInit {
       this.confirmInsert(json);
     }
     setTimeout(this.refresh, 2000); 
-  }
-
-  refresh() {
-    window.location.reload();
   }
 
   confirmInsert(json: any) {
@@ -169,6 +160,16 @@ export class TableTransportComponent implements OnInit {
       }
     });
   }
+
+  closeModal() {
+    this.form?.reset();
+    this.poModal?.close();
+  }
+
+  refresh() {
+    window.location.reload();
+  }
+
 }
 
 
