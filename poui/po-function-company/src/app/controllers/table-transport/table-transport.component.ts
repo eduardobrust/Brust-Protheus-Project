@@ -10,6 +10,7 @@ import { PoBreadcrumb, PoDynamicViewField, PoModalComponent, PoNotificationServi
 import { map } from 'rxjs';
 import { Company } from '../company.interface';
 import { TableTransportService } from '../services/table-transport.service';
+import { PoPageAction } from '@po-ui/ng-components';
 
 interface ExtendedNavigationExtras extends NavigationExtras {
   reload: boolean;
@@ -23,7 +24,7 @@ interface ExtendedNavigationExtras extends NavigationExtras {
 export class TableTransportComponent implements OnInit {
 
   //propriedades da classe
-  @ViewChild('updateModal') updateModal!: PoModalComponent;
+  @ViewChild('pageModal') pageModal!: PoModalComponent;
   @ViewChild('optionsForm', { static: true }) form: NgForm | undefined;
   @ViewChild(PoModalComponent, { static: true }) poModal: PoModalComponent | undefined;
 
@@ -90,7 +91,7 @@ export class TableTransportComponent implements OnInit {
       this.active = 'Ativo';
     }
 
-    this.updateModal.open();
+    this.pageModal.open();
   }
 
   readonly statusOptions: Array<PoSelectOption> = [
