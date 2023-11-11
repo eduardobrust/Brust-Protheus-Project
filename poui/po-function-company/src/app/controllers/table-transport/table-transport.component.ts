@@ -21,7 +21,7 @@ interface ExtendedNavigationExtras extends NavigationExtras {
   providers: [TableTransportService]
 })
 export class TableTransportComponent implements OnInit {
-  
+
   //propriedades da classe
   @ViewChild('updateModal') updateModal!: PoModalComponent;
   @ViewChild('optionsForm', { static: true }) form: NgForm | undefined;
@@ -33,9 +33,11 @@ export class TableTransportComponent implements OnInit {
   valueFields: any;
   cfunction: any;
   company: any;
-  abbreviation:any;
-  active:any;
-  
+  abbreviation: any;
+  active: any;
+  title: any;
+  disabled: any;
+
   close: PoModalAction = {
     action: () => {
       this.closeModal();
@@ -46,16 +48,16 @@ export class TableTransportComponent implements OnInit {
 
   confirm: PoModalAction = {
     action: () => {
-      this.confirmUpdate();
+      this.confirmModal();
     },
     label: 'Confirm'
   };
 
   //metodos
-  constructor(private transportService: TableTransportService,private poNotification: PoNotificationService) {
+  constructor(private transportService: TableTransportService, private poNotification: PoNotificationService) {
     // Não chame o método `document.querySelector('po-modal')` no construtor.
   }
-  
+
   public readonly breadcrumb: PoBreadcrumb = {
     items: [{ label: 'Home', link: '/' }, { label: 'Configurar:' }]
   };
@@ -69,28 +71,43 @@ export class TableTransportComponent implements OnInit {
   ];
 
   private onClickUpdModal(fields: any) {
-        
+    const label = this.actions[0].label;
+    console.log('onClickUpdModal ' + label);
+    this.title = label
+    this.disabled = this.title === 'Editar' ? true : false;
     this.valueFields = fields;
-    this.cfunction = this.valueFields['cfunction'];
+    this.cfunction = this.valueFields['cfunction']; 
     this.company = this.valueFields['company'];
     this.abbreviation = this.valueFields['abbreviation'];
-    this.active = this.valueFields['active'] === 'Y' ? 'Ativo' : 'Bloqueado';
+
+    console.log('onClickUpdModal ' + this.title);
+    console.log('onClickUpdModal ' + this.cfunction);
+    console.log('onClickUpdModal ' + this.company);
+
+    if (this.title === 'Editar') {
+      this.active = this.valueFields['active'] === 'Y' ? 'Ativo' : 'Inativo';
+    } else {
+      this.active = 'Ativo';
+    }
+
     this.updateModal.open();
   }
 
   readonly statusOptions: Array<PoSelectOption> = [
     { label: 'Ativo', value: 'Y' },
-    { label: 'Bloqueado', value: 'N' }
+    { label: 'Inativo', value: 'N' }
   ];
 
   ngOnInit() {
+    this.title = 'teste';
+    this.disabled = true;
     this.columns = this.transportService.getColumns();
-    let companies: Company[]; 
+    let companies: Company[];
 
     this.transportService.getItems().pipe(
       map((response: any) => response.companies)
     ).subscribe((items) => {
-      companies = items; 
+      companies = items;
       this.items = companies;
     });
 
@@ -111,17 +128,35 @@ export class TableTransportComponent implements OnInit {
     this.poModal?.close();
   }
 
-  confirmUpdate() {
+  confirmModal() {
     const json = {
       itens: [
         {
           cFunction: this.cfunction,
           cCompany: this.company,
-          cAbbreviation:  this.abbreviation,
-          cActive: this.active === 'Ativo' ? 'Y' : 'N'         
+          cAbbreviation: this.abbreviation,
+          cActive: this.active === 'Ativo' ? 'Y' : 'N'
         }
       ]
     };
+
+    if (this.title === 'Editar') {
+      this.confirmUpdate(json);
+    } else {
+      this.confirmInsert(json);
+    }
+    setTimeout(this.refresh, 2000); 
+  }
+
+  refresh() {
+    window.location.reload();
+  }
+
+  confirmInsert(json: any) {
+    alert('cliquei no insert');
+  }
+
+  confirmUpdate(json: any) {
 
     this.active = undefined;
     this.form?.reset();
@@ -131,19 +166,12 @@ export class TableTransportComponent implements OnInit {
       next: () => {
         // O patch foi concluído com sucesso.
         this.poNotification.success('Alteração realizada com sucesso!');
-        setTimeout(this.refresh, 2000);      
       },
       error: (error) => {
         // O patch não foi concluído com sucesso.
         this.poNotification.error('Erro ao realizar a alteração.');
-        window.location.reload();
       }
     });
-   
-  }
-
-  refresh(){
-    window.location.reload();
   }
 }
 
