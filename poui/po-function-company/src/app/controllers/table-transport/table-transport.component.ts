@@ -97,7 +97,7 @@ export class TableTransportComponent implements OnInit {
 
     this.modalForm = this.fb.group({
       cfunction: ['', [Validators.required, Validators.pattern(/^[^ ]+$/), Validators.maxLength(50)]],
-      company: ['', [Validators.required, Validators.pattern(/^[0-9]{6}$/), Validators.maxLength(6)]],
+      company: ['', [Validators.required, Validators.pattern(/^[0-9]{2}$/), Validators.maxLength(6)]],
       abbreviation: ['', [Validators.required, Validators.pattern(/^[a-zA-Z]{3,}$/), Validators.maxLength(10)]],
       active: ['', [Validators.required]]
     });
@@ -143,9 +143,9 @@ export class TableTransportComponent implements OnInit {
       const json = {
         itens: [
           {
-            cFunction: this.modalForm.value.cfunction,
+            cFunction: String(this.modalForm.value.cfunction).toUpperCase(),
             cCompany: this.modalForm.value.company,
-            cAbbreviation: this.modalForm.value.abbreviation,
+            cAbbreviation: String(this.modalForm.value.abbreviation).toUpperCase(),
             cActive: this.modalForm.value.active === 'Ativo' ? 'Y' : 'N'
           }
         ]

@@ -32,11 +32,12 @@ namespace nApiGab
 
 Interface iApiFunctionCompany
 
-public method GetApiFunctionCompany() as json
-public method PostApiFunctionCompany() as json
-public method PatchApiFunctionCompany() as json
+public method GetApiFunctionCompany() as json 	//api get para consulta dos dados
+public method PostApiFunctionCompany() as json	//api post para insert dos dados
+public method PatchApiFunctionCompany() as json	//api patch para update dos dados
 
-Private method UpdateFunctionCompany() as json
+Private method UpdateFunctionCompany()  //realiza o update no banco
+Private method InsertFunctionCompany()  //realiza o insert no banco
 
 EndInterface
 
@@ -74,6 +75,8 @@ class cApiFunctionCompany from nGab.cFunctionCompany Implements iApiFunctionComp
 	public method PatchApiFunctionCompany() as json
 
 	Private method UpdateFunctionCompany()
+
+	Private method InsertFunctionCompany()
 
 endclass
 
@@ -220,6 +223,50 @@ method PatchApiFunctionCompany() as json class cApiFunctionCompany
 return oRest:setResponse( ::jRetorno )
 
 
+/*/{Protheus.doc} cApiFunctionCompany::PostApiFunctionCompany() as json
+Metodo Post para inclusao de registros na tabela FUNCTION_COMPANY
+@type method
+@version 12.1.2310
+@author Eduardo Brust
+@since 11/12/2023
+@return variant, return_um objeto
+/*/
+method PostApiFunctionCompany() as json class cApiFunctionCompany
+
+	Local lRet	:= .T. 	as logical
+
+	::jHeader := oRest:getHeaderRequest()
+	if ( ::jHeader <> Nil )
+		::cToken := ::jHeader[ 'Authorization' ]
+	endif
+
+	if lRet
+		If .F. // !U_VTOKEN(::cToken) // VALIDO SE TOKEN E VALIDO RETIRAR DEPOIS DOS TESTES
+			lRet := .F.
+			::jRetorno := {"error": "Invalid Token", "code": 401}
+			oRest:setStatusCode( 401 )
+		endif
+	endif
+
+	if lRet
+		::jBody := JsonObject():new()
+		::jBody:fromJson( oRest:GetBodyRequest() )
+		if !( ::jBody:HasProperty("itens") )
+			lRet := .F.
+			::jRetorno := {"erro": "Bad Request", "code": 400}
+			oRest:setStatusCode( 400 )
+		endif
+	endif
+
+	if lRet
+		::InsertFunctionCompany()
+	endif
+
+	lRet := oRest:setKeyHeaderResponse("Content-Type", "application/json")
+
+return oRest:setResponse( ::jRetorno )
+
+
 /*/{Protheus.doc} cApiFunctionCompany::UpdateFunctionCompany()
 Altera registros na tabela FUNCTION_COMPANY
 @type method
@@ -240,9 +287,9 @@ method UpdateFunctionCompany() class cApiFunctionCompany
 		cCompany := IIF(::jBody["itens"][I]:GetJsonText("cCompany") == "null",'', ::jBody["itens"][I]:GetJsonText("cCompany"))
 		cAbbreviation := IIF(::jBody["itens"][I]:GetJsonText("cAbbreviation") == "null",'', ::jBody["itens"][I]:GetJsonText("cAbbreviation"))
 		cActive := IIF(::jBody["itens"][I]:GetJsonText("cActive") == "null",'', ::jBody["itens"][I]:GetJsonText("cActive"))
-		
+
 		cFunction := UPPER(ALLTRIM(cFunction))
-		cCompany := ALLTRIM(cCompany) 
+		cCompany := ALLTRIM(cCompany)
 		cAbbreviation := UPPER(ALLTRIM(cAbbreviation))
 		cActive := UPPER(ALLTRIM(cActive))
 
@@ -269,6 +316,80 @@ method UpdateFunctionCompany() class cApiFunctionCompany
 
 	if nErro > 0
 		::jRetorno := {"erro": "Erro ao atualizar registros", "company": 500}
+		oRest:setStatusCode( 500 )
+	else
+		::jRetorno := {"msg": "Sucesso", "company": 200}
+		oRest:setStatusCode( 200 )
+	endif
+return
+
+
+/*/{Protheus.doc} cApiFunctionCompany::InsertFunctionCompany
+Inclui registros na tabela FUNCTION_COMPANY
+@type method
+@version 12.1.2310
+@author Eduardo Brust
+@since 11/12/2023
+/*/
+method InsertFunctionCompany() class cApiFunctionCompany
+	Local cInsert	:= ""	as character
+	local nStatus	:=	0	as numeric
+	Local i					as numeric
+	local nErro		:=	0	as numeric
+	local lInsert	:= .F.	as logical
+	Local _cQry 	:= "" 	as Character
+	Local cTrb1				as Character
+	Local cFunction := cCompany := cAbbreviation := cActive := "" as character
+
+	FOR I:= 1 TO len(::jBody["itens"])
+
+		cFunction := IIF(::jBody["itens"][I]:GetJsonText("cFunction") == "null",'', ::jBody["itens"][I]:GetJsonText("cFunction"))
+		cCompany := IIF(::jBody["itens"][I]:GetJsonText("cCompany") == "null",'', ::jBody["itens"][I]:GetJsonText("cCompany"))
+		cAbbreviation := IIF(::jBody["itens"][I]:GetJsonText("cAbbreviation") == "null",'', ::jBody["itens"][I]:GetJsonText("cAbbreviation"))
+		cActive := IIF(::jBody["itens"][I]:GetJsonText("cActive") == "null",'', ::jBody["itens"][I]:GetJsonText("cActive"))
+
+		cFunction := UPPER(ALLTRIM(cFunction))
+		cCompany := ALLTRIM(cCompany)
+		cAbbreviation := UPPER(ALLTRIM(cAbbreviation))
+		cActive := UPPER(ALLTRIM(cActive))
+
+		lInsert	:= .F.
+		_cQry	:= " " +CRLF									
+		_cQry += " SELECT M0_CODIGO 					" +CRLF
+		_cQry += " FROM SYS_COMPANY 					" +CRLF
+		_cQry += " WHERE  D_E_L_E_T_ = ' ' 				" +CRLF
+		_cQry += " AND M0_CODIGO = '" + cCompany + "'   " +CRLF
+		_cQry += " AND ROWNUM = 1 						" +CRLF
+
+		cTrb1 := MpSysOpenQuery(_cQry)
+
+		IF (cTrb1)->(!Eof())
+			lInsert	:= .T.
+		ELSE
+			nErro++
+		ENDIF
+
+		//FECHO A AREA ABERTA PELA QUERY
+		If Select(cTrb1) > 0 .AND. !EMPTY(cTrb1)
+			(cTrb1)->(DbCloseArea())
+			cTrb1	:= ""
+		endif
+
+		IF !EMPTY(cFunction) .AND. !EMPTY(cCompany) .AND. !EMPTY(cAbbreviation) .AND.!EMPTY(cActive) .AND. lInsert
+			cInsert := ""
+			cInsert += " INSERT INTO FUNCTION_COMPANY (CFUNCTION, COMPANY, ABBREVIATION, ACTIVE) VALUES " + CRLF
+			cInsert += "('" + cFunction + "', '" + cCompany + "', '" + cAbbreviation + "', '" + cActive + "')" + CRLF
+			//cInsert += " IF NOT EXISTS (SELECT 1 FROM FUNCTION_COMPANY WHERE UPPER(TRIM(CFUNCTION)) = '" + cFunction + "' AND TRIM(COMPANY) = '" + cCompany + "')"
+
+			nStatus := TCSQLExec(cInsert)
+			if nStatus < 0
+				nErro++
+			endif
+		ENDIF
+	NEXT
+
+	if nErro > 0
+		::jRetorno := {"erro": "Erro ao inserir registros", "company": 500}
 		oRest:setStatusCode( 500 )
 	else
 		::jRetorno := {"msg": "Sucesso", "company": 200}
