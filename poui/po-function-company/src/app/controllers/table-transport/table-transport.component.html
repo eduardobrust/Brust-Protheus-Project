@@ -25,18 +25,17 @@
 </po-page-list>
 
 <po-modal #pageModal [p-title]="title">
-  <form #f="ngForm">
+  <form #f="ngForm" [formGroup]="modalForm">
   <div class="po-row">
-    <po-input class="po-md-6" name="cfunction" [(ngModel)]="cfunction" p-clean p-icon="po-icon po-icon-document-filled" p-label="Rotina:" [p-disabled]="disabled" > </po-input>
-    <po-input class="po-md-6" name="company" [(ngModel)]="company" p-clean p-icon="po-icon po-icon-company" p-label="Empresa:" [p-disabled]="disabled"> </po-input>
+    <po-input class="po-md-6" formControlName="cfunction"  p-clean p-icon="po-icon po-icon-document-filled" p-label="Rotina:" [p-disabled]="disabled" > </po-input>
+    <po-input class="po-md-6" formControlName="company"  p-clean p-icon="po-icon po-icon-company" p-label="Empresa:" [p-disabled]="disabled"> </po-input>
   </div>
   <div class="po-row"> 
-    <po-input class="po-md-6" name="abbreviation" [(ngModel)]="abbreviation" p-clean p-icon="po-icon po-icon-company" p-label="Sigla:" p-clean="true" > </po-input>
+    <po-input class="po-md-6" formControlName="abbreviation"  p-clean p-icon="po-icon po-icon-company" p-label="Sigla:" p-clean="true" > </po-input>
   </div>
   <div class="po-row">
     <po-switch
-  name="active"
-  [(ngModel)]="active"
+    formControlName="active"
   p-label="Status"
   p-label-off="Inativo"
   p-label-on="Ativo"

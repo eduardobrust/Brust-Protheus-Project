@@ -4,13 +4,12 @@ import { PoModalAction, PoSelectOption, PoTableAction } from '@po-ui/ng-componen
 
 import { PoTableColumn } from '@po-ui/ng-components';
 
-import { NgForm } from '@angular/forms';
+import { FormBuilder, FormGroup, NgForm, Validators } from '@angular/forms';
 import { NavigationExtras } from '@angular/router';
-import { PoBreadcrumb, PoDynamicViewField, PoModalComponent, PoNotificationService } from '@po-ui/ng-components';
+import { PoBreadcrumb, PoDynamicViewField, PoModalComponent, PoNotificationService, PoPageAction } from '@po-ui/ng-components';
 import { map } from 'rxjs';
 import { Company } from '../company.interface';
 import { TableTransportService } from '../services/table-transport.service';
-import { PoPageAction } from '@po-ui/ng-components';
 
 interface ExtendedNavigationExtras extends NavigationExtras {
   reload: boolean;
@@ -22,20 +21,18 @@ interface ExtendedNavigationExtras extends NavigationExtras {
   providers: [TableTransportService]
 })
 export class TableTransportComponent implements OnInit {
-
+  
   //propriedades da classe
   @ViewChild('pageModal') pageModal!: PoModalComponent;
   @ViewChild('optionsForm', { static: true }) form: NgForm | undefined;
   @ViewChild(PoModalComponent, { static: true }) poModal: PoModalComponent | undefined;
 
+  modalForm!: FormGroup;
+
   columns: Array<PoTableColumn> = [];
   items: Array<any> = [];
   poTable: any;
   valueFields: any;
-  cfunction: any;
-  company: any;
-  abbreviation: any;
-  active: any;
   title: any;
   disabled: any;
 
@@ -86,7 +83,9 @@ export class TableTransportComponent implements OnInit {
   ];
 
   //metodos
-  constructor(private transportService: TableTransportService, private poNotification: PoNotificationService) {
+  constructor(private transportService: TableTransportService, 
+    private poNotification: PoNotificationService,
+    private fb: FormBuilder) {
     // Não chame o método `document.querySelector('po-modal')` no construtor.
   }
 
@@ -95,6 +94,13 @@ export class TableTransportComponent implements OnInit {
     this.disabled = true;
     this.columns = this.transportService.getColumns();
     let companies: Company[];
+
+    this.modalForm = this.fb.group({
+      cfunction: ['', [Validators.required, Validators.pattern(/^[^ ]+$/), Validators.maxLength(50)]],
+      company: ['', [Validators.required, Validators.pattern(/^[0-9]{6}$/), Validators.maxLength(6)]],
+      abbreviation: ['', [Validators.required, Validators.pattern(/^[a-zA-Z]{3,}$/), Validators.maxLength(10)]],
+      active: ['', [Validators.required]]
+    });
 
     this.transportService.getItems().pipe(
       map((response: any) => response.companies)
@@ -108,7 +114,12 @@ export class TableTransportComponent implements OnInit {
   private onClickInsertModal(obj:any){
     this.title = "Incluir";
     this.disabled = false;
-    this.active = 'Ativo';
+    this.modalForm.setValue({
+      cfunction: '',
+      company: '',
+      abbreviation: '',
+      active: 'Ativo',
+    });
     this.pageModal.open();
   }
 
@@ -117,37 +128,38 @@ export class TableTransportComponent implements OnInit {
     this.title = label;
     this.disabled = this.title === 'Editar' ? true : false;
     this.valueFields = fields;
-    this.cfunction = this.valueFields['cfunction']; 
-    this.company = this.valueFields['company'];
-    this.abbreviation = this.valueFields['abbreviation'];
-
-    if (this.title === 'Editar') {
-      this.active = this.valueFields['active'] === 'Y' ? 'Ativo' : 'Inativo';
-    } else {
-      this.active = 'Ativo';
-    }
-
+    this.modalForm.setValue({
+      cfunction: this.valueFields['cfunction'],
+      company: this.valueFields['company'],
+      abbreviation: this.valueFields['abbreviation'],
+      active: this.title === 'Editar' ? this.valueFields['active'] === 'Y' ? 'Ativo' : 'Inativo' : 'Ativo'
+    }); 
+    
     this.pageModal.open();
   }
 
   confirmModal() {
-    const json = {
-      itens: [
-        {
-          cFunction: this.cfunction,
-          cCompany: this.company,
-          cAbbreviation: this.abbreviation,
-          cActive: this.active === 'Ativo' ? 'Y' : 'N'
-        }
-      ]
-    };
-
-    if (this.title === 'Editar') {
-      this.confirmUpdate(json);
+    if (this.modalForm.valid) {
+      const json = {
+        itens: [
+          {
+            cFunction: this.modalForm.value.cfunction,
+            cCompany: this.modalForm.value.company,
+            cAbbreviation: this.modalForm.value.abbreviation,
+            cActive: this.modalForm.value.active === 'Ativo' ? 'Y' : 'N'
+          }
+        ]
+      };
+  
+      if (this.title === 'Editar') {
+        this.confirmUpdate(json);
+      } else {
+        this.confirmInsert(json);
+      }
+      setTimeout(this.refresh, 2000);
     } else {
-      this.confirmInsert(json);
+      this.poNotification.error('Campos do Formulário inválidos.Favor revisar!');
     }
-    setTimeout(this.refresh, 2000); 
   }
 
   confirmInsert(json: any) {
@@ -156,10 +168,7 @@ export class TableTransportComponent implements OnInit {
 
   confirmUpdate(json: any) {
 
-    this.active = undefined;
-    this.form?.reset();
     this.poModal?.close();
-
     this.transportService.patchItems(json).subscribe({
       next: () => {
         // O patch foi concluído com sucesso.
