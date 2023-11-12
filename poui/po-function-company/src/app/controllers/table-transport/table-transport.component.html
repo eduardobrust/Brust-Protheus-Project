@@ -27,11 +27,11 @@
 <po-modal #pageModal [p-title]="title">
   <form #f="ngForm">
   <div class="po-row">
-    <po-input class="po-modal-fields" name="cfunction" [(ngModel)]="cfunction" p-clean p-icon="po-icon po-icon-document-filled" p-label="Rotina:" [p-disabled]="disabled" > </po-input>
-    <po-input class="po-modal-fields" name="company" [(ngModel)]="company" p-clean p-icon="po-icon po-icon-company" p-label="Empresa:" [p-disabled]="disabled"> </po-input>
+    <po-input class="po-md-6" name="cfunction" [(ngModel)]="cfunction" p-clean p-icon="po-icon po-icon-document-filled" p-label="Rotina:" [p-disabled]="disabled" > </po-input>
+    <po-input class="po-md-6" name="company" [(ngModel)]="company" p-clean p-icon="po-icon po-icon-company" p-label="Empresa:" [p-disabled]="disabled"> </po-input>
   </div>
   <div class="po-row"> 
-    <po-input class="po-modal-fields" name="abbreviation" [(ngModel)]="abbreviation" p-clean p-icon="po-icon po-icon-company" p-label="Sigla:" p-clean="true" > </po-input>
+    <po-input class="po-md-6" name="abbreviation" [(ngModel)]="abbreviation" p-clean p-icon="po-icon po-icon-company" p-label="Sigla:" p-clean="true" > </po-input>
   </div>
   <div class="po-row">
     <po-switch
