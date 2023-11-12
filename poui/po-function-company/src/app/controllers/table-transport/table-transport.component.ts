@@ -163,7 +163,18 @@ export class TableTransportComponent implements OnInit {
   }
 
   confirmInsert(json: any) {
-    alert('cliquei no insert');
+
+    this.poModal?.close();
+    this.transportService.postItems(json).subscribe({
+      next: () => {
+        // O insert foi concluído com sucesso.
+        this.poNotification.success('Inserção realizada com sucesso!');
+      },
+      error: (error) => {
+        // O insert não foi concluído com sucesso.
+        this.poNotification.error('Erro ao realizar a inserção.');
+      }
+    });
   }
 
   confirmUpdate(json: any) {
