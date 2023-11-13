@@ -2,13 +2,20 @@ import { Injectable } from '@angular/core';
 
 import { PoTableColumn } from '@po-ui/ng-components';
 
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Company } from '../company.interface';
+import { environment } from 'src/environments/environment.development';
 
-@Injectable()
+@Injectable({
+  providedIn: 'root'
+})
 export class TableTransportService {
   items: any[] = []; // Initialize the items property in the constructor
+
+  private readonly API = `${environment.baseUrl}/tlpp/cfg/v1/cApiFunctionCompany`
+  private readonly headers = new HttpHeaders({ Authorization: environment.token })
+  httpClient: any;
 
   constructor(private http: HttpClient) {}
 
@@ -33,17 +40,19 @@ export class TableTransportService {
   }
 
   getItems(): Observable<Company[]> {
-    const url = 'http://localhost:8003/rest/tlpp/cfg/v1/cApiFunctionCompany?cToken=tokenteste&cActive=*';
+    console.log(this.API);
+    console.log(this.headers);
+    const url = `${this.API}?cToken=tokenteste&cActive=*`;
     return this.http.get<Company[]>(url);
   }
-
+  
   patchItems(json: any): Observable<any> {
-    const url = 'http://localhost:8003/rest/tlpp/cfg/v1/cApiFunctionCompany';
+    const url =this.API;
     return this.http.patch(url, json);
   }
 
   postItems(json: any): Observable<any> {
-    const url = 'http://localhost:8003/rest/tlpp/cfg/v1/cApiFunctionCompany';
+    const url =this.API;
     return this.http.post(url, json);
   }
   
