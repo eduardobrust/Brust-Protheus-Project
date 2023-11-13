@@ -1,7 +1,5 @@
 import { Component } from '@angular/core';
-
 import { PoMenuItem } from '@po-ui/ng-components';
-import { ProAppConfigService } from '@totvs/protheus-lib-core';
 
 @Component({
   selector: 'app-root',
@@ -10,7 +8,6 @@ import { ProAppConfigService } from '@totvs/protheus-lib-core';
 })
 export class AppComponent {
   
-
   readonly menus: Array<PoMenuItem> = [
     { label: 'Home', link: '/controllers/home', icon: "po-icon po-icon-home"  },
   //  { label: 'Manager - Function x Company', link: '/controllers/dynamic-table' },
@@ -21,19 +18,4 @@ export class AppComponent {
   //  { label: 'Fechar aplicativo',action: this.closeApp.bind(this),icon: 'po-icon po-icon-exit' }
   ];
   
-  /*
-  constructor(private proAppConfigService: ProAppConfigService) {
-  }
-  */
-
-  private closeApp() {
-    /*
-    if (this.proAppConfigService.insideProtheus()) {
-      this.proAppConfigService.callAppClose();
-    } else {
-      alert('O App não está sendo executado dentro do Protheus.');
-    }
-    */
-  }
-
 }
