@@ -1,9 +1,0 @@
-@import 'node_modules/@po-ui/style/css/po-theme-default-variables.min.css';
-
-body {
-  background-color: var(--color-background);
-}
-
-:root {
-  --color-background: #00ff2a;
-}
