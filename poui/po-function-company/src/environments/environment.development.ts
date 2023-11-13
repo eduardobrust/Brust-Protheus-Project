@@ -1,4 +1,4 @@
-import { Buffer } from 'buffer'
+import { Buffer } from '@types/node';
 
 export const environment = {
   production: false,
