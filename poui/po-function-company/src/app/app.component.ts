@@ -20,10 +20,18 @@ export class AppComponent {
   ];
   constructor(
     private proAppConfigService: ProAppConfigService
-  ) {}
+  ) {
+    if (!this.proAppConfigService.insideProtheus()) {
+      this.proAppConfigService.loadAppConfig();
+    }
+  }
 
-  closeApp(): void {
-    this.proAppConfigService.callAppClose(true);
-}
+  private closeApp() {
+    if (this.proAppConfigService.insideProtheus()) {
+      this.proAppConfigService.callAppClose();
+    } else {
+      alert('O App não está sendo executado dentro do Protheus.');
+    }
+  }
   
 }
