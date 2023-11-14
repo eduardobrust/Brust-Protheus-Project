@@ -5,7 +5,7 @@ import { PoTableColumn } from '@po-ui/ng-components';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Company } from '../company.interface';
-import { environment } from 'src/environments/environment.development';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -40,8 +40,6 @@ export class TableTransportService {
   }
 
   getItems(): Observable<Company[]> {
-    console.log(this.API);
-    console.log(this.headers);
     const url = `${this.API}?cToken=tokenteste&cActive=*`;
     return this.http.get<Company[]>(url);
   }

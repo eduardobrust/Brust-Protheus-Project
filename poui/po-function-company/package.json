@@ -23,6 +23,7 @@
     "@totvs/protheus-lib-core": "^15.0.1",
     "@types/node": "^20.9.0",
     "rxjs": "~7.5.5",
+    "subsink": "^1.0.2",
     "tslib": "^2.6.2",
     "zone.js": "~0.13.0"
   },
