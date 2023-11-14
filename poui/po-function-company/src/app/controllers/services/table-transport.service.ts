@@ -13,7 +13,8 @@ import { environment } from 'src/environments/environment';
 export class TableTransportService {
   items: any[] = []; // Initialize the items property in the constructor
 
-  private readonly API = `${environment.baseUrl}/tlpp/cfg/v1/cApiFunctionCompany`
+  //private readonly API = `${environment.api_baseUrl}/tlpp/cfg/v1/cApiFunctionCompany`
+  private readonly API = '/tlpp/cfg/v1/cApiFunctionCompany'
   private readonly headers = new HttpHeaders({ Authorization: environment.token })
   httpClient: any;
 
