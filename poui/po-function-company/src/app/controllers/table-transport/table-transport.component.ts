@@ -97,7 +97,7 @@ export class TableTransportComponent implements OnInit {
 
     this.modalForm = this.fb.group({
       cfunction: ['', [Validators.required, Validators.pattern(/^[^ ]+$/), Validators.maxLength(50)]],
-      company: ['', [Validators.required, Validators.pattern(/^[0-9]{2}$/), Validators.maxLength(6)]],
+      company: ['', [Validators.required, Validators.pattern(/^[0-9]{6}$/), Validators.maxLength(6)]],
       abbreviation: ['', [Validators.required, Validators.pattern(/^[a-zA-Z]{3,}$/), Validators.maxLength(10)]],
       active: ['', [Validators.required]]
     });
