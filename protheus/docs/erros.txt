@@ -1,0 +1,8 @@
+http://localhost:8888/devtools/inspector.html?ws=localhost:8888/devtools/page/4F82BF470670A4DEE8D771D1C5A630EE
+
+Inspectable WebContents
+localhost:5000/app-root/preindex/index.html?totvstec_websocket_port=63972&amp;totvstec_remote_type=1&amp;app_name=po-function-company&amp;totvstec_websocket_port=63972
+
+sigaatf-bra-por
+
+The request requires authentication. The server might return this response for a page behind a login ou Http failure response – Unauthorized
