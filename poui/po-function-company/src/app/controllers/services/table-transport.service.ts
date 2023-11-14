@@ -1,3 +1,4 @@
+import { AppComponent } from './../../app.component';
 import { Injectable } from '@angular/core';
 
 import { PoTableColumn } from '@po-ui/ng-components';
@@ -14,11 +15,20 @@ export class TableTransportService {
   items: any[] = []; // Initialize the items property in the constructor
 
   //private readonly API = `${environment.api_baseUrl}/tlpp/cfg/v1/cApiFunctionCompany`
-  private readonly API = '/tlpp/cfg/v1/cApiFunctionCompany'
-  private readonly headers = new HttpHeaders({ Authorization: environment.token })
-  httpClient: any;
+  //private  API = '/tlpp/cfg/v1/cApiFunctionCompany';
+  //private  headers = new HttpHeaders({ Authorization: environment.token });
 
-  constructor(private http: HttpClient) {}
+  private  API:any;
+  private  headers:any;
+  httpClient: any;
+  
+  constructor(private http: HttpClient,private appComponent: AppComponent) {
+
+    this.API = this.appComponent.protheus ? '/tlpp/cfg/v1/cApiFunctionCompany' : `${environment.api_baseUrl}/tlpp/cfg/v1/cApiFunctionCompany`
+    this.headers = new HttpHeaders({ Authorization: environment.token }); 
+    console.log(this.API);  
+    console.log(this.headers);  
+  }
 
   getColumns(): Array<PoTableColumn> {
     return [
@@ -42,17 +52,17 @@ export class TableTransportService {
 
   getItems(): Observable<Company[]> {
     const url = `${this.API}?cToken=tokenteste&cActive=*`;
-    return this.http.get<Company[]>(url);
+    return this.http.get<Company[]>(url, { headers: this.headers });
   }
   
   patchItems(json: any): Observable<any> {
     const url =this.API;
-    return this.http.patch(url, json);
+    return this.http.patch(url, json, { headers: this.headers });
   }
 
   postItems(json: any): Observable<any> {
     const url =this.API;
-    return this.http.post(url, json);
+    return this.http.post(url, json, { headers: this.headers });
   }
   
 }

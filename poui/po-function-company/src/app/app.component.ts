@@ -8,6 +8,8 @@ import { ProAppConfigService } from '@totvs/protheus-lib-core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
+
+  public protheus: boolean | undefined;
   
   readonly menus: Array<PoMenuItem> = [
     { label: 'Home', link: '/controllers/home', icon: "po-icon po-icon-home"  },
@@ -19,14 +21,17 @@ export class AppComponent {
   ) {
     if (!this.proAppConfigService.insideProtheus()) {
       this.proAppConfigService.loadAppConfig();
+      this.protheus = false;
     }
   }
 
   private closeApp() {
     if (this.proAppConfigService.insideProtheus()) {
       this.proAppConfigService.callAppClose();
+      this.protheus = true;
     } else {
       alert('O App não está sendo executado dentro do Protheus.');
+      this.protheus = false;
     }
   }
   
