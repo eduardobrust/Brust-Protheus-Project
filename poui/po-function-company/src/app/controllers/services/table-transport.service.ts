@@ -5,7 +5,7 @@ import { PoTableColumn } from '@po-ui/ng-components';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Company } from '../company.interface';
-import { environment } from 'src/environments_old/environment';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
