@@ -315,8 +315,8 @@ method UpdateFunctionCompany() class cApiFunctionCompany
 	NEXT
 
 	if nErro > 0
-		::jRetorno := {"erro": "Erro ao atualizar registros", "company": 500}
-		oRest:setStatusCode( 500 )
+		::jRetorno := {"erro": "Erro ao atualizar registros", "company": 400}
+		oRest:setStatusCode( 400 )
 	else
 		::jRetorno := {"msg": "Sucesso", "company": 200}
 		oRest:setStatusCode( 200 )
@@ -389,8 +389,8 @@ method InsertFunctionCompany() class cApiFunctionCompany
 	NEXT
 
 	if nErro > 0
-		::jRetorno := {"erro": "Erro ao inserir registros", "company": 500}
-		oRest:setStatusCode( 500 )
+		::jRetorno := {"erro": "Erro ao inserir registros", "company": 400}
+		oRest:setStatusCode( 400 )
 	else
 		::jRetorno := {"msg": "Sucesso", "company": 200}
 		oRest:setStatusCode( 200 )

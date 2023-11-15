@@ -16,6 +16,7 @@ export class AppComponent {
     { label: 'Rotina x Empresa', link: '/controllers/table-transport',icon: "po-icon po-icon-company" },
     { label: 'Exit',action: this.closeApp.bind(this),icon: 'po-icon po-icon-exit' }
   ];
+  
   constructor(
     private proAppConfigService: ProAppConfigService
   ) {

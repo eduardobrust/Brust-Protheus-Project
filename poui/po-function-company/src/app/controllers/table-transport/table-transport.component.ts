@@ -1,11 +1,11 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, Inject, OnInit, ViewChild } from '@angular/core';
 
 import { PoModalAction, PoSelectOption, PoTableAction } from '@po-ui/ng-components';
 
 import { PoTableColumn } from '@po-ui/ng-components';
 
 import { FormBuilder, FormGroup, NgForm, Validators } from '@angular/forms';
-import { NavigationExtras } from '@angular/router';
+import { NavigationExtras, Router } from '@angular/router';
 import { PoBreadcrumb, PoDynamicViewField, PoModalComponent, PoNotificationService, PoPageAction } from '@po-ui/ng-components';
 import { map } from 'rxjs';
 import { Company } from '../company.interface';
@@ -85,8 +85,8 @@ export class TableTransportComponent implements OnInit {
   //metodos
   constructor(private transportService: TableTransportService, 
     private poNotification: PoNotificationService,
-    private fb: FormBuilder) {
-    // Não chame o método `document.querySelector('po-modal')` no construtor.
+    private fb: FormBuilder,
+    @Inject(Router) private router: Router) {
   }
 
   ngOnInit() {
@@ -197,8 +197,13 @@ export class TableTransportComponent implements OnInit {
     this.poModal?.close();
   }
 
-  refresh() {
-    window.location.reload();
+  refresh() {   
+    console.log('rodei o refresh-inicio');
+
+    this.router.navigateByUrl('/controllers/home', { skipLocationChange: false });
+    this.router.navigateByUrl('/controllers/table-transport', { skipLocationChange: false });
+     
+    console.log('rodei o refresh-fim');
   }
 
 }
