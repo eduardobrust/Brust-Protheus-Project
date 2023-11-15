@@ -24,10 +24,8 @@ export class TableTransportService {
   
   constructor(private http: HttpClient,private appComponent: AppComponent) {
 
-    this.API = this.appComponent.protheus ? '/tlpp/cfg/v1/cApiFunctionCompany' : `${environment.api_baseUrl}/tlpp/cfg/v1/cApiFunctionCompany`
+    this.API = this.appComponent.protheus ? `${this.appComponent.endPointProt}/tlpp/cfg/v1/cApiFunctionCompany` : `${environment.api_baseUrl}/tlpp/cfg/v1/cApiFunctionCompany`
     this.headers = new HttpHeaders({ Authorization: environment.token }); 
-    console.log(this.API);  
-    console.log(this.headers);  
   }
 
   getColumns(): Array<PoTableColumn> {

@@ -109,6 +109,8 @@ export class TableTransportComponent implements OnInit {
       this.items = companies;
     });
 
+    this.poNotification.setDefaultDuration(3000);
+
   }
 
   private onClickInsertModal(obj:any){

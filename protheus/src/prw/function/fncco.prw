@@ -9,9 +9,20 @@ Funcao responsavel por chamar a tela PO UI para gerencimento de cadastro Functio
 /*/
 User Function fncCo()
 	Local aArea := GetArea()
-
-	ALERT('fncCo-Chamando Rotina PO UI')
-    FWCallApp('po-function-company')
+	FWCallApp('po-function-company')
 
 	RestArea(aArea)
 Return
+
+Static Function JsToAdvpl(oWebChannel,cType,cContent)
+	Do Case
+		// Se a interação que recebi for igual a mensagemJavascript
+	Case cType == 'mensagemJavascript'
+		// Imprimo a informação que recebi para trabalhar
+		alert('O que veio do JS: ' + cContent)
+		// Se a interação que recebi for igual a receberProtheus
+	Case cType == 'receberProtheus'
+		// Envio um comando ADVPL para minha aplicação Web
+		oWebChannel:AdvPLToJS('setUrlProtheus', getmv("MV_XURLPRO"))
+	End
+Return .T.
