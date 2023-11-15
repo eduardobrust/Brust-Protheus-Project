@@ -1,5 +1,5 @@
 function(codeType, content) {
-    if (codeType === 'setUrlProtheus') {
+    if (codeType == 'setUrlProtheus') {
         sessionStorage['setUrlProtheus'] = content;
     }
   }

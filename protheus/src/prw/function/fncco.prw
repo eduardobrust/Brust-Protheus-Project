@@ -15,6 +15,7 @@ User Function fncCo()
 Return
 
 Static Function JsToAdvpl(oWebChannel,cType,cContent)
+	Local cUrlProt := ""
 	Do Case
 		// Se a interação que recebi for igual a mensagemJavascript
 	Case cType == 'mensagemJavascript'
@@ -22,7 +23,8 @@ Static Function JsToAdvpl(oWebChannel,cType,cContent)
 		alert('O que veio do JS: ' + cContent)
 		// Se a interação que recebi for igual a receberProtheus
 	Case cType == 'receberProtheus'
+		cUrlProt := alltrim(GetNewPar("MV_XURLPRO", ""))
 		// Envio um comando ADVPL para minha aplicação Web
-		oWebChannel:AdvPLToJS('setUrlProtheus', getmv("MV_XURLPRO"))
+		oWebChannel:AdvPLToJS('setUrlProtheus', cUrlProt)
 	End
 Return .T.
