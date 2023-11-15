@@ -25,6 +25,6 @@ Static Function JsToAdvpl(oWebChannel,cType,cContent)
 	Case cType == 'receberProtheus'
 		cUrlProt := alltrim(GetNewPar("MV_XURLPRO", ""))
 		// Envio um comando ADVPL para minha aplicação Web
-		oWebChannel:AdvPLToJS('setUrlProtheus', cUrlProt)
+		oWebChannel:AdvPLToJS('urlprotheus', cUrlProt)
 	End
 Return .T.
