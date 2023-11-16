@@ -15,8 +15,7 @@ export class AppComponent {
   readonly menus: Array<PoMenuItem> = [
     { label: 'Home', link: '/controllers/home', icon: "po-icon po-icon-home" },
     { label: 'Rotina x Empresa', link: '/controllers/table-transport', icon: "po-icon po-icon-company" },
-    { label: 'Exit', action: this.closeApp.bind(this), icon: 'po-icon po-icon-exit' },
-    { label: 'receber >> protheus', action: this.click1.bind(this), icon: 'po-icon po-icon-exit' }
+    { label: 'Exit', action: this.closeApp.bind(this), icon: 'po-icon po-icon-exit' }
   ];
 
   constructor(
@@ -25,14 +24,14 @@ export class AppComponent {
     private poNotification: PoNotificationService
   ) {
 
-      this.endPointProt = sessionStorage.getItem('urlprotheus') || 'nao_achou_session';
-      this.poNotification.information('EndPoint Rest:' + this.endPointProt);
-
     if (this.proAppConfigService.insideProtheus()) {
-      this.proJsToAdvplService.jsToAdvpl('receberprotheus', '');
-      this.endPointProt = sessionStorage.getItem('urlprotheus') || 'nao_achou_session';
-      this.poNotification.information('EndPoint Rest:' + this.endPointProt);
       this.protheus = true;
+      let retorno = this.proJsToAdvplService.jsToAdvpl('receberprotheus', '');
+
+      if (retorno) {
+        this.endPointProt = sessionStorage['urlprotheus'];
+        this.poNotification.information('EndPoint Rest:' + this.endPointProt);
+      }
     }
     else {
       this.proAppConfigService.loadAppConfig();
@@ -50,11 +49,4 @@ export class AppComponent {
       this.poNotification.warning('Rotina rodando fora do Protheus!');
     }
   }
-
-  private click1(){
-    this.proJsToAdvplService.jsToAdvpl('receberprotheus', '');
-    this.endPointProt = sessionStorage.getItem('urlprotheus') || 'nao_achou_session';
-    this.poNotification.information('EndPoint Rest:' + this.endPointProt);
-  }
-
 }

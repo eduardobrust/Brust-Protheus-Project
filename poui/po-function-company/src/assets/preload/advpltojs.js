@@ -1,3 +1,5 @@
 function(codeType, content) {
-    sessionStorage.setItem('urlprotheus', content);
-      }
+  if (codeType == 'urlprotheus') {
+  sessionStorage['urlprotheus'] = content;
+  }
+}
