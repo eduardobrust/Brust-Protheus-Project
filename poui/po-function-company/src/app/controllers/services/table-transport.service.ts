@@ -14,17 +14,13 @@ import { environment } from 'src/environments/environment';
 export class TableTransportService {
   items: any[] = []; // Initialize the items property in the constructor
 
-  //private readonly API = `${environment.api_baseUrl}/tlpp/cfg/v1/cApiFunctionCompany`
-  //private  API = '/tlpp/cfg/v1/cApiFunctionCompany';
-  //private  headers = new HttpHeaders({ Authorization: environment.token });
-
   private  API:any;
   private  headers:any;
   httpClient: any;
   
   constructor(private http: HttpClient,private appComponent: AppComponent) {
 
-    this.API = this.appComponent.protheus ? `${this.appComponent.endPointProt}/tlpp/cfg/v1/cApiFunctionCompany` : `${environment.api_baseUrl}/tlpp/cfg/v1/cApiFunctionCompany`
+    this.API = this.appComponent.endPointProt !== undefined ? `${this.appComponent.endPointProt}/tlpp/cfg/v1/cApiFunctionCompany` : `${environment.api_baseUrl}/tlpp/cfg/v1/cApiFunctionCompany`
     this.headers = new HttpHeaders({ Authorization: environment.token }); 
   }
 
