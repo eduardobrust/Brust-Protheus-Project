@@ -20,7 +20,8 @@ export class TableTransportService {
   
   constructor(private http: HttpClient,private appComponent: AppComponent) {
 
-    this.API = this.appComponent.endPointProt !== undefined ? `${this.appComponent.endPointProt}/tlpp/cfg/v1/cApiFunctionCompany` : `${environment.api_baseUrl}/tlpp/cfg/v1/cApiFunctionCompany`
+    //this.API = this.appComponent.endPointProt !== undefined ? `${this.appComponent.endPointProt}/tlpp/cfg/v1/cApiFunctionCompany` : `${environment.api_baseUrl}/tlpp/cfg/v1/cApiFunctionCompany`
+    this.API = '/tlpp/cfg/v1/cApiFunctionCompany'
     this.headers = new HttpHeaders({ Authorization: environment.token }); 
   }
 
