@@ -33,7 +33,7 @@ PoModalModule,
 PoPageDynamicEditModule,
 FormsModule,
 ReactiveFormsModule,
-ProtheusLibCoreModule
+//ProtheusLibCoreModule
 ],
 providers: [],
 bootstrap: [AppComponent]
