@@ -47,17 +47,17 @@ export class TableTransportService {
 
   getItems(): Observable<Company[]> {
     const url = `${this.API}?cToken=tokenteste&cActive=*`;
-    return this.http.get<Company[]>(url, { headers: this.headers });
+    return this.http.get<Company[]>(url);
   }
   
   patchItems(json: any): Observable<any> {
     const url =this.API;
-    return this.http.patch(url, json, { headers: this.headers });
+    return this.http.patch(url, json);
   }
 
   postItems(json: any): Observable<any> {
     const url =this.API;
-    return this.http.post(url, json, { headers: this.headers });
+    return this.http.post(url, json);
   }
   
 }

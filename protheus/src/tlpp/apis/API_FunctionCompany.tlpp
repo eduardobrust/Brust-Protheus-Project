@@ -163,7 +163,8 @@ method GetApiFunctionCompany() as json class cApiFunctionCompany
 	endif
 
 	if lRet
-		::jRetorno := ::getFunctionCompany(cFunction = ::cFunction,lAllBranches = lAllBranches ,cCompany = ::cCompany,cActive = ::cActive,cAbbreviation = ::cAbbreviation) //usando parametros nomeados
+		//::jRetorno := ::getFunctionCompany(cFunction = ::cFunction,lAllBranches = lAllBranches ,cCompany = ::cCompany,cActive = ::cActive,cAbbreviation = ::cAbbreviation) //RELEASE 2310 - usando parametros nomeados
+		::jRetorno := ::getFunctionCompany(::cFunction,lAllBranches ,::cCompany,::cActive,::cAbbreviation) //RELEASE 2210 - OBRIGADO INFORMAR PARAMETROS NA ORDEM
 
 		//verifico se recurso foi encontrado.
 		if valtype(::jRetorno) == 'J' .AND. ::jRetorno:HasProperty("companies")
@@ -355,10 +356,10 @@ method InsertFunctionCompany() class cApiFunctionCompany
 
 		lInsert	:= .F.
 		_cQry	:= " " +CRLF									
-		_cQry += " SELECT M0_CODIGO 					" +CRLF
+		_cQry += " SELECT M0_CODFIL 					" +CRLF
 		_cQry += " FROM SYS_COMPANY 					" +CRLF
 		_cQry += " WHERE  D_E_L_E_T_ = ' ' 				" +CRLF
-		_cQry += " AND M0_CODIGO = '" + cCompany + "'   " +CRLF
+		_cQry += " AND M0_CODFIL = '" + cCompany + "'   " +CRLF
 		_cQry += " AND ROWNUM = 1 						" +CRLF
 
 		cTrb1 := MpSysOpenQuery(_cQry)
