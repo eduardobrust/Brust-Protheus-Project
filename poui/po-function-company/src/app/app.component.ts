@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { PoMenuItem, PoNotificationService } from '@po-ui/ng-components';
 import { ProAppConfigService, ProJsToAdvplService } from '@totvs/protheus-lib-core';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -15,13 +17,15 @@ export class AppComponent {
   readonly menus: Array<PoMenuItem> = [
     { label: 'Home', link: '/controllers/home', icon: "po-icon po-icon-home" },
     { label: 'Rotina x Empresa', link: '/controllers/table-transport', icon: "po-icon po-icon-company" },
-    { label: 'Exit', action: this.closeApp.bind(this), icon: 'po-icon po-icon-exit' }
+    { label: 'Exit', action: this.closeApp.bind(this), icon: 'po-icon po-icon-exit' },
+    { label: 'LER_JSON', action: this.loadAppConfig.bind(this), icon: 'po-icon po-icon-exit' }
   ];
 
   constructor(
     private proAppConfigService: ProAppConfigService,
     private proJsToAdvplService: ProJsToAdvplService,
-    private poNotification: PoNotificationService
+    private poNotification: PoNotificationService,
+    private http: HttpClient
   ) {
 
     if (this.proAppConfigService.insideProtheus()) {
@@ -33,8 +37,8 @@ export class AppComponent {
         this.poNotification.information('EndPoint Rest:' + this.endPointProt);
       }
     }
-    else {
-      this.proAppConfigService.loadAppConfig();
+    else {    
+      this.loadAppConfig();
       this.protheus = false;
     }
   }
@@ -47,6 +51,20 @@ export class AppComponent {
       this.protheus = false;
       this.poNotification.setDefaultDuration(3000);
       this.poNotification.warning('Rotina rodando fora do Protheus!');
+    }
+  }
+
+  async loadAppConfig(): Promise<string> {
+    try {
+      const response = await firstValueFrom(this.http.get<any>('assets/data/appConfig.json'));
+
+      this.endPointProt = response.api_baseUrl;
+      this.endPointProt = response.api_baseUrl
+      this.poNotification.information('Endpoint Rest: ' + this.endPointProt);
+      return response.api_baseUrl
+    } catch (error) {
+      //console.error('Error loading app config', error);
+      throw error; // You might want to handle the error appropriately in your application
     }
   }
 }
