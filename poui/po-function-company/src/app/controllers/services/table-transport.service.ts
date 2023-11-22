@@ -27,12 +27,6 @@ export class TableTransportService {
 
   getColumns(): Array<PoTableColumn> {
     return [
-      { property: 'cfunction', label: 'Rotina',visible: true },
-      { property: 'reducedCode', label: 'Cod.Reduzido',width: '1%',visible: true },
-      { property: 'company', label: 'Filial',width: '1%',visible: true },
-      { property: 'abbreviation', label: 'Sigla',width: '1%',visible: true },
-      { property: 'description', label: 'Nome Comercial',width: '25%',visible: true },
-      { property: 'cnpj', label: 'CNPJ',width: '10%',visible: true },
       {
         property: 'active',
         type: 'label',
@@ -41,7 +35,13 @@ export class TableTransportService {
           { value: 'Y', color: 'green', label: 'Ativo',icon: 'po-icon po-icon-lock-off'  },
           { value: 'N', color: 'red', label: 'Inativo', icon: 'po-icon po-icon-lock' }
         ]
-      }
+      },
+      { property: 'cfunction', label: 'Rotina',visible: true },
+      { property: 'reducedCode', label: 'Cod.Reduzido',width: '1%',visible: true },
+      { property: 'company', label: 'Filial',width: '1%',visible: true },
+      { property: 'abbreviation', label: 'Sigla',width: '1%',visible: true },
+      { property: 'description', label: 'Nome Comercial',width: '25%',visible: true },
+      { property: 'cnpj', label: 'CNPJ',width: '10%',visible: true }
     ];
   }
 

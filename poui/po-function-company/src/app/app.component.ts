@@ -17,8 +17,8 @@ export class AppComponent {
   readonly menus: Array<PoMenuItem> = [
     { label: 'Home', link: '/controllers/home', icon: "po-icon po-icon-home" },
     { label: 'Rotina x Empresa', link: '/controllers/table-transport', icon: "po-icon po-icon-company" },
-    { label: 'Exit', action: this.closeApp.bind(this), icon: 'po-icon po-icon-exit' },
-    { label: 'LER_JSON', action: this.loadAppConfig.bind(this), icon: 'po-icon po-icon-exit' }
+    { label: 'Exit', action: this.closeApp.bind(this), icon: 'po-icon po-icon-exit' }
+ //   { label: 'LER_JSON', action: this.loadAppConfig.bind(this), icon: 'po-icon po-icon-exit' }
   ];
 
   constructor(
@@ -34,7 +34,11 @@ export class AppComponent {
 
       if (retorno) {
         this.endPointProt = sessionStorage['urlprotheus'];
-        this.poNotification.information('EndPoint Rest:' + this.endPointProt);
+        if  (this.endPointProt !== undefined && this.endPointProt !== null){
+          this.poNotification.information('Endpoint Rest [MV_XURLPRO] :' + this.endPointProt);
+        }else {
+          this.loadAppConfig();
+        }
       }
     }
     else {    
@@ -60,7 +64,7 @@ export class AppComponent {
 
       this.endPointProt = response.api_baseUrl;
       this.endPointProt = response.api_baseUrl
-      this.poNotification.information('Endpoint Rest: ' + this.endPointProt);
+      this.poNotification.information('Endpoint Rest [JsonConfig] : ' + this.endPointProt);
       return response.api_baseUrl
     } catch (error) {
       //console.error('Error loading app config', error);
