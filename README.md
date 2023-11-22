@@ -157,6 +157,11 @@ O layout da aplicação segue o padrão do PO UI Totvs Protheus
 - Apagar a pasta(po-proj-function-company) em \Protheus_Data\http-root\app-root
 - Chamar rotina pelo protheus para gerar a pasta novamente
 
+#### :computer: [ Tela no Protheus ]
+![tela-protheus](./assets/images/tela-protheus.png)
+![editar-tela-protheus](./assets/images/editar-tela-protheus.png)
+![incluir-tela-protheus](./assets/images/incluir-tela-protheus.png)
+
 #### Licença
 
 Este projeto está sob a licença MIT. Consulte o arquivo [LICENSE](./LICENSE) para obter mais detalhes.
