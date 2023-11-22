@@ -20,12 +20,12 @@ O projeto é desenvolvido em:
 
 ### :books: Versões globais início do projeto
 
-Angular CLI: 16.2.8
-Node: 18.18.0
-Package Manager: npm 9.8.1
-OS: win32 x64
+-   Angular CLI: 16.2.8
+-   Node: 18.18.0
+-   Package Manager: npm 9.8.1
+-   OS: win32 x64
 
-Angular: 16.2.11
+-   Angular: 16.2.11
 ... animations, common, compiler, compiler-cli, core, forms
 ... platform-browser, platform-browser-dynamic, router
 
