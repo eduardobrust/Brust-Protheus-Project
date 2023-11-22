@@ -13,6 +13,8 @@ O projeto é desenvolvido em:
 
 -   [Front-end - Biblioteca - PO UI v16.5](https://po-ui.io/)
 
+-   [Front-end - Biblioteca - @totvs/protheus-lib-core](https://tdn.totvs.com/display/public/framework/Protheus-lib-core/)
+
 -   [Back-end - ERP Protheus Release 12.1.2310](https://tdn.totvs.com/pages/releaseview.action?pageId=744479921)
 -   [API Rest - TLPP](https://tdn.totvs.com/display/tec/TLPP)
 
