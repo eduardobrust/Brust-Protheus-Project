@@ -23,7 +23,7 @@ Static Function JsToAdvpl(oWebChannel,cType,cContent)
 		alert('O que veio do JS: ' + cContent)
 		// Se a interação que recebi for igual a receberProtheus
 	Case cType $ 'receberprotheus'
-		cUrlProt := alltrim(GetNewPar("MV_XURLPRO", ""))
+		cUrlProt := alltrim(GetNewPar("MV_XURLPRO", " "))
 		// Envio um comando ADVPL para minha aplicação Web
 		oWebChannel:AdvPLToJS('urlprotheus', cUrlProt)
 	End
