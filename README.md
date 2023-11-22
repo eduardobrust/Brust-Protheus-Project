@@ -1,6 +1,5 @@
-![Logotipo do Brust-Protheus-Project](./assets/images/Brust-Protheus-Project.png)
+![Logotipo do Brust-Protheus-Project](./assets/images/Protheus-Angular-Project.png)
 
-# Protheus-Project-TLPP-PO-UI
 
 Repository for developing TL++ and POUI projects for the Totvs Protheus environment.
 
