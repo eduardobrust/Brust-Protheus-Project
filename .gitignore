@@ -4,4 +4,3 @@ vscode/
 .vscode
 console_error.log
 *.orig
-*.json
