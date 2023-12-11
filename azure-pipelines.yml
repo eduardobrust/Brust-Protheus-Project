@@ -4,7 +4,7 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
 
 pr:
-- main
+- main_devops
 
 name: Build-Angular
 
