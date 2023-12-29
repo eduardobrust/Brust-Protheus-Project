@@ -4,7 +4,7 @@
 #include "totvs.ch"
 
 User Function testa2classe()
-	local i
+	//local i
 
 	_cfil		:= "01"
 	aTables 	:= {"SF1"}
@@ -13,6 +13,10 @@ User Function testa2classe()
 	RpcClearEnv()
 	RpcSetType(3)
 	RpcSetEnv( "99", _cfil, , ,_cModulo,ProcName(),aTables )
+
+	testa3classe()
+
+	/*
 
 	//testando a classe
 	oEmpresas   := nGab.cFunctionCompany():New()
@@ -39,4 +43,16 @@ User Function testa2classe()
 		endif  
 	endif
 	FREEOBJ( oEmpresas )
+	*/
+return 
+
+
+Static Function testa3classe()
+Local aResult := {}
+
+	//testando a classe
+	oJson   := nApiGab.cApiTokenGab():New()
+
+	aResult	:= oJson:getProtheusToken()
+
 return 

@@ -1,0 +1,122 @@
+#include 'tlpp-core.th'
+#include 'tlpp-rest.th'
+#include "msobject.ch"
+#include "totvs.ch"
+
+/*
+EDUARDO BRUST - HOMOLOGADO NA RELEASE 12.1.2310
+Descrição:
+API responsável por obter token de acesso as API'S no Protheus.
+
+Exemplos de uso:
+
+*/
+
+//Definindo o namespace para a classe
+namespace nApiGab
+
+// Definicao da Interface
+Interface iApiTokenGab
+
+Public method getProtheusToken(argUsername as Character, argPassword as Character) as Character      //metodo publico para retornar o token recuperado pelo protheus.
+Private method postProtheusToken() as Character	                                                    //api post para obtencao do token na API do protheus
+
+EndInterface
+
+
+/*/ cApiTokenGab
+Classe responsável por obter o token de acesso as APIS do protheus com base no usuário e senha passados e implementa a iApiTokenGab
+@type classe
+@version 12.1.2310
+@author eduardo.brust
+@since 12/29/2023
+/*/
+class cApiTokenGab  Implements iApiTokenGab
+
+	Private data username as Character
+	Private data password as Character
+    Private data aRetorno as Array
+    
+	public method New() as object
+
+	Public method getProtheusToken( argUsername as Character, argPassword as Character) as Array
+	Private method postProtheusToken() 
+endclass
+
+/*/{Protheus.doc} cApiTokenGab::new() as object
+Metodo construtor
+@type method
+@version 12.1.2310
+@author Eduardo Brust
+@since 10/29/2023
+return Self, retorna um objeto
+/*/
+method new() as object class cApiTokenGab
+	::username		:= ''
+	::password		:= ''
+    ::aRetorno      := {}
+return Self
+
+
+/*/{Protheus.doc} cApiTokenGab::getProtheusToken( argUsername as Character, argPassword as Character) as Array
+metodo publico para retornar o token recuperado pelo protheus.
+@type method
+@version 12.1.2310
+@author Eduardo Brust
+@since 12/29/2023
+@return Array, ::aRetorno
+/*/
+method getProtheusToken( argUsername as Character, argPassword as Character) as Array class cApiTokenGab
+    //chamo API para obter o token do protheus
+    ::postProtheusToken()
+return ::aRetorno
+
+
+/*/{Protheus.doc} cApiTokenGab::postProtheusToken() 
+api post obtencao do token na API do protheus
+@type method
+@version 12.1.2310
+@author Eduardo Brust
+@since 12/29/2023
+/*/
+method postProtheusToken()  class cApiTokenGab
+	Local cEndPoint := GetnewPar("MV_XURLREST","https://localhost:8003/rest") 	as Character //EndPoint da API GAB para busca do token - Integração ICF x Protheus
+	Local cResource	:= "/api/oauth2/v1/token?grant_type=password" as Character
+	Local aHeader	:= {} as Array
+	Local oRet		:= Nil as object
+	Local cResult	:= "" as Character
+
+	oRet := FWRest():New(cEndPoint)  //conecto ao EndPoint do serviço
+
+	oRet:SetPath(cResource)		 	//defino a url final de conexao
+
+	// Inclusão de parametros no Header
+	aAdd(aHeader,"Content-Type: application/json")
+	aAdd(aHeader,"Accept: application/json" )
+    aAdd(aHeader,"username: eduardo.brust" )
+    aAdd(aHeader,"password: a12345" )
+
+	//TRATAMENTO DE ERRO
+	if VALTYPE(oRet) <> "O"
+		return cResult
+	endif
+                        	
+	oRet:SetPostParams()
+
+	If (oRet:Post(aHeader))
+
+		//recupero o json retornado
+		cResult	:= oRet:GetResult()
+
+		//trato o json
+		oJson	:= JsonObject():new()
+		oJson:fromJson(cResult)
+
+		//recupero o token
+		cResult	:= 	oJson:GetJsonText("access_token")
+        ::aRetorno := {.T.,cResult}
+	else
+		cResult	:= oRet:GetLastError()
+        ::aRetorno := {.F.,cResult}
+	endif
+return 
