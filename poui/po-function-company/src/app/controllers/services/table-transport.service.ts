@@ -32,8 +32,8 @@ export class TableTransportService {
         type: 'label',
         width: '8%',
         labels: [
-          { value: 'Y', color: 'green', label: 'Ativo',icon: 'po-icon po-icon-lock-off'  },
-          { value: 'N', color: 'red', label: 'Inativo', icon: 'po-icon po-icon-lock' }
+          { value: 'Y', color: 'green', label: 'Ativo',icon: ' an an-lock-open'  },
+          { value: 'N', color: 'red', label: 'Inativo', icon: ' an an-lock' }
         ]
       },
       { property: 'cfunction', label: 'Rotina',visible: true },

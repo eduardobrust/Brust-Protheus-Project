@@ -16,10 +16,10 @@ export class AppComponent {
   public endPointProt: string | undefined;
 
   readonly menus: Array<PoMenuItem> = [
-    { label: 'Home', link: '/controllers/home', icon: "po-icon po-icon-home" },
-    { label: 'Rotina x Empresa', link: '/controllers/table-transport', icon: "po-icon po-icon-company" },
-    { label: 'Exit', action: this.closeApp.bind(this), icon: 'po-icon po-icon-exit' }
- //   { label: 'LER_JSON', action: this.loadAppConfig.bind(this), icon: 'po-icon po-icon-exit' }
+    { label: 'Home', link: '/controllers/home', icon: " an an-house-line" },
+    { label: 'Rotina x Empresa', link: '/controllers/table-transport', icon: " an an-building-apartment" },
+    { label: 'Exit', action: this.closeApp.bind(this), icon: ' an an-sign-out' }
+ //   { label: 'LER_JSON', action: this.loadAppConfig.bind(this), icon: ' an an-sign-out' }
   ];
 
   constructor(

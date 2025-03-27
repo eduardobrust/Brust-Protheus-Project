@@ -35,7 +35,7 @@ export class TableTransportComponent implements OnInit {
   companies: Company[] | any;
 
   public readonly PageActions: Array<PoPageAction> = [
-    { label: 'Incluir', action: this.onClickInsertModal.bind(this), icon: 'po-icon po-icon-plus' },
+    { label: 'Incluir', action: this.onClickInsertModal.bind(this), icon: ' an an-plus' },
   ];
 
   close: PoModalAction = {
@@ -76,7 +76,7 @@ export class TableTransportComponent implements OnInit {
     {
       label: 'Editar',
       action: this.onClickEditdModal.bind(this),
-      icon: 'po-icon po-icon-edit'
+      icon: ' an an-pencil-simple'
     }
   ];
 
