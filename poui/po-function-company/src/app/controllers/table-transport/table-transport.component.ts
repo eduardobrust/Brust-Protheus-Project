@@ -12,9 +12,10 @@ import { Company } from '../company.interface';
 import { TableTransportService } from '../services/table-transport.service';
 
 @Component({
-  selector: 'app-table-transport',
-  templateUrl: './table-transport.component.html',
-  providers: [TableTransportService]
+    selector: 'app-table-transport',
+    templateUrl: './table-transport.component.html',
+    providers: [TableTransportService],
+    standalone: false
 })
 export class TableTransportComponent implements OnInit {
   
