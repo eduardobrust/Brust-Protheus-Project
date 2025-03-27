@@ -20,7 +20,7 @@
     "@angular/router": "~19.0.0",
     "@po-ui/ng-components": "19.6.0",
     "@po-ui/ng-templates": "19.6.0",
-    "@totvs/protheus-lib-core": "^15.0.1",
+    "@totvs/protheus-lib-core": "^19.0.0",
     "@types/node": "^20.9.0",
     "rxjs": "~7.8.0",
     "services": "^0.0.3",
