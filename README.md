@@ -18,7 +18,7 @@ O projeto é desenvolvido em:
 -   [Back-end - ERP Protheus Release 12.1.2410](https://tdn.totvs.com/pages/releaseview.action?pageId=836052340)
 -   [API Rest - TLPP](https://tdn.totvs.com/display/tec/TLPP)
 
-### :books: Versões globais início do projeto
+### :books: Versões globais do projeto
 
 - Angular CLI: 19.0.7
 - Node: 22.14.0
