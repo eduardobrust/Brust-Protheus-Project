@@ -9,37 +9,49 @@ Repository for developing TL++ and POUI projects for the Totvs Protheus environm
 
 O projeto é desenvolvido em:
 
--   [Front-end - Framework - Angular 16](https://angular.io/)
+-   [Front-end - Framework - Angular 19](https://angular.io/)
 
--   [Front-end - Biblioteca - PO UI v16.5](https://po-ui.io/)
+-   [Front-end - Biblioteca - PO UI v19](https://po-ui.io/)
 
 -   [Front-end - Biblioteca - @totvs/protheus-lib-core](https://tdn.totvs.com/display/public/framework/Protheus-lib-core/)
 
--   [Back-end - ERP Protheus Release 12.1.2310](https://tdn.totvs.com/pages/releaseview.action?pageId=744479921)
+-   [Back-end - ERP Protheus Release 12.1.2410](https://tdn.totvs.com/pages/releaseview.action?pageId=836052340)
 -   [API Rest - TLPP](https://tdn.totvs.com/display/tec/TLPP)
 
 ### :books: Versões globais início do projeto
 
--   Angular CLI: 16.2.8
--   Node: 18.18.0
--   Package Manager: npm 9.8.1
--   OS: win32 x64
+- Angular CLI: 19.0.7
+- Node: 22.14.0
+- Package Manager: npm 10.9.2
+- OS: win32 x64
 
--   Angular: 16.2.11
-... animations, common, compiler, compiler-cli, core, forms
+- Angular: 19.0.7
+... animations, cli, common, compiler, compiler-cli, core, forms
+... platform-browser, platform-browser-dynamic, router
+
+... animations, cli, common, compiler, compiler-cli, core, forms
 ... platform-browser, platform-browser-dynamic, router
 
 ### :package: Package Version
 
-@angular-devkit/architect 0.1602.8
-@angular-devkit/build-angular 16.2.8
-@angular-devkit/core 16.2.8
-@angular-devkit/schematics 16.2.8
-@angular/cli 16.2.8
-@schematics/angular 16.2.8
-rxjs 7.5.7
-typescript 5.1.6
-zone.js 0.13.3
+@angular-devkit/architect       0.1900.7
+@angular-devkit/architect       0.1900.7
+@angular-devkit/build-angular   19.0.7
+@angular-devkit/core            19.0.7
+@angular-devkit/core            19.0.7
+@angular-devkit/schematics      19.0.7
+@angular-devkit/schematics      19.0.7
+@angular/cdk                    19.2.7
+@angular-devkit/schematics      19.0.7
+@angular-devkit/schematics      19.0.7
+@angular-devkit/schematics      19.0.7
+@angular-devkit/schematics      19.0.7
+@angular-devkit/schematics      19.0.7
+@angular/cdk                    19.2.7
+@schematics/angular             19.0.7
+rxjs                            7.8.2
+typescript                      5.6.3
+zone.js                         0.15.0
 
 ### :deciduous_tree: Estrutura de pastas sugerida para o projeto :
 
@@ -108,13 +120,13 @@ O layout da aplicação segue o padrão do PO UI Totvs Protheus
 1. Entrar na raiz do projeto e atualizar:
 
 ```bash
-  ng update @po-ui/ng-components@15.9.2 --allow-dirty --force
+  ng update @po-ui/ng-components@19.6.0 --allow-dirty --force
 ```
 
 2. Entrar na raiz do projeto e atualizar:
 
 ```bash
-  ng update @po-ui/ng-templates@15.9.2 --allow-dirty --force
+  ng update @po-ui/ng-templates@19.6.0  --allow-dirty --force
 ```
 
 #### ⚙️ [ Criando no PO UI ]
