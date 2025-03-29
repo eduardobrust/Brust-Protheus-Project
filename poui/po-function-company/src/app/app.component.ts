@@ -17,7 +17,7 @@ export class AppComponent {
 
   readonly menus: Array<PoMenuItem> = [
     { label: 'Home', link: '/controllers/home', icon: " an an-house-line" },
-    { label: 'Rotina x Empresa', link: '/controllers/table-transport', icon: " an an-building-apartment" },
+    { label: 'Function x Company', link: '/controllers/table-transport', icon: " an an-building-apartment" },
     { label: 'Exit', action: this.closeApp.bind(this), icon: ' an an-sign-out' }
  //   { label: 'LER_JSON', action: this.loadAppConfig.bind(this), icon: ' an an-sign-out' }
   ];

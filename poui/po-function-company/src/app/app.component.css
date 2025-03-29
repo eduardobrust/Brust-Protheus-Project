@@ -1,0 +1,15 @@
+@media (max-width: 768px) {
+  .po-table {
+    font-size: 14px;
+  }
+
+  .po-table th, .po-table td {
+    padding: 5px;
+  }
+}
+
+@media (max-width: 480px) {
+  .po-table {
+    font-size: 12px;
+  }
+}
