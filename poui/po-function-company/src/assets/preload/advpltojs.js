@@ -1,5 +1,5 @@
-(codeType, content)=> {
+(codeType, content) => {
   if (codeType == 'urlprotheus') {
-  sessionStorage['urlprotheus'] = content;
+    return true;
   }
 }
