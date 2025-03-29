@@ -65,9 +65,10 @@ export class AppComponent {
       this.endPointProt = response.api_baseUrl;
       this.endPointProt = response.api_baseUrl
       this.poNotification.information('Endpoint Rest [JsonConfig] : ' + this.endPointProt);
+      console.error('Endpoint Rest [JsonConfig] :', this.endPointProt);
       return response.api_baseUrl
     } catch (error) {
-      //console.error('Error loading app config', error);
+      console.error('Error loading app config', error);
       throw error; // You might want to handle the error appropriately in your application
     }
   }

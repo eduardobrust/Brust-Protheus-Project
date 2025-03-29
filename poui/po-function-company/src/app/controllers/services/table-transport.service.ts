@@ -17,13 +17,18 @@ export class TableTransportService {
 
   constructor(private http: HttpClient, private appComponent: AppComponent) {
     // Define a URL base para autenticação usando environment.api_baseUrl
-    this.authUrl = `${environment.api_baseUrl}api/oauth2/v1/token?grant_type=password`;
+
+    //this.authUrl = `${environment.api_baseUrl}api/oauth2/v1/token?grant_type=password`;
+
+    this.authUrl = (this.appComponent.endPointProt !== undefined && this.appComponent.endPointProt !== null)
+    ? `${this.appComponent.endPointProt}/api/oauth2/v1/token?grant_type=password`
+    : `${environment.api_baseUrl}/api/oauth2/v1/token?grant_type=password`;
 
     // Define a URL base da API cApiFunctionCompany
     // Se appComponent.endPointProt estiver definido, usa ele; caso contrário, usa environment.api_baseUrl
     this.API = (this.appComponent.endPointProt !== undefined && this.appComponent.endPointProt !== null)
       ? `${this.appComponent.endPointProt}/tlpp/cfg/v1/cApiFunctionCompany`
-      : `${environment.api_baseUrl}tlpp/cfg/v1/cApiFunctionCompany`;
+      : `${environment.api_baseUrl}/tlpp/cfg/v1/cApiFunctionCompany`;
   }
 
   // Método para obter o token de autenticação
