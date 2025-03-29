@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
 import { PoDynamicModule, PoFieldModule, PoModalModule, PoModule, PoPageModule, PoTableModule, PoI18nModule, PoI18nConfig } from '@po-ui/ng-components';
 import { PoPageDynamicEditModule, PoTemplatesModule } from '@po-ui/ng-templates';
 import { AppRoutingModule } from './app-routing.module';
@@ -14,15 +13,12 @@ import { TableTransportComponent } from './controllers/table-transport/table-tra
 const i18nLiterals = {
   pt: {
     welcome: 'Bem-vindo',
-    // Adicione outros literais conforme necessário
   },
   en: {
     welcome: 'Welcome',
-    // Adicione outros literais conforme necessário
   },
   es: {
     welcome: 'Bienvenido',
-    // Adicione outros literais conforme necessário
   }
 };
 
@@ -45,9 +41,8 @@ const i18nConfig: PoI18nConfig = {
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule,
+    AppRoutingModule, // Já inclui o RouterModule.forRoot
     PoModule,
-    RouterModule.forRoot([]),
     PoTemplatesModule,
     PoTableModule,
     PoPageModule,
@@ -61,7 +56,6 @@ const i18nConfig: PoI18nConfig = {
   ],
   providers: [
     provideHttpClient(withInterceptorsFromDi()),
-    // Remova o { provide: I18N_CONFIG, useValue: i18nConfig } daqui
   ],
   bootstrap: [AppComponent]
 })
