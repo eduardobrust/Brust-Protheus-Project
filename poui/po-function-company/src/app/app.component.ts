@@ -1,7 +1,7 @@
+import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { PoMenuItem, PoNotificationService } from '@po-ui/ng-components';
 import { ProAppConfigService, ProJsToAdvplService } from '@totvs/protheus-lib-core';
-import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
@@ -30,16 +30,8 @@ export class AppComponent {
 
     if (this.proAppConfigService.insideProtheus()) {
       this.protheus = true;
-      let retorno = this.proJsToAdvplService.jsToAdvpl('receberprotheus', '');
-
-      if (retorno) {
-        this.endPointProt = sessionStorage['urlprotheus'];
-        if  (this.endPointProt !== undefined && this.endPointProt !== null){
-          this.poNotification.information('Endpoint Rest [MV_XURLPRO] :' + this.endPointProt);
-        }else {
-          this.loadAppConfig();
-        }
-      }
+      this.endPointProt  = sessionStorage.getItem('api_baseUrl') || undefined;
+      this.poNotification.information('Endpoint Rest :' + this.endPointProt);
     }
     else {    
       this.loadAppConfig();
@@ -63,7 +55,6 @@ export class AppComponent {
       const response = await firstValueFrom(this.http.get<any>('assets/data/appConfig.json'));
 
       this.endPointProt = response.api_baseUrl;
-      this.endPointProt = response.api_baseUrl
       this.poNotification.information('Endpoint Rest [JsonConfig] : ' + this.endPointProt);
       console.error('Endpoint Rest [JsonConfig] :', this.endPointProt);
       return response.api_baseUrl

@@ -11,12 +11,11 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:application",
+          "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": {
-              "base": "dist/po-function-company"
-            },
+            "outputPath": "dist/po-function-company",
             "index": "src/index.html",
+            "main": "src/main.ts",
             "polyfills": [
               "zone.js"
             ],
@@ -30,8 +29,7 @@
               "./node_modules/@po-ui/style/css/po-theme-default.min.css",
               "src/styles.css"
             ],
-            "scripts": [],
-            "browser": "src/main.ts"
+            "scripts": []
           },
           "configurations": {
             "production": {
