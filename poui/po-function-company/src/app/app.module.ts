@@ -8,6 +8,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HomeComponent } from './controllers/home/home.component';
 import { TableTransportComponent } from './controllers/table-transport/table-transport.component';
+import { ProtheusLibCoreModule } from '@totvs/protheus-lib-core';
 
 // Defina os literais para os idiomas suportados
 const i18nLiterals = {
@@ -41,7 +42,7 @@ const i18nConfig: PoI18nConfig = {
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule, // Já inclui o RouterModule.forRoot
+    AppRoutingModule, 
     PoModule,
     PoTemplatesModule,
     PoTableModule,
@@ -52,7 +53,8 @@ const i18nConfig: PoI18nConfig = {
     PoPageDynamicEditModule,
     FormsModule,
     ReactiveFormsModule,
-    PoI18nModule.config(i18nConfig) // Configura o PoI18nModule com a configuração
+    PoI18nModule.config(i18nConfig),
+    ProtheusLibCoreModule 
   ],
   providers: [
     provideHttpClient(withInterceptorsFromDi()),
