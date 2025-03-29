@@ -19,7 +19,6 @@ export class AppComponent {
     { label: 'Home', link: '/controllers/home', icon: " an an-house-line" },
     { label: 'Function x Company', link: '/controllers/table-transport', icon: " an an-building-apartment" },
     { label: 'Exit', action: this.closeApp.bind(this), icon: ' an an-sign-out' }
- //   { label: 'LER_JSON', action: this.loadAppConfig.bind(this), icon: ' an an-sign-out' }
   ];
 
   constructor(

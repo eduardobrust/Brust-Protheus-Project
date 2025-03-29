@@ -3,9 +3,9 @@
 /*/{Protheus.doc} fncCo
 Funcao responsavel por chamar a tela PO UI para gerencimento de cadastro Function x Company
 @type function
-@version 12.1.2310
+@version 12.1.2410
 @author Eduardo Brust
-@since 11/13/2023
+@since 03/28/2025
 /*/
 User Function fncCo()
 	Local aArea := GetArea()
@@ -23,7 +23,7 @@ Static Function JsToAdvpl(oWebChannel,cType,cContent)
 		alert('O que veio do JS: ' + cContent)
 		// Se a interação que recebi for igual a receberProtheus
 	Case cType $ 'receberprotheus'
-		cUrlProt := alltrim(GetNewPar("MV_XURLPRO", " "))
+		cUrlProt := alltrim(GetNewPar("MV_XURLPRO", "https://localhost:8003/rest/"))
 		// Envio um comando ADVPL para minha aplicação Web
 		oWebChannel:AdvPLToJS('urlprotheus', cUrlProt)
 	End

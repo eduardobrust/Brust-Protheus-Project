@@ -1,6 +1,6 @@
 {
     "name": "FunctionCompany",
     "version": "1.0.0",
-    "api_baseUrl": "https://localhost:8003/rest/",
+    "api_baseUrl": "/",
     "productLine": "Protheus"
 }
