@@ -9,7 +9,7 @@ namespace MvcLogin
 Classe Observer para tratamento de eventos do modelo CadLogin
 @type class
 @author eduardo.brust
-@since 2/5/2026
+@since 19/04/2026
 /*/
 class CadLoginEvents From FWModelEvent
 
@@ -19,24 +19,25 @@ class CadLoginEvents From FWModelEvent
 
 	//métodos
 	protected Method New() CONSTRUCTOR //metodo construtor da classe
-	protected method finish() //limpar  os objetos e arrays da memória antes de eliminar a instancia da classe
+	protected Method finish() //limpar  os objetos e arrays da memória antes de eliminar a instancia da classe
 	protected Method BrowseDef()  //definicao do browser da tela
 
-	public method ModelPosVld(oModel as object, cModelId as character) as logical
-	public method AfterTTS(oModel as object, cModelId as character)
+	public Method ModelPosVld(oModel as object, cModelId as character) as logical
+	public Method AfterTTS(oModel as object, cModelId as character)
 
-	Static method CadastraLoginHml()  //método estático para cadastro de login na base de homologação, será chamado externamente via job / scheduler
-	Static Method RetornaCadLogin()  //método para retornar os dados da tabela de cadastro de login
-	Static Method ConectaApiLogin(jLogin as json)  as logical //método para conectar na API do protheus de cadastro de usuarios
+	Static Method CadastraLoginHml()  //método estático para cadastro de login na base de homologação, será chamado externamente via job / scheduler
+	Static Method RetornaCadLogin() as Logical  //método para retornar os dados da tabela de cadastro de login
+	Static Method ConectaApiLogin(jLogin as json, cToken as character)  as logical //método para conectar na API do protheus de cadastro de usuarios
 	Static Method AtualizaCadLogin(cLogin as character,cDataIn as character) //método para atualizar os dados da tabela de cadastro de login
-	Static method ProtheusToken() as character //método para obter o token de acesso as APIs do protheus via API
+	Static Method ProtheusToken() as character //método para obter o token de acesso as APIs do protheus via API
+	Static Method InfoServer() as Logical //método para obter informações do server
 endclass
 
 /*/{Protheus.doc} CadLoginEvents::New
 É o **método construtor** da classe. Ele é responsável por inicializar os atributos essenciais
 @type method
 @author eduardo.brust
-@since 2/5/2026
+@since 19/04/2026
 @return object, retorna a instancia do objeto
 /*/
 method New() class CadLoginEvents
@@ -50,7 +51,7 @@ return self
 Método destinado à **limpeza de memória**. Ele desativa e destrói o objeto de Browse
 @type method
 @author eduardo.brust
-@since 2/5/2026
+@since 19/04/2026
 /*/
 Method finish() CLASS CadLoginEvents
 
@@ -67,7 +68,7 @@ Return
 Método de pós-validação total do modelo (TudoOk).
 @type method
 @author eduardo.brust
-@since 2/5/2026
+@since 19/04/2026
 @return logical, retorna .t. ou .f. dependendo da validação
 /*/
 method ModelPosVld(oModel as object, cModelId as character) as logical class CadLoginEvents
@@ -82,7 +83,7 @@ return
 definicao do browser da tela
 @type method
 @author eduardo.brust
-@since 2/5/2026
+@since 19/04/2026
 /*/
 Method BrowseDef() CLASS CadLoginEvents
 
@@ -90,31 +91,46 @@ Method BrowseDef() CLASS CadLoginEvents
 	::oBrowseTable := FWMBrowse():New()
 	::oBrowseTable:SetAlias("ZZG")
 
-	::oBrowseTable:AddLegend("!EMPTY(ZZG->ZZG_DATAIN)","GREEN"	,"Login Cdastrado")
+	::oBrowseTable:AddLegend("!EMPTY(ZZG->ZZG_DATAIN)","GREEN"	,"Login Cadastrado")
 	::oBrowseTable:AddLegend("EMPTY(ZZG->ZZG_DATAIN)","RED"	,"Login Pendente Cadastro")
 
 	::oBrowseTable:SetUseCaseFilter(.T.)
 	::oBrowseTable:DisableDetails()
 	::oBrowseTable:SetDescription(::cTitulo)
-	::oBrowseTable:SetMenuDef("MvcCadLoginHml.CadLogin")
+	::oBrowseTable:SetMenuDef("MvcLogin.CadLogin")
 	::oBrowseTable:Activate()
 
 return
 
 
 Method CadastraLoginHml() CLASS CadLoginEvents
+	Local lRet as logical
 
-	RpcClearEnv()
-	RpcSetEnv( '99','01',,,,,)
+	lRet := mvcLogin.CadLoginEvents():InfoServer() //chamo o método para verificar se o ambiente é de teste/homologação
 
-	//chamo metódo que retorna os dados da tabela de cadastro de login via API do protheus, para preencher o browse da tela
-	MvcLogin.CadLoginEvents():RetornaCadLogin()
+	If ISBLIND() .OR. GetRemoteType() == -1 .OR. !TCIsConnected()
+		RpcClearEnv()
+		RpcSetEnv( '99','01',,,,,)
+	endif
 
-	RpcClearEnv()
+	if lRet // se for ambiente de teste ou homologação
+		//chamo metódo que retorna os dados da tabela de cadastro de login via API do protheus, para preencher o browse da tela
+		lRet := MvcLogin.CadLoginEvents():RetornaCadLogin()
+	endif
+
+	If ISBLIND() .OR. GetRemoteType() == -1 .OR. !TCIsConnected()
+		RpcClearEnv()
+	else
+		if lRet
+			FWAlertSuccess("Login cadastrado com sucesso", "Api Login")
+		else
+			FWAlertError("Falha ao cadastrar o login", "Api Login")
+		endif
+	endif
 
 return
 
-Method RetornaCadLogin() CLASS CadLoginEvents
+Method RetornaCadLogin() as Logical CLASS CadLoginEvents
 	local cQuery as character //query para consulta
 	Local oStatement      as object
 	local nParamOrder := 1 as numeric //ordem dos parametros
@@ -122,6 +138,8 @@ Method RetornaCadLogin() CLASS CadLoginEvents
 	local cLifeTime := "600" as character //tempo de vida da consulta
 	local cTimeOut := "120" as character //tempo de espera da consulta
 	Local jLogin as json //monto os dados do login em formato json para enviar via API
+	Local cToken := "" as character //variável para armazenar o token de acesso as APIs do protheus
+	Local lRet := .F. as logical
 
 	cQuery := ""
 
@@ -145,6 +163,10 @@ Method RetornaCadLogin() CLASS CadLoginEvents
 	//percorro o alias data tabela para cadastro do login via API, caso haja algum registro sem data de cadastro (pendente)
 	while !(cAlias)->(Eof())
 
+		if empty(cToken)
+			cToken := MvcLogin.CadLoginEvents():ProtheusToken() //chamo o método para obter o token de acesso as APIs do protheus somente 1x
+		endif
+
 		jLogin := JsonObject():New()
 		jLogin["LOGIN"] := LOWER(ALLTRIM((cAlias)->ZZG_LOGIN))
 		jLogin["NOME"] := LOWER(ALLTRIM((cAlias)->ZZG_NOME))
@@ -153,19 +175,21 @@ Method RetornaCadLogin() CLASS CadLoginEvents
 		jLogin["CARGO"] := LOWER(ALLTRIM((cAlias)->ZZG_CARGO))
 		JLogin["DEPART"] := LOWER(ALLTRIM((cAlias)->ZZG_DEPART))
 
-		IF MvcLogin.CadLoginEvents():ConectaApiLogin( jLogin) //chamo o método de conexão com a API para cadastro do login, passando os dados do login em formato json
+		IF MvcLogin.CadLoginEvents():ConectaApiLogin( jLogin, cToken) //chamo o método de conexão com a API para cadastro do login, passando os dados do login em formato json
 
 			//caso a conexão com a API seja bem sucedida, atualizo a data de cadastro do login na tabela
 			MvcLogin.CadLoginEvents():AtualizaCadLogin((cAlias)->ZZG_LOGIN, DTOS(Date()))
 			VARINFO("Login " + (cAlias)->ZZG_LOGIN + " cadastrado com sucesso via API", "CadLogin")
+			lRet := .T.
 		ELSE
 			VARINFO("Falha ao cadastrar o login " + (cAlias)->ZZG_LOGIN + " via API", "CadLogin")
 		ENDIF
 		(cAlias)->(dbSkip())
 	enddo
-return
 
-Method ConectaApiLogin(jLogin as json)  as logical CLASS CadLoginEvents
+return lRet
+
+Method ConectaApiLogin(jLogin as json, cToken as character)  as logical CLASS CadLoginEvents
 	Local aHeader   := {}
 	Local cEndPoint := GetNewPar("MV_XURLREST", "https://localhost:8003/rest")
 	Local cResource := "/api/framework/v1/users/" // Endpoint de gravação conforme sua imagem
@@ -174,9 +198,7 @@ Method ConectaApiLogin(jLogin as json)  as logical CLASS CadLoginEvents
 	Local lRet      := .F.
 	Local jBody := JsonObject():New() as json
 	Local cBody := ""
-	Local cToken := "" as character
 
-	cToken := MvcLogin.CadLoginEvents():ProtheusToken() //chamo o método para obter o token de acesso as APIs do protheus
 
 	// --- MONTAGEM DO BODY (Conforme o seu JSON) ---
 	jBody["userName"]      := jLogin["LOGIN"]
@@ -297,7 +319,7 @@ Method AtualizaCadLogin(cLogin as character, cDataIn as character) CLASS CadLogi
 
 	IF !EMPTY(cLogin) .AND. !EMPTY(cDataIn)
 		cUpdate := ""
-		cUpdate += " UPDATE ZZG SET ZZG_DATAIN = '" + cDataIn + "' " + CRLF
+		cUpdate += " UPDATE " +  RetSqlName("ZZG") + " SET ZZG_DATAIN = '" + cDataIn + "' " + CRLF
 		cUpdate += " WHERE ZZG_LOGIN = '" + cLogin + "' " + CRLF
 
 		nRet := TCSQLExec(cUpdate) // Atualiza a temporária localmente
@@ -311,11 +333,36 @@ Method AtualizaCadLogin(cLogin as character, cDataIn as character) CLASS CadLogi
 
 return
 
+Method InfoServer() as Logical CLASS CadLoginEvents
+	Local cIniName		:= ""
+	Local cAmbiente		:= ""
+	Local lRet			:= .F. as logical  // se retornar .T. ambiente é teste ou homologacao
+
+	//VERIFICAR SE O AMBIENTE EM EXECUÇÃO É BASE TESTE OU PRODUÇÃO BUSCANDO UMA CHAVE NO INI QUE A ROTINA IRA RODAR
+	cIniName	:= ALLTRIM(GetSrvIniName())
+
+	//TRATAMENTO DE ERRO
+	IF VALTYPE(cIniName) == "C"
+		cAmbiente	:= ALLTRIM(GetPvProfString("AMBIENTE_AGUAS", "TIPO", "", cIniName))
+	ENDIF
+
+	//TRATAMENTO DE ERRO
+	IF VALTYPE(cAmbiente) <> "C"
+		cAmbiente := ""
+	ENDIF
+
+	//TESTO SE O AMBIENTE LIDO NO INI DO SERVER E DE TESTE/HOMOLOGACAO
+	IF UPPER(cAmbiente) $ "|TESTE|HOMOLOGACA0|"
+		lRet := .T.
+	ENDIF
+
+Return lRet
+
 /*/{Protheus.doc} CadLogin
 Função principal (Entry Point) renomeada para CadLogin
 @type function
 @author eduardo.brust
-@since 2/5/2026
+@since 19/04/2026
 /*/
 User Function CadLogin()
 	local aArea as array
@@ -330,7 +377,7 @@ User Function CadLogin()
 	//RpcSetType(3)
 	//lRet := RpcSetEnv( "00", "010101", , ,,ProcName(), )
 
-	oCadLogin := MvcCadLoginHml.CadLoginEvents():New()  //instancio o objeto da classe
+	oCadLogin := MvcLogin.CadLoginEvents():New()  //instancio o objeto da classe
 
 	//Criando o browse da temporária
 	oCadLogin:BrowseDef()
@@ -351,7 +398,7 @@ Retorna um array com as **opções de menu** disponíveis na rotina. Define quais o
 como Pesquisar, Visualizar, Incluir, Alterar, Excluir, Imprimir e Copiar.
 @type function
 @author eduardo.brust
-@since 2/5/2026
+@since 19/04/2026
 @return array, Array contendo as opções da rotina, algumas opções
 não são apresentadas diretamente como botões, é necessário ir nas
 outras ações
@@ -360,17 +407,18 @@ User Function MenuDef() as array
 	local aRotina := {} as array
 
 	// As referências de Action devem conter o Namespace completo
-	Add Option aRotina Title "Visualizar" Action "ViewDef.MvcCadLoginHml.CadLogin" Operation OP_VISUALIZAR Access 0
-	Add Option aRotina Title "Incluir"    Action "ViewDef.MvcCadLoginHml.CadLogin" Operation OP_INCLUIR    Access 0
-	Add Option aRotina Title "Alterar"    Action "ViewDef.MvcCadLoginHml.CadLogin" Operation OP_ALTERAR    Access 0
-	Add Option aRotina Title "Excluir"    Action "ViewDef.MvcCadLoginHml.CadLogin" Operation OP_EXCLUIR    Access 0
+	Add Option aRotina Title "Visualizar" Action "ViewDef.MvcLogin.CadLogin" Operation OP_VISUALIZAR Access 0
+	Add Option aRotina Title "Incluir"    Action "ViewDef.MvcLogin.CadLogin" Operation OP_INCLUIR    Access 0
+	Add Option aRotina Title "Alterar"    Action "ViewDef.MvcLogin.CadLogin" Operation OP_ALTERAR    Access 0
+	Add Option aRotina Title "Excluir"    Action "ViewDef.MvcLogin.CadLogin" Operation OP_EXCLUIR    Access 0
+	Add Option aRotina Title "API Login"  Action "MvcLogin.CadLoginEvents():CadastraLoginHml()" Operation OP_INCLUIR    Access 0
 Return aRotina
 
 /*/{Protheus.doc} ModelDef
 Definição do modelo de dados (Aberto/Público em TLPP)
 @type function
 @author eduardo.brust
-@since 2/5/2026
+@since 19/04/2026
 @return object, retorna o objeto do model
 /*/
 User Function ModelDef() as object
@@ -389,7 +437,7 @@ User Function ModelDef() as object
 	oModel:SetPrimaryKey({"ZZG_FILIAL", "ZZG_LOGIN"})
 
 	// Instalação do Observer
-	oModel:InstallEvent("BordEvents", , MvcCadLoginHml.CadLoginEvents():New())
+	oModel:InstallEvent("BordEvents", , MvcLogin.CadLoginEvents():New())
 
 Return oModel
 
@@ -397,7 +445,7 @@ Return oModel
 Define a **Interface Visual (View)** da rotina. Ela determina como os campos serão exibidos
 @type function
 @author eduardo.brust
-@since 2/5/2026
+@since 19/04/2026
 @return object, Objeto do tipo FwFormView
 /*/
 User Function ViewDef() as object
@@ -405,7 +453,7 @@ User Function ViewDef() as object
 	Local oStruZZG 	as object
 
 	// O carregamento do modelo exige o nome completo (Namespace + Função)
-	oModel    := FWLoadModel("MvcCadLoginHml.CadLogin")
+	oModel    := FWLoadModel("MvcLogin.CadLogin")
 	oStruZZG  := FWFormStruct(2, "ZZG")
 
 
