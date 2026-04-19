@@ -1,0 +1,457 @@
+// definição dos includes
+#include "protheus.ch"
+#include "msobject.ch"
+#include "totvs.framework.treports.integratedprovider.th"  // prover o acesso a classe pai herdada
+
+/*
+#SMARTVIEW
+Eduardo Brust
+Objeto de Negócio : sv.ctb.nfentrada
+Finalidade : Objeto de Negócio para Smart View de Nota Fiscal de Entrada/Saida
+chamada no menu : CallSvCtb
+*/
+
+namespace sv.ctb //namespace do Objeto de Negócio
+
+@totvsFrameworkTReportsIntegratedProvider(active=.T., team="SIGACTB", tables="SD1,SB1,SF4,SA2", name="Nota-Fiscal-EntradaSaida", country="BRA", initialRelease="12.1.2310",customTables="ALL")
+
+//classe para criação do Objeto de Negócio de NotaFiscalEntrada para o SmartView
+class NfEntSaiSvBusinessObject from totvs.framework.treports.integratedprovider.IntegratedProvider
+
+	//propriedades da classe
+	protected data aFields as array				//campos do Smart View
+	protected data aFieldsSql as array			//campos da query sql
+	protected data aStruct as array				//estrutura da tabela
+	protected data oStatement      as object
+	protected data cAlias          as character	//alias da tabela
+	protected data cFieldQueryE     as character  //campos da query de entrada
+	protected data cFieldQueryS     as character  //campos da query de saída
+
+	//metodos da classe
+	public method new() as object	//construtor
+	public method getData(nPage as numeric, oFilter as object) as object //metodo que retorna os dados do objeto de negocio
+	public method getSchema() as object //metodo que retorna a estrutura do objeto de negocio
+	protected method getFields() //metodo que retorna os campos do objeto de negocio
+	protected method getStruct() as array //metodo que retorna a estrutura dos campos da tabela
+
+endclass
+
+/*/{Protheus.doc} NfEntSaiSvBusinessObject::new
+Construtor da classe
+@type method
+@version 12.1.2410
+@author Eduardo Brust
+@since 30/10/2025
+@return object, retorna o objeto instanciado
+/*/
+method new() as object class NfEntSaiSvBusinessObject
+
+	_Super:new()  //instancio o método new da classe pai herdada pela minha classe.
+	self:aFields 		:= {}
+	self:aFieldsSql		:= {}
+	self:aStruct 		:= {}
+	self:cAlias 		:= ""
+	self:cFieldQueryE 	:= ""
+	self:cFieldQueryS 	:= ""
+
+	self:appendArea("Custom-Gab")
+	self:setDisplayName("CTB-Nota Fiscal de Entrada e Saída")
+	self:setDescription("CTB - Objeto de Negócios utilizado para visão de Nota Fiscal de Entrada e Saída de materiais em trânsito")
+
+	::getFields()  //chamo o método getFields para popular o array de campos da tabela
+	self:aStruct := ::getStruct()
+return self
+
+/*/{Protheus.doc} NfEntSaiSvBusinessObject::getFields
+retorna os campos da tabela
+@type method
+@version 12.1.2410
+@author Eduardo Brust
+@since 30/10/2025
+/*/
+method getFields() class NfEntSaiSvBusinessObject
+	local n as numeric
+
+	self:aFields 		:= {}
+	self:aFields := {{ 'D1_FILIAL', 'string','Filial','E'},;
+		{ 'Entrada', 'string','EntradaSaida','E'},;
+		{ 'D1_LOCAL', 'string','Armazem','E'},;
+		{ 'D1_DTDIGIT', 'date','DataContabil','E'},;
+		{ 'D1_EMISSAO', 'date','Emissao','E'},;
+		{ 'D1_DOC', 'string','Documento','E'},;
+		{ 'D1_SERIE', 'string','Serie','E'},;
+		{ 'D1_TES', 'string','TES','E'},;
+		{ 'D1_ITEM', 'string','Item','E'},;
+		{ 'D1_FORNECE', 'string','FornCliente','E'},;
+		{ 'D1_LOJA', 'string','LojaFornCliente','E'},;
+		{ 'A2_NOME', 'string','NomeFornCiente','E'},;
+		{ 'D1_TOTAL', 'number','Valor','E'},;
+		{ 'F4_TPMOV', 'string','TPMOV','E'},;
+		{ 'B1_COD', 'string','CodProduto','E'},;
+		{ 'B1_DESC', 'string','DescricaoProduto','E'},;
+		{ 'B1_XATUEST', 'string','AtualizaEstoque','E'};
+		};
+
+	self:aFieldsSql		:= {}
+	self:aFieldsSql := {{ 'D1_FILIAL', 'string','Filial','E'},;
+		{ 'Entrada', 'string','EntradaSaida','E'},;
+		{ 'D1_LOCAL', 'string','Armazem','E'},;
+		{ 'D1_DTDIGIT', 'date','DataContabil','E'},;
+		{ 'D1_EMISSAO', 'date','Emissao','E'},;
+		{ 'D1_DOC', 'string','Documento','E'},;
+		{ 'D1_SERIE', 'string','Serie','E'},;
+		{ 'D1_TES', 'string','TES','E'},;
+		{ 'D1_ITEM', 'string','Item','E'},;
+		{ 'D1_FORNECE', 'string','FornCliente','E'},;
+		{ 'D1_LOJA', 'string','LojaFornCliente','E'},;
+		{ 'A2_NOME', 'string','NomeFornCiente','E'},;
+		{ 'D1_TOTAL', 'number','Valor','E'},;
+		{ 'F4_CODIGO', 'string','CodTES','E'},;
+		{ 'F4_TPMOV', 'string','TPMOV','E'},;
+		{ 'B1_COD', 'string','CodProduto','E'},;
+		{ 'B1_DESC', 'string','DescricaoProduto','E'},;
+		{ 'B1_XATUEST', 'string','AtualizaEstoque','E'},;
+		{ 'D2_FILIAL', 'string','Filial','S'},;
+		{ 'Saida', 'string','EntradaSaida','S'},;
+		{ 'D2_LOCAL', 'string','Armazem','S'},;
+		{ 'D2_EMISSAO', 'date','DataContabil','S'},;
+		{ 'D2_EMISSAO', 'date','Emissao','S'},;
+		{ 'D2_DOC', 'string','Documento','S'},;
+		{ 'D2_SERIE', 'string','Serie','S'},;
+		{ 'D2_TES', 'string','TES','S'},;
+		{ 'D2_ITEM', 'string','Item','S'},;
+		{ 'D2_CLIENTE', 'string','FornCliente','S'},;
+		{ 'D2_LOJA', 'string','LojaFornCliente','S'},;
+		{ 'A2_NOME', 'string','NomeFornCiente','S'},;
+		{ 'D2_TOTAL', 'number','Valor','S'},;
+		{ 'F4_CODIGO', 'string','CodTES','S'},;
+		{ 'F4_TPMOV', 'string','TPMOV','S'},;
+		{ 'B1_COD', 'string','CodProduto','S'},;
+		{ 'B1_DESC', 'string','DescricaoProduto','S'},;
+		{ 'B1_XATUEST', 'string','AtualizaEstoque','S'};
+		};
+
+	//monta a string com os campos para a query de entrada e saída
+	self:cFieldQueryE := '' + CRLF
+	self:cFieldQueryS := '' + CRLF
+	for n := 1 to Len(self:aFieldsSql)
+		IF self:aFieldsSql[n][4] == 'E'
+			if self:aFieldsSql[n][1] == 'Entrada'
+				self:cFieldQueryE += "'Entrada'"  + ' AS "' + self:aFieldsSql[n][3] + '",' + CRLF
+			else
+				self:cFieldQueryE += ' ' + self:aFieldsSql[n][1] + ' AS "' + self:aFieldsSql[n][3] + '",' + CRLF
+			endif
+		ELSE
+			if self:aFieldsSql[n][1] == 'Saida'
+				self:cFieldQueryS += "'Saida'"  + ' AS "' + self:aFieldsSql[n][3] + '",' + CRLF
+			else
+				self:cFieldQueryS += ' ' + self:aFieldsSql[n][1] + ' AS "' + self:aFieldsSql[n][3] + '",' + CRLF
+			endif
+		ENDIF
+	next n
+
+	self:cFieldQueryE := alltrim(substr(self:cFieldQueryE, 1, len(self:cFieldQueryE) - 3)) + ' ' + CRLF //retira a ultima virgula
+	self:cFieldQueryS := alltrim(substr(self:cFieldQueryS, 1, len(self:cFieldQueryS) - 3)) + ' ' + CRLF //retira a ultima virgula
+
+	self:aFieldsSql		:= {}
+
+return
+
+/*/{Protheus.doc} NfEntSaiSvBusinessObject::getStruct
+retorna a estrutura da tabela
+@type method
+@version 12.1.2410
+@author Eduardo Brust
+@since 30/10/2025
+@return array, retorna a estrutura da tabela
+/*/
+method getStruct() as array class NfEntSaiSvBusinessObject
+	Local aFieldStruct    as array
+	Local nC         as numeric
+
+	aFieldStruct    := {}
+
+	for nC := 1 to Len(self:aFields)
+		AAdd(aFieldStruct, {self:aFields[nC][3], self:aFields[nC][3], self:aFields[nC][2], self:aFields[nC][3]})
+	next nC
+
+
+return (aFieldStruct)
+
+/*/{Protheus.doc} NfEntSaiSvBusinessObject::getschema
+retorna a estrutura do objeto de negocio
+@type method
+@version 12.1.2410
+@author Eduardo Brust
+@since 30/10/2025
+/*/
+method getschema() class NfEntSaiSvBusinessObject
+	Local nX as numeric
+
+	for nX := 1 To Len(self:aStruct)
+		self:addProperty(self:aStruct[nX][1], self:aStruct[nX][2], self:aStruct[nX][3], self:aStruct[nX][4])
+	Next nX
+
+	//defino parametros Nativos para o meu Objeto de Negócios - com isso qualquer recurso que utilize este objeto já herdará estes parametros nativos.
+	self:addParameter("01"  , "Filial de ", "string", .F.)
+	self:addParameter("02"  , "Filial até ", "string", .F.)
+	self:addParameter("03"  , "Data Contábil de (max 1 mes)" , "date"  , .F.)
+	self:addParameter("04"  , "Data Contábil Até (max 1 mes)", "date"  , .F.)
+
+	//Consulta dos parâmetros
+	self:setCustomURL("01",  "api/framework/v1/genericLookupService/smartview/SM0", 2)
+	self:setCustomURL("02",  "api/framework/v1/genericLookupService/smartview/SM0", 2)
+
+return self:oSchema
+
+/*/{Protheus.doc} NfEntSaiSvBusinessObject::getData
+retorna os dados do objeto de negocio
+@type method
+@version 12.1.2410
+@author Eduardo Brust
+@since 30/10/2025
+@return object, retorna os dados do objeto de negocio
+/*/
+method getData(nPage as numeric, oFilter as object) as object class NfEntSaiSvBusinessObject
+	local cQuery as character //query para consulta
+	local nSkip as numeric	//quantidade de registros a pular
+	local nCount as numeric //contador de registros
+	local nX as numeric //contador de laço
+	local jItems as json //json de itens
+	local aPDFields as array //array de campos protegidos
+	local lParamUser as logical //parametro de usuario
+	local nParamOrder := 1 as numeric //ordem dos parametros
+	local lObfuscated := .F. as logical	//ofusca ou não o campo
+	local nTotRegPag := 1000 as numeric //total de registros por página
+	local cCampo as character //nome do campo
+	local cDataIni as character //data inicial tradada para query
+	local cDataFim as character //data final tratada para query
+	local cFinalQuery as character //query final já injetada com os parametros
+	local cLifeTime := "600" as character //tempo de vida da consulta
+	local cTimeOut := "120" as character //tempo de espera da consulta
+
+	nCount := 0
+	cQuery := ""
+
+	// Monta a query para a consulta utilizando o conceito de variavel bind para melhor segurança e performance
+
+	cQuery += " SELECT " + self:cFieldQueryE + " " + CRLF  //query para entrada
+
+	// from e joins
+	cQuery += " FROM    ? SD1 " + CRLF
+
+	cQuery += " INNER JOIN ? SA2 ON SA2.D_E_L_E_T_ = ? " + CRLF
+	cQuery += " AND A2_FILIAL = ? " + CRLF
+	cQuery += " AND A2_COD = D1_FORNECE  " + CRLF
+	cQuery += " AND A2_LOJA = D1_LOJA  " + CRLF
+
+	cQuery += " INNER JOIN ? SF4 ON SF4.D_E_L_E_T_ = ? " + CRLF
+	cQuery += " AND F4_FILIAL = D1_FILIAL  " + CRLF
+	cQuery += " AND F4_TPMOV = ?  " + CRLF
+	cQuery += " AND F4_CODIGO = D1_TES  " + CRLF
+
+	cQuery += " INNER JOIN ? SB1 ON SB1.D_E_L_E_T_ = ? " + CRLF
+	cQuery += " AND B1_FILIAL = ? " + CRLF
+	cQuery += " AND B1_COD = D1_COD  " + CRLF
+	cQuery += " AND B1_XATUEST = ?   " + CRLF
+
+	// where da query
+	cQuery += " WHERE SD1.d_e_l_e_t_ = ? " + CRLF
+
+	lParamUser := .T.
+
+	// Filtros setados na interface do Smart View
+	if oFilter:hasFilter()
+		cQuery += " AND " + oFilter:getSQLExpression()
+	endif
+
+	// Método para retorno do json dos parâmetros
+	jParams := oFilter:getParameters()
+
+	if ValType(jParams["01"]) == "A" .AND. ValType(jParams["02"]) == "A"
+		cQuery += " AND D1_FILIAL BETWEEN ? AND ? " + CRLF
+	else
+		lParamUser := .F.
+	endif
+
+	if ValType(jParams["03"]) == "A" .AND. ValType(jParams["04"]) == "A"
+		cQuery += " AND D1_DTDIGIT BETWEEN ? AND ? " + CRLF
+	endif
+
+	cQuery += " UNION ALL " + CRLF
+
+	cQuery += " SELECT " + self:cFieldQueryS + " " + CRLF  //query para saída
+
+	// from e joins
+	cQuery += " FROM    ? SD2 " + CRLF
+
+	cQuery += " INNER JOIN ? SA2 ON SA2.D_E_L_E_T_ = ? " + CRLF
+	cQuery += " AND A2_FILIAL = ? " + CRLF
+	cQuery += " AND A2_COD = D2_CLIENTE  " + CRLF
+	cQuery += " AND A2_LOJA = D2_LOJA  " + CRLF
+
+	cQuery += " INNER JOIN ? SF4 ON SF4.D_E_L_E_T_ = ? " + CRLF
+	cQuery += " AND F4_FILIAL = D2_FILIAL  " + CRLF
+	cQuery += " AND F4_TPMOV = ?  " + CRLF
+	cQuery += " AND F4_CODIGO = D2_TES  " + CRLF
+
+	cQuery += " INNER JOIN ? SB1 ON SB1.D_E_L_E_T_ = ? " + CRLF
+	cQuery += " AND B1_FILIAL = ? " + CRLF
+	cQuery += " AND B1_COD = D2_COD  " + CRLF
+	cQuery += " AND B1_XATUEST = ?   " + CRLF
+
+	cQuery += " WHERE SD2.d_e_l_e_t_ = ? " + CRLF
+
+	// Filtros setados na interface do Smart View
+	if oFilter:hasFilter()
+		cQuery += " AND " + oFilter:getSQLExpression()
+	endif
+
+	// Método para retorno do json dos parâmetros
+	jParams := oFilter:getParameters()
+
+	if ValType(jParams["01"]) == "A" .AND. ValType(jParams["02"]) == "A"
+		cQuery += " AND D2_FILIAL BETWEEN ? AND ? " + CRLF
+	else
+		lParamUser := .F.
+	endif
+
+	if ValType(jParams["03"]) == "A" .AND. ValType(jParams["04"]) == "A"
+		cQuery += " AND D2_EMISSAO BETWEEN ? AND ? " + CRLF
+	endif
+
+	cQuery += " ORDER BY 1,2,3,4,5 " + CRLF
+
+
+	self:oStatement := FWExecStatement():New(cQuery)
+
+	//injeta os parâmetros fixo na query
+	self:oStatement:SetUnsafe(nParamOrder++, RetSqlName('SD1'))
+	self:oStatement:SetUnsafe(nParamOrder++, RetSqlName('SA2'))
+	self:oStatement:SetString(nParamOrder++, space(1)) // SA2.D_E_L_E_T_
+	self:oStatement:SetString(nParamOrder++, FWxFilial('SA2')) // A2_FILIAL
+	self:oStatement:SetUnsafe(nParamOrder++, RetSqlName('SF4'))
+	self:oStatement:SetString(nParamOrder++, space(1)) // SF4.D_E_L_E_T_
+	self:oStatement:SetString(nParamOrder++, 'PT') // F4_TPMOV
+	self:oStatement:SetUnsafe(nParamOrder++, RetSqlName('SB1'))
+	self:oStatement:SetString(nParamOrder++, space(1)) // SB1.D_E_L_E_T_
+	self:oStatement:SetString(nParamOrder++, FWxFilial('SB1')) // B1_FILIAL
+	self:oStatement:SetString(nParamOrder++, '1') // B1_XATUEST
+	self:oStatement:SetString(nParamOrder++, space(1)) // SD1.D_E_L_E_T_
+
+	//injeta os parâmetros do usuário na query
+	if ValType(jParams["01"]) == "A"
+		self:oStatement:SetString(nParamOrder++, ALLTRIM(jParams['01'][1])) // D1_FILIAL
+	endif
+
+	if ValType(jParams["02"]) == "A"
+		self:oStatement:SetString(nParamOrder++, ALLTRIM(jParams['02'][1])) // D1_FILIAL
+	endif
+
+	if ValType(jParams["03"]) == "A" .AND. ValType(jParams["04"]) == "A"
+		cDataIni := dtos(FwDateTimeToLocal(jParams["03"][1],0)[1]) // D1_DTDIGIT
+		cDataFim := dtos(FwDateTimeToLocal(jParams["04"][1],0)[1]) // D1_DTDIGIT
+
+		if DateDiffMonth(stod(cDataIni),stod(cDataFim)) > 1
+			cDataFim := cDataIni := "20990101" //ajusta para data inválida para não retornar nada
+		endif
+
+		self:oStatement:SetString(nParamOrder++, cDataIni) // D1_DTDIGIT
+		self:oStatement:SetString(nParamOrder++, cDataFim) // D1_DTDIGIT
+	endif
+
+	self:oStatement:SetUnsafe(nParamOrder++, RetSqlName('SD2'))
+	self:oStatement:SetUnsafe(nParamOrder++, RetSqlName('SA2'))
+	self:oStatement:SetString(nParamOrder++, space(1)) // SA2.D_E_L_E_T_
+	self:oStatement:SetString(nParamOrder++, FWxFilial('SA2')) // A2_FILIAL
+	self:oStatement:SetUnsafe(nParamOrder++, RetSqlName('SF4'))
+	self:oStatement:SetString(nParamOrder++, space(1)) // SF4.D_E_L_E_T_
+	self:oStatement:SetString(nParamOrder++, 'PT') // F4_TPMOV
+	self:oStatement:SetUnsafe(nParamOrder++, RetSqlName('SB1'))
+	self:oStatement:SetString(nParamOrder++, space(1)) // SB1.D_E_L_E_T_
+	self:oStatement:SetString(nParamOrder++, FWxFilial('SB1')) // B1_FILIAL
+	self:oStatement:SetString(nParamOrder++, '1') // B1_XATUEST
+	self:oStatement:SetString(nParamOrder++, space(1)) // SD2.D_E_L_E_T_
+
+	//injeta os parâmetros do usuário na query
+	if ValType(jParams["01"]) == "A"
+		self:oStatement:SetString(nParamOrder++, ALLTRIM(jParams['01'][1])) // D2_FILIAL
+	endif
+
+	if ValType(jParams["02"]) == "A"
+		self:oStatement:SetString(nParamOrder++, ALLTRIM(jParams['02'][1])) // D2_FILIAL
+	endif
+
+	if ValType(jParams["03"]) == "A" .AND. ValType(jParams["04"]) == "A"
+		cDataIni := dtos(FwDateTimeToLocal(jParams["03"][1],0)[1]) // D2_EMISSAO
+		cDataFim := dtos(FwDateTimeToLocal(jParams["04"][1],0)[1]) // D2_EMISSAO
+
+		if DateDiffMonth(stod(cDataIni),stod(cDataFim)) > 1
+			cDataFim := cDataIni := "20990101" //ajusta para data inválida para não retornar nada
+		endif
+
+		self:oStatement:SetString(nParamOrder++, cDataIni) // D2_EMISSAO
+		self:oStatement:SetString(nParamOrder++, cDataFim) // D2_EMISSAO
+	endif
+
+	//Recupera a consulta já com os parâmetros injetados
+	cFinalQuery := self:oStatement:GetFixQuery()
+
+
+	self:cAlias := self:oStatement:OpenAlias(GetNextAlias(),cLifeTime,cTimeOut)
+
+	// Seta o tamanho da página
+	self:setPageSize(nTotRegPag)
+	if nPage == 1
+		(self:cAlias)->(dbGoTop())
+	else
+		// Define a quantidade que irá pular conforme a página atual
+		nSkip := ((nPage - 1) * self:getPageSize())
+		(self:cAlias)->(dbSkip(nSkip))
+	endif
+
+	// Tratamento para LGPD [ESTE OBJETO DE NEGÓCIOS NÃO É NECESSÁRIO POR NÃO TER DADOS SENSÍVEIS]
+	// aPDFields := FwProtectedDataUtil():UsrAccessPDField(__cUserID, self:aFields)
+	// lObfuscated := len(aPDFields) != Len(self:aFields)
+
+	while !(self:cAlias)->(Eof()) .and. lParamUser
+		jItems := JsonObject():new()
+
+		for nX := 1 To Len(self:aStruct)
+			cCampo := self:aStruct[nX][1]
+			if lObfuscated .and. aScan(aPDFields, self:aStruct[nX][1]) == 0
+				jItems[cCampo] := FwProtectedDataUtil():ValueAsteriskToAnonymize((self:cAlias)->&(self:aStruct[nX][1]))  // ESCONDE O DADO NA TELA SE FOR UM DADO PROTEGIDO
+			else
+				if self:aStruct[nX][3] == "date"
+					jItems[cCampo] := totvs.framework.treports.date.stringToTimeStamp((self:cAlias)->&(cCampo))
+				elseif self:aStruct[nX][3] == "string"
+					jItems[cCampo] := (self:cAlias)->&(cCampo)
+				else
+					jItems[cCampo] := (self:cAlias)->&(cCampo)
+				endif
+			endif
+		next nX
+
+		self:oData:appendData(jItems)
+
+		(self:cAlias)->(DBSkip())
+		nCount++
+
+		// Fim do processamento quando atingir o limite da Página
+		if nCount == self:getPageSize()
+			exit
+		endif
+	enddo
+
+	// Define nova página se não for último registro
+	self:setHasNext(!(self:cAlias)->(Eof()))
+
+	dbSelectArea(self:cAlias)
+	(self:cAlias)->(DBCloseArea())
+
+	If Select(self:cAlias) == 0
+		FErase((self:cAlias)+GetDBExtension())
+		FErase("cArqInd"+OrdBagExt())
+	EndIf
+
+return self:oData

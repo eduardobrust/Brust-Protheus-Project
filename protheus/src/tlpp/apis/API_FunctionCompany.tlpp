@@ -163,8 +163,8 @@ method GetApiFunctionCompany() as json class cApiFunctionCompany
 	endif
 
 	if lRet
-		//::jRetorno := ::getFunctionCompany(cFunction = ::cFunction,lAllBranches = lAllBranches ,cCompany = ::cCompany,cActive = ::cActive,cAbbreviation = ::cAbbreviation) //RELEASE 2310 - usando parametros nomeados
-		::jRetorno := ::getFunctionCompany(::cFunction,lAllBranches ,::cCompany,::cActive,::cAbbreviation) //RELEASE 2210 - OBRIGADO INFORMAR PARAMETROS NA ORDEM
+		::jRetorno := ::getFunctionCompany(cFunction = ::cFunction,lAllBranches = lAllBranches ,cCompany = ::cCompany,cActive = ::cActive,cAbbreviation = ::cAbbreviation) //RELEASE 2310 - usando parametros nomeados
+		//::jRetorno := ::getFunctionCompany(::cFunction,lAllBranches ,::cCompany,::cActive,::cAbbreviation) //RELEASE 2210 - OBRIGADO INFORMAR PARAMETROS NA ORDEM
 
 		//verifico se recurso foi encontrado.
 		if valtype(::jRetorno) == 'J' .AND. ::jRetorno:HasProperty("companies")
@@ -380,8 +380,7 @@ method InsertFunctionCompany() class cApiFunctionCompany
 			cInsert := ""
 			cInsert += " INSERT INTO FUNCTION_COMPANY (CFUNCTION, COMPANY, ABBREVIATION, ACTIVE) VALUES " + CRLF
 			cInsert += "('" + cFunction + "', '" + cCompany + "', '" + cAbbreviation + "', '" + cActive + "')" + CRLF
-			//cInsert += " IF NOT EXISTS (SELECT 1 FROM FUNCTION_COMPANY WHERE UPPER(TRIM(CFUNCTION)) = '" + cFunction + "' AND TRIM(COMPANY) = '" + cCompany + "')"
-
+	
 			nStatus := TCSQLExec(cInsert)
 			if nStatus < 0
 				nErro++

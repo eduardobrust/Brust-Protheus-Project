@@ -1,0 +1,635 @@
+#include 'tlpp-core.th'
+#include 'tlpp-rest.th'
+
+#include "protheus.ch"
+#include "fwmvcdef.ch"
+
+//define o namespace que a tela em mvc ficara agrupada. [necessário para MVC em TLPP]
+namespace MvcFunctionCompany
+
+//expoem o cadastro mvc em uma API
+PUBLISH USER MODEL REST NAME CadFncComp SOURCE "MvcFunctionCompany.FuncComp"
+
+/*/{Protheus.doc} FncComp
+Classe para gerenciamento da tela MVC Cadastro de Funções x Empresas herdando os métodos da classe FWModelEvent
+@type class
+@author eduardo.brust
+@since 1/20/2026
+/*/
+Class FncComp From FWModelEvent
+
+	//atributos
+	public data  oTempTable as object
+	public data  oBrowseTable as object
+	public data  aRotina  as array
+	public data  cAliasTmp as character
+	public data  cTitulo as character
+	public data  aCampos as array
+	public data  aColunas as array
+	public data  aPesquisa as array
+
+	//métodos
+	protected Method New() CONSTRUCTOR //metodo construtor da classe
+	protected method finish() //limpar  os objetos e arrays da memória antes de eliminar a instancia da classe
+	protected Method TempTable()  //criação da tabela temporaria do MVC
+	protected Method BrowseTable()  //criação da tela com dados da tabela temporaria
+	protected Method ExistPK(cFunction as character, cCompany as character) as logical
+	public Method BeforeTTS(oModel as object)  //antes da transação do commit
+	public Method InTTS(oModel as object)    //durante a transação do commit
+	public Method AfterTTS(oModel as object)  //depois da transação do commit
+	public Method ModelPosVld(oModel as object, cModelId as character) as logical // Método para validação total do modelo
+EndClass
+
+
+/*/{Protheus.doc} FncComp::New
+É o **método construtor** da classe. Ele é responsável por inicializar os atributos essenciais, como o título da rotina, 
+os arrays de colunas e pesquisa, e definir o nome do Alias temporário (`temp_FncComp`).
+@type method
+@author eduardo.brust
+@since 1/21/2026
+@return object, retorna a instancia do objeto
+/*/
+Method New() CLASS  FncComp
+
+	// inicialização dos atributos
+	::oTempTable  := nil
+	::oBrowseTable := nil
+	::aRotina     := {}
+	::cAliasTmp   := "temp_FncComp"
+	::cTitulo     := "MVC - TLPP - USANDO CLASSE E MÉTODOS BeforeTTS/InTTS/AfterTTS - Tela de amarração Rotinas x Empresas"
+	::aCampos     := {}
+	::aColunas    := {}
+	::aPesquisa   := {}
+
+Return self
+
+
+/*/{Protheus.doc} FncComp::finish
+Método destinado à **limpeza de memória**. Ele desativa e destrói o objeto de Browse, deleta fisicamente a tabela temporária do banco de dados (Oracle/SQL) 
+e limpa todos os arrays utilizados para evitar vazamento de memória.
+@type method
+@author eduardo.brust
+@since 1/22/2026 
+/*/
+Method finish() CLASS FncComp
+
+	//limpo o componente de tela
+	If ::oBrowseTable <> Nil
+		::oBrowseTable:DeActivate()
+		::oBrowseTable:Destroy()
+		::oBrowseTable := Nil
+	EndIf
+
+	// Limpo a tabela física do banco de dados (Drop Table)
+	If ::oTempTable <> Nil
+		::oTempTable:Delete()
+		::oTempTable := Nil
+	EndIf
+
+	// Limpeza de arrays
+	aSize(::aRotina, 0)
+	::aRotina := Nil
+
+	aSize(::aCampos, 0)
+	::aCampos := Nil
+
+	aSize(::aColunas, 0)
+	::aColunas := Nil
+
+	aSize(::aPesquisa, 0)
+	::aPesquisa := Nil
+
+Return
+
+
+/*/{Protheus.doc} FncComp::TempTable
+Este método realiza a **criação da estrutura da tabela temporária** utilizando a classe `FWTemporaryTable`. Além de criar a tabela no banco, ele executa um comando `INSERT INTO ... 
+SELECT` para popular a temporária com dados da tabela real `FUNCTION_COMPANY` em conjunto com a `SYS_COMPANY`.
+@type method
+@author eduardo.brust
+@since 1/20/2026
+/*/
+Method TempTable() CLASS FncComp
+	Local cQryUpd       as character
+	Local cTRealName    as character
+	Local nStatus       as numeric
+
+	cQryUpd     := ""
+	cTRealName  := ""
+
+	//Campos da temporária
+	aAdd(::aCampos, {"TCFUNCTION", "C", 050, 0})
+	aAdd(::aCampos, {"TCOMPANY",   "C", 006, 0})
+	aAdd(::aCampos, {"TABBREV", "C", 010, 0})
+	aAdd(::aCampos, {"TM0NOMECOM", "C", 060, 0})
+	aAdd(::aCampos, {"TM0_CGC", "C", 014, 0})
+	aAdd(::aCampos, {"TACTIVE", "C", 001, 0})
+
+	//Cria a temporária
+	::oTempTable := FWTemporaryTable():New(::cAliasTmp)
+	::oTempTable:SetFields(::aCampos)
+	::oTempTable:AddIndex("1", {"TCFUNCTION"} )
+	::oTempTable:AddIndex("2", {"TCOMPANY"} )
+	::oTempTable:Create()
+	cTRealName := ::oTempTable:GetRealName()
+	::cTitulo :=  ::cTitulo  + "Tabela temporária : " + cTRealName
+
+	//Agora vamos inserir os dados na temporária conforme os que existem no banco de dados
+	cQryUpd := ""
+	cQryUpd += " INSERT INTO " + cTRealName + CRLF
+	cQryUpd += " (TCFUNCTION, TCOMPANY, TABBREV, TM0NOMECOM,TM0_CGC,TACTIVE) " + CRLF
+	cQryUpd += " SELECT CFUNCTION, COMPANY, ABBREVIATION, M0_NOMECOM,M0_CGC,ACTIVE " + CRLF
+	cQryUpd += " FROM FUNCTION_COMPANY " + CRLF
+	cQryUpd += " INNER JOIN SYS_COMPANY " + CRLF
+	cQryUpd += " ON D_E_L_E_T_ = ' ' " + CRLF
+	cQryUpd += " AND M0_CODIGO = '00' " + CRLF
+	cQryUpd += " AND SUBSTR(M0_CODFIL,1,6) = COMPANY " + CRLF
+	cQryUpd += " ORDER BY 2 " + CRLF
+
+	nStatus := TCSQLExec(cQryUpd)
+
+Return
+
+/*/{Protheus.doc} FncComp::BrowseTable
+Responsável pela **configuração visual do Browse**. Ele define quais colunas da tabela temporária serão exibidas para o usuário e 
+configura os índices de pesquisa (busca por função e empresa) que estarão disponíveis na lupa da interface.
+@type method 
+@author eduardo.brust
+@since 1/20/2026
+/*/
+Method BrowseTable() CLASS FncComp
+
+	//Definindo as colunas que serão usadas no browse
+	aAdd(::aColunas, {"CFUNCTION",    "TCFUNCTION", "C", 050, 0, ""})
+	aAdd(::aColunas, {"COMPANY",      "TCOMPANY",   "C", 006, 0, ""})
+	aAdd(::aColunas, {"ABBREVIATION",   "TABBREV", "C", 010, 0, ""})
+	aAdd(::aColunas, {"M0_NOMECOM",   "TM0NOMECOM", "C", 060, 0, ""})
+	aAdd(::aColunas, {"M0_CGC",   "TM0_CGC", "C", 014, 0, ""})
+	aAdd(::aColunas, {"ACTIVE",   "TACTIVE", "C", 001, 0, ""})
+
+	//Adiciona os indices para pesquisar
+    /*
+        [n,1] Título da pesquisa
+        [n,2,n,1] LookUp
+        [n,2,n,2] Tipo de dados
+        [n,2,n,3] Tamanho
+        [n,2,n,4] Decimal
+        [n,2,n,5] Título do campo
+        [n,2,n,6] Máscara
+        [n,2,n,7] Nome Físico do campo - Opcional - é ajustado no programa
+        [n,3] Ordem da pesquisa
+        [n,4] Exibe na pesquisa
+    */
+	aAdd(::aPesquisa, {"CFUNCTION", {{"", "C", 050, 0, "CFUNCTION", "@!", "TCFUNCTION",1,.t.}} } )
+	aAdd(::aPesquisa, {"COMPANY", {{"", "C", 006, 0, "COMPANY", "@!", "TCOMPANY",2,.t.}} } )
+
+Return
+
+/*/{Protheus.doc} as
+Consulta se a combinação de Rotina e Empresa já existe na tabela FUNCTION_COMPANY.
+@type function
+@author eduardo.brust
+@since 1/23/2026
+@return logical, retorna .t. ou .f. caso ache o registro ou nao na tabela
+/*/
+Method ExistPK(cFunction as character, cCompany as character) as logical CLASS FncComp
+	Local lFound    as logical
+	Local cSql      as character
+	Local cAliasQry as character
+
+	default	cFunction := " "
+	default	cCompany := " "
+
+	lFound := .F.
+	cSql	:= ""
+	cAliasQry  := GetNextAlias()
+
+	// Monta a query de consulta na tabela física real
+	cSql := " SELECT 1 AS EXISTE "
+	cSql += " FROM FUNCTION_COMPANY "
+	cSql += " WHERE CFUNCTION = '" + AllTrim(cFunction) + "' "
+	cSql += " AND COMPANY = '" + AllTrim(cCompany) + "' "
+
+	// Executa a consulta no SGBD de forma otimizada
+	MPSysOpenQuery(cSql, cAliasQry)
+
+	// Se o cursor não estiver no fim, significa que encontrou o registro
+	If !(cAliasQry)->(Eof())
+		lFound := .T.
+	EndIf
+
+	// Fecha a área da consulta para liberar memória
+	(cAliasQry)->(dbCloseArea())
+
+Return lFound
+
+/*/{Protheus.doc} FncComp::ModelPosVld
+Método de pós-validação total do modelo (TudoOk).
+@type method
+@author eduardo.brust
+@since 1/23/2026
+@return logical, retorna .t. ou .f. dependendo da validação
+/*/
+Method ModelPosVld(oModel as object, cModelId as character) as logical CLASS FncComp
+	Local lRet as logical
+	Local cFunction as character
+	Local cCompany as character
+	Local nOperacao as numeric
+
+	nOperacao := oModel:GetOperation()
+	cFunction := oModel:GetValue("FORMTMP", "TCFUNCTION")
+	cCompany := oModel:GetValue("FORMTMP", "TCOMPANY")
+	lRet := .T.
+
+	//VALIDACAO DE PREENCHIMENTO DE CAMPOS
+	If Empty(cFunction)
+		// No Model, mensagens de erro devem usar Help() ou SetErrorMessage
+		oModel:SetErrorMessage("FORMTMP", "TCFUNCTION", "FORMTMP", "TCFUNCTION", "VAL01", "Rotina não informada", "Informe o código da rotina")
+		lRet := .F.
+	ELSEIF Empty(cCompany)
+		oModel:SetErrorMessage("FORMTMP", "TCOMPANY", "FORMTMP", "TCOMPANY", "VAL02", "Empresa não informada", "Informe o código da empresa")
+		lRet := .F.
+	ELSEIF Empty(oModel:GetValue("FORMTMP", "TACTIVE"))
+		oModel:SetErrorMessage("FORMTMP", "TACTIVE", "FORMTMP", "TACTIVE", "VAL03", "Ativo/Inativo não informado", "Informe a situação do cadastro")
+		lRet := .F.
+	EndIf
+
+	IF lRet .AND. nOperacao = 3 // SOMENTE NA INCLUSAO
+		IF ::ExistPK(cFunction,cCompany)
+			oModel:SetErrorMessage(;
+				"FORMTMP",;             // [5] ID do submodelo em validação [2]
+			"TCFUNCTION",;          // [6] ID do campo que receberá o foco (cursor) [7]
+			"FORMTMP",;             // [8] ID do submodelo onde ocorreu o erro
+			"TCFUNCTION",;          // [9] ID do campo de erro
+			"PKEXIST",;             // [10] ID identificador deste erro específico [7]
+			"O registro com a Rotina '" + AllTrim(cFunction) + "' e Empresa '" + AllTrim(cCompany) + "' já está cadastrado.",; // [11] Mensagem de erro [7]
+			"Verifique os dados informados ou utilize a opção 'Alterar' se desejar modificar o registro existente."; // [12] Mensagem de solução [7]
+			)
+			lRet := .F.
+		ENDIF
+	ENDIF
+
+Return lRet
+
+/*/{Protheus.doc} FncComp::BeforeTTS
+Evento disparado **antes do início da transação** de banco de dados. 
+É utilizado para validações finais que devem ocorrer antes que o Protheus abra o processo de gravação (commit).
+@type method
+@author eduardo.brust
+@since 1/22/2026
+/*/
+Method BeforeTTS(oModel as object) CLASS FncComp
+	Local nOperacao as numeric // Obtém a operação (4 = Alteração) [1, 2]
+
+	nOperacao := oModel:GetOperation()
+
+	// O BeforeTTS é o local ideal para validações finais ou preparo de dados externos
+	// que devem ocorrer ANTES de a transação ser aberta no banco [3-5].
+	If nOperacao == 4
+		// Exemplo: Você poderia verificar aqui se o registro ainda existe no Oracle
+		// ou se há algum bloqueio antes de permitir que o Protheus inicie o commit. [4]
+	EndIf
+Return
+
+/*/{Protheus.doc} FncComp::InTTS
+Evento acionado **após a gravação na tabela temporária**, mas ainda dentro da transação ativa. 
+É o local ideal para atualizações em tabelas relacionadas que precisariam de um *rollback* automático caso ocorra algum erro crítico.
+@type method
+@author eduardo.brust
+@since 1/22/2026
+/*/
+Method InTTS(oModel as object) CLASS FncComp
+	Local nOperacao as numeric      // Obtém a operação
+	Local oModelTmp as object       // Acessa o submodelo definido no seu ModelDef
+	Local cQry      as character
+	Local nStatus as numeric
+	Local cEmpresa as character
+	Local cFuncao  as character
+
+	nOperacao := oModel:GetOperation() // Obtém a operação
+	oModelTmp := oModel:GetModel("FORMTMP") // Acessa o submodelo definido no seu ModelDef
+	cQry      := ""
+	cEmpresa := AllTrim(oModelTmp:GetValue("TCOMPANY"))
+	cFuncao  := AllTrim(oModelTmp:GetValue("TCFUNCTION"))
+
+	// 1. Trata a INCLUSÃO (Somente campos físicos da FUNCTION_COMPANY)
+	If nOperacao == 3
+
+		// ATUALIZA A TEMPORÁRIA COM O DADO DO JOIN
+		// Como o registro acabou de ser inserido, o Alias temporário está posicionado.
+		// busco o nome da empresa e cgc para preencher o campo visual.
+		cQry := " UPDATE " + ::oTempTable:GetRealName() + " SET " + CRLF
+		cQry += " TM0NOMECOM = (SELECT M0_NOMECOM FROM SYS_COMPANY WHERE M0_CODIGO = '00' AND SUBSTR(M0_CODFIL,1,6) = '" + cEmpresa + "'), " + CRLF
+		cQry += " TM0_CGC    = (SELECT M0_CGC     FROM SYS_COMPANY WHERE M0_CODIGO = '00' AND SUBSTR(M0_CODFIL,1,6) = '" + cEmpresa + "') " + CRLF
+		cQry += " WHERE TCFUNCTION = '" + cFuncao + "' " + CRLF
+		cQry += " AND TCOMPANY     = '" + cEmpresa + "' "
+
+		TCSQLExec(cQry) // Atualiza a temporária localmente
+
+		//atualiza a tabela física do banco
+		cQry := " INSERT INTO FUNCTION_COMPANY " + CRLF
+		cQry += " (CFUNCTION, COMPANY, ABBREVIATION, ACTIVE) " + CRLF
+		cQry += " VALUES " + CRLF
+		cQry += " ('" + cFuncao + "', " + CRLF
+		cQry += "  '" + cEmpresa   + "', " + CRLF
+		cQry += "  '" + AllTrim(oModelTmp:GetValue("TABBREV"))    + "', " + CRLF
+		cQry += "  '" + AllTrim(oModelTmp:GetValue("TACTIVE"))    + "') " + CRLF
+
+		// Trata a ALTERAÇÃO (Atualiza campos editáveis usando a PK no WHERE)
+	ElseIf nOperacao == 4
+		cQry := " UPDATE FUNCTION_COMPANY SET " + CRLF
+		cQry += " ACTIVE       = '" + AllTrim(oModelTmp:GetValue("TACTIVE")) + "' " + CRLF
+		cQry += " WHERE CFUNCTION = '" + cFuncao + "' " + CRLF
+		cQry += " AND COMPANY     = '" + cEmpresa   + "' " + CRLF
+
+		// 3. Trata a EXCLUSÃO (Opcional, para manter a integridade total)
+	ElseIf nOperacao == 5
+		cQry := " DELETE FROM FUNCTION_COMPANY " + CRLF
+		cQry += " WHERE CFUNCTION = '" + cFuncao + "' " + CRLF
+		cQry += " AND COMPANY     = '" + cEmpresa   + "' " + CRLF
+	EndIf
+
+	// Executa a query se houver uma operação válida
+	If !Empty(cQry)
+		nStatus := TCSQLExec(cQry) // Persiste as mudanças diretamente no banco de dados real
+	EndIf
+Return
+
+
+/*/{Protheus.doc} FncComp::AfterTTS
+Método que é chamado apos a transacao
+@type method
+@author eduardo.brust
+@since 1/22/2026
+/*/
+
+Method AfterTTS(oModel as object) CLASS FncComp
+	//implementar lógica
+Return
+
+
+/*/{Protheus.doc} FuncComp
+É a **função principal (ponto de entrada)** da rotina. Ela coordena o fluxo operacional: instancia a classe `FncComp`, chama a criação da tabela temporária e do browse, 
+ativa a interface MVC e, ao final, garante a limpeza dos objetos através do método `finish()`.
+@type function
+@author eduardo.brust
+@since 1/22/2026
+
+/*/
+User function FuncComp()
+	local aArea as array
+
+	Private oFncComp as object
+
+	aArea := getArea()
+
+	//RETIRAR DEPOIS DE TESTAR
+
+	//RpcClearEnv()
+	//RpcSetType(3)
+	//lRet := RpcSetEnv( "00", "010101", , ,,ProcName(), )
+
+	oFncComp := MvcFunctionCompany.FncComp():New()  //instancio o objeto da classe
+
+	//Definicao do menu
+	oFncComp:aRotina := MvcFunctionCompany.U_MenuDef()
+
+	//chamo o método para criação da tabela temporária
+	oFncComp:TempTable()
+
+	//chamo o método para popular a tela com os dados ta tabela
+	oFncComp:BrowseTable()
+
+	//Criando o browse da temporária
+	MvcFunctionCompany.U_BrowseDef()
+
+	//chamo metódo para limpeza dos objetos da clase
+	oFncComp:finish()
+
+	//elimino a instancia da classe em memória
+	FreeObj(oFncComp)
+	oFncComp := nil
+
+	//restauro a área do protheus em memória
+	FWRestArea(aArea)
+
+return nil
+
+/*/BrowseDef
+	Retorna o browse da rotina
+return oBrowse Objeto do tipo FWMBrowse(FWBrowse)
+	author Eduardo Brust
+	since 16/01/2026
+/*/
+
+/*/{Protheus.doc} BrowseDef
+Função que define o objeto **`FWMBrowse`**. Ela configura o Alias temporário, associa as colunas definidas no método `BrowseTable` e ativa o componente visual de navegação na tela.
+@type function
+@author eduardo.brust
+@since 1/22/2026
+/*/
+User function BrowseDef() as object
+
+	//Criando o browse da temporária
+	oFncComp:oBrowseTable := FWMBrowse():New()
+	oFncComp:oBrowseTable:SetAlias(oFncComp:cAliasTmp)
+
+	oFncComp:oBrowseTable:AddLegend( "TACTIVE=='Y'", "GREEN", "Ativo" )
+	oFncComp:oBrowseTable:AddLegend( "TACTIVE=='N'", "RED",   "Inativo" )
+
+	oFncComp:oBrowseTable:SetTemporary(.T.)
+	oFncComp:oBrowseTable:SetFields(oFncComp:aColunas)
+
+	oFncComp:oBrowseTable:SetUseCaseFilter(.T.)
+
+	oFncComp:oBrowseTable:DisableDetails()
+	oFncComp:oBrowseTable:SetDescription(oFncComp:cTitulo)
+	oFncComp:oBrowseTable:SetSeek(.T., oFncComp:aPesquisa)
+	oFncComp:oBrowseTable:SetMenuDef("MvcFunctionCompany.FuncComp")
+	oFncComp:oBrowseTable:Activate()
+return
+
+
+/*/{Protheus.doc} ModelDef
+Define o **Modelo de Dados (Model)** do MVC. Nesta função, são descritas as estruturas de campos, as regras de negócio (como validações de números em campos de empresa), 
+a chave primária do modelo e a instalação de eventos da classe para monitorar a gravação. 
+@type function
+@author eduardo.brust
+@since 1/21/2026
+@return object, retorna o objeto do model
+/*/
+User function ModelDef() as object
+	Local oModel := Nil
+	Local oStTMP := FWFormModelStruct():New()
+
+	//Na estrutura, define os campos e a temporária
+	oStTMP:AddTable(oFncComp:cAliasTmp, {'TCFUNCTION', 'TCOMPANY', 'TABBREV', 'TM0NOMECOM','TM0_CGC','TACTIVE'}, "Temporaria")
+
+	//Adiciona os campos da estrutura
+	oStTmp:AddField(;
+		"Rotina",;                                                                              // [01]  C   Titulo do campo
+	"Rotina",;                                                                                  // [02]  C   ToolTip do campo
+	"TCFUNCTION",;                                                                              // [03]  C   Id do Field
+	"C",;                                                                                       // [04]  C   Tipo do campo
+	050,;                                                                                       // [05]  N   Tamanho do campo
+	0,;                                                                                         // [06]  N   Decimal do campo
+	Nil,;                                                                                       // [07]  B   Code-block de validação do campo
+	FwBuildFeature(STRUCT_FEATURE_WHEN, "INCLUI"),;                                             // [08]  B   Code-block de validação When do campo
+	{},;                                                                                        // [09]  A   Lista de valores permitido do campo
+	.T.,;                                                                                       // [10]  L   Indica se o campo tem preenchimento obrigatório
+	FwBuildFeature( STRUCT_FEATURE_INIPAD, "Iif(!INCLUI,"+oFncComp:cAliasTmp+"->TCFUNCTION,'')" ),;      // [11]  B   Code-block de inicializacao do campo
+	.T.,;                                                                                       // [12]  L   Indica se trata-se de um campo chave
+	.F.,;                                                                                       // [13]  L   Indica se o campo pode receber valor em uma operação de update.
+	.F.)                                                                                        // [14]  L   Indica se o campo é virtual
+
+	oStTmp:AddField(;
+		"Empresa",;                                         // [1] Titulo
+	"Empresa",;                                         // [2] ToolTip
+	"TCOMPANY",;                                        // [3] ID
+	"C",;                                               // [4] Tipo
+	006,;                                               // [5] Tamanho
+	0,;                                                 // [6] Decimal
+	FwBuildFeature(STRUCT_FEATURE_VALID, "IsNumeric(AllTrim(M->TCOMPANY)) .And. Len(AllTrim(M->TCOMPANY)) == 6"),;  // [07]  B   Code-block de validação do campo
+	FwBuildFeature(STRUCT_FEATURE_WHEN, "INCLUI"),;     // [8] When
+	{},;                                                // [9] Values
+	.T.,;                                               // [10] Obrigatório
+	FwBuildFeature(STRUCT_FEATURE_INIPAD, "Iif(!INCLUI, " + oFncComp:cAliasTmp + "->TCOMPANY, '')" ),; // [11]  B   Code-block de inicializacao do campo
+	.F.,;                                               // [12]  L   Indica se trata-se de um campo chave
+	.F.,;                                               // [13]  L   Indica se o campo pode receber valor em uma operação de update.
+	.F.)                                                // [14]  L   Indica se o campo é virtual
+
+	oStTmp:AddField(;
+		"Sigla",;                                                                                   // [01]  C   Titulo do campo
+	"Sigla",;                                                                                   // [02]  C   ToolTip do campo
+	"TABBREV",;                                                                                 // [03]  C   Id do Field
+	"C",;                                                                                       // [04]  C   Tipo do campo
+	010,;                                                                                        // [05]  N   Tamanho do campo
+	0,;                                                                                         // [06]  N   Decimal do campo
+	FwBuildFeature(STRUCT_FEATURE_VALID, "!IsNumeric(AllTrim(M->TABBREV)) .And. Len(AllTrim(M->TABBREV)) <= 10"),;  // [07]  B   Code-block de validação do campo
+	Nil,;                                                                                       // [08]  B   Code-block de validação When do campo
+	{},;                                                                                        // [09]  A   Lista de valores permitido do campo
+	.T.,;                                                                                       // [10]  L   Indica se o campo tem preenchimento obrigatório
+	FwBuildFeature( STRUCT_FEATURE_INIPAD, "Iif(!INCLUI,"+oFncComp:cAliasTmp+"->TABBREV,'')" ),;      // [11]  B   Code-block de inicializacao do campo
+	.F.,;                                                                                       // [12]  L   Indica se trata-se de um campo chave
+	.F.,;                                                                                       // [13]  L   Indica se o campo pode receber valor em uma operação de update.
+	.F.)                                                                                        // [14]  L   Indica se o campo é virtual
+
+	oStTmp:AddField(;
+		"NomeEmpresa",;                                                                                  // [01]  C   Titulo do campo
+	"NomeEmpresa",;                                                                                  // [02]  C   ToolTip do campo
+	"TM0NOMECOM",;                                                                              // [03]  C   Id do Field
+	"C",;                                                                                       // [04]  C   Tipo do campo
+	060,;                                                                                        // [05]  N   Tamanho do campo
+	00,;                                                                                        // [06]  N   Decimal do campo
+	Nil,;                                                                                       // [07]  B   Code-block de validação do campo
+	Nil,;                                                                                       // [08]  B   Code-block de validação When do campo
+	{},;                                                                                        // [09]  A   Lista de valores permitido do campo
+	.F.,;                                                                                       // [10]  L   Indica se o campo tem preenchimento obrigatório
+	FwBuildFeature( STRUCT_FEATURE_INIPAD, "Iif(!INCLUI,"+oFncComp:cAliasTmp+"->TM0NOMECOM,'')" ),;      // [11]  B   Code-block de inicializacao do campo
+	.F.,;                                                                                       // [12]  L   Indica se trata-se de um campo chave
+	.F.,;                                                                                       // [13]  L   Indica se o campo pode receber valor em uma operação de update.
+	.F.)                                                                                        // [14]  L   Indica se o campo é virtual
+
+	oStTmp:AddField(;
+		"CGC",;                                                                             // [01]  C   Titulo do campo
+	"CGC",;                                                                             // [02]  C   ToolTip do campo
+	"TM0_CGC",;                                                                              // [03]  C   Id do Field
+	"C",;                                                                                       // [04]  C   Tipo do campo
+	014,;                                                                                        // [05]  N   Tamanho do campo
+	00,;                                                                                        // [06]  N   Decimal do campo
+	Nil,;                                                                                       // [07]  B   Code-block de validação do campo
+	Nil,;                                                                                       // [08]  B   Code-block de validação When do campo
+	{},;                                                                                        // [09]  A   Lista de valores permitido do campo
+	.F.,;                                                                                       // [10]  L   Indica se o campo tem preenchimento obrigatório
+	FwBuildFeature( STRUCT_FEATURE_INIPAD, "Iif(!INCLUI,"+oFncComp:cAliasTmp+"->TM0_CGC,'')" ),;      // [11]  B   Code-block de inicializacao do campo
+	.F.,;                                                                                       // [12]  L   Indica se trata-se de um campo chave
+	.F.,;                                                                                       // [13]  L   Indica se o campo pode receber valor em uma operação de update.
+	.F.)                                                                                        // [14]  L   Indica se o campo é virtual
+
+	oStTmp:AddField(;
+		"ATIVO",;                                                                                    // [01]  C   Titulo do campo
+	"ATIVO",;                                                                                    // [02]  C   ToolTip do campo
+	"TACTIVE",;                                                                                  // [03]  C   Id do Field
+	"C",;                                                                                       // [04]  C   Tipo do campo
+	001,;                                                                                        // [05]  N   Tamanho do campo
+	00,;                                                                                        // [06]  N   Decimal do campo
+	Nil,;                                                                                       // [07]  B   Code-block de validação do campo
+	Nil,;                                                                                       // [08]  B   Code-block de validação When do campo
+	{"Y=Yes", "N=No"},;                               							                 // [09] A   Lista de valores permitido do campo
+	.F.,;                                                                                       // [10]  L   Indica se o campo tem preenchimento obrigatório
+	FwBuildFeature( STRUCT_FEATURE_INIPAD, "Iif(!INCLUI,"+oFncComp:cAliasTmp+"->TACTIVE,'Y')" ),; // [11]  B   Code-block de inicializacao do campo
+	.F.,;                                                                                       // [12]  L   Indica se trata-se de um campo chave
+	.F.,;                                                                                       // [13]  L   Indica se o campo pode receber valor em uma operação de update.
+	.F.)                                                                                        // [14]  L   Indica se o campo é virtual
+
+
+	//Instanciando o modelo
+	oModel := MPFormModel():New("FuncCompM",/*bPre*/, /*bPos*/,/*bCommit*/,/*bCancel*/)
+	oModel:AddFields("FORMTMP",/*cOwner*/,oStTMP)
+	oModel:SetPrimaryKey({'TCFUNCTION','TCOMPANY'})
+	oModel:SetDescription("Modelo de Dados do Cadastro "+oFncComp:cTitulo)
+	oModel:GetModel("FORMTMP"):SetDescription("Formulário do Cadastro "+oFncComp:cTitulo)
+
+	//Instala um evento no modelo de dados que irá ficar "observando" as alterações do formulário
+	oModel:InstallEvent("VLD_TMPTAB", , oFncComp)
+Return oModel
+
+/*/{Protheus.doc} ViewDef
+Define a **Interface Visual (View)** da rotina. Ela determina como os campos serão exibidos (ex: ComboBox para o campo ATIVO), 
+organiza o layout da tela em boxes horizontais e associa a interface ao modelo de dados.
+@type function
+@author eduardo.brust
+@since 1/21/2026
+@return object, Objeto do tipo FwFormView
+/*/
+User function ViewDef() as object
+	Local oModel := FWLoadModel("MvcFunctionCompany.FuncComp")
+	Local oStTMP := FWFormViewStruct():New()
+	Local oView := Nil
+
+	//Adiciona os campos da estrutura
+	oStTmp:AddField("TCFUNCTION","01","Rotina","Rotina",,'Get',Nil,Nil,Nil,Nil,Nil,Nil,Nil,Nil,Nil,.T.)
+	oStTmp:AddField("TCOMPANY","02","Empresa","Empresa",,'Get',Nil,Nil,Nil,Nil,Nil,Nil,Nil,Nil,Nil,.T.)
+	oStTmp:AddField("TABBREV","03","Sigla","Sigla",,'Get',Nil,Nil,Nil,Nil,Nil,Nil,Nil,Nil,Nil,.T.)
+	oStTmp:AddField("TM0NOMECOM","04","NomeEmpresa","NomeEmpresa",,'Get',Nil,Nil,Nil,.F.,Nil,Nil,Nil,Nil,Nil,.T.)
+	oStTmp:AddField("TM0_CGC","05","CGC","CGC",,'Get',Nil,Nil,Nil,.F.,Nil,Nil,Nil,Nil,Nil,.T.)
+	oStTmp:AddField("TACTIVE","06","ATIVO","ATIVO",,'Get',Nil,Nil,Nil,Nil,Nil,Nil,Nil,Nil,Nil,.T.)
+
+	//definindo algumas propriedades nos campos
+	oStTmp:SetProperty("TCFUNCTION", MVC_VIEW_PICT, "@!")
+	oStTmp:SetProperty("TCOMPANY", MVC_VIEW_PICT, "999999")
+	oStTmp:SetProperty("TABBREV", MVC_VIEW_PICT, "@!")
+	oStTmp:SetProperty("TACTIVE", MVC_VIEW_COMBOBOX, {"Y=Yes", "N=No"})
+
+	//Criando a view que será o retorno da função e setando o modelo da rotina
+	oView := FWFormView():New()
+	oView:SetModel(oModel)
+	oView:AddField("VIEW_TMP", oStTMP, "FORMTMP")
+	oView:CreateHorizontalBox("TELA",100)
+	oView:EnableTitleView('VIEW_TMP', 'Dados - '+oFncComp:cTitulo )
+	oView:SetCloseOnOk({||.T.})
+	oView:SetOwnerView("VIEW_TMP","TELA")
+Return oView
+
+/*/{Protheus.doc} MenuDef
+Retorna um array com as **opções de menu** disponíveis na rotina. Define quais operações o usuário pode realizar, 
+como Pesquisar, Visualizar, Incluir, Alterar, Excluir, Imprimir e Copiar.
+@type function
+@author eduardo.brust
+@since 1/21/2026
+@return array, Array contendo as opções da rotina, algumas opções
+não são apresentadas diretamente como botões, é necessário ir nas
+outras ações
+/*/
+User function MenuDef() as array
+	local aRotina := {} as array
+
+	Add Option aRotina Title "Pesquisar" Action "PesqBrw" Operation OP_PESQUISAR Access 0
+	Add Option aRotina Title "Visualizar" Action "ViewDef.MvcFunctionCompany.FuncComp" Operation OP_VISUALIZAR Access 0
+	Add Option aRotina Title "Incluir" Action "ViewDef.MvcFunctionCompany.FuncComp" Operation OP_INCLUIR Access 0
+	Add Option aRotina Title "Alterar" Action "ViewDef.MvcFunctionCompany.FuncComp" Operation OP_ALTERAR Access 0
+	Add Option aRotina Title "Excluir" Action "ViewDef.MvcFunctionCompany.FuncComp" Operation OP_EXCLUIR Access 0
+	Add Option aRotina Title "Imprimir" Action "ViewDef.MvcFunctionCompany.FuncComp" Operation OP_IMPRIMIR Access 0
+	Add Option aRotina Title "Copiar" Action "ViewDef.MvcFunctionCompany.FuncComp" Operation OP_COPIA Access 0
+
+return aRotina

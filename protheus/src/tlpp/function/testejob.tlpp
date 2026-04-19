@@ -1,0 +1,26 @@
+#include "protheus.ch"
+#include "tlpp-rest.th"
+#include "tlpp-core.th"
+#include "tlpp-object.th"
+
+User Function testejob()
+
+	/*
+	lret := .F.
+
+	varinfo('testejob-brust','rotina chamada pelo job')
+
+	//varinfo('testejob-brust-__cUserId',__cUserId)
+
+	cToken := totvs.framework.users.rpc.getAuthToken()
+
+	varinfo('testejob-brust-token_gerado-getAuthToken',cToken)
+
+	lret := totvs.framework.users.rpc.authByToken(cToken)
+
+	varinfo('testejob-brust-RETORNO-authByToken',lret)
+	*/
+
+	MvcLogin.CadLoginEvents():CadastraLoginHml()
+
+return

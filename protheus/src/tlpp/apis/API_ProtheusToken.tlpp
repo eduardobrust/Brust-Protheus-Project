@@ -94,7 +94,7 @@ method postProtheusToken()  class cApiTokenGab
 	aAdd(aHeader,"Content-Type: application/json")
 	aAdd(aHeader,"Accept: application/json" )
     aAdd(aHeader,"username: eduardo.brust" )
-    aAdd(aHeader,"password: a12345" )
+    aAdd(aHeader,"password: @Edu12345" )
 
 	//TRATAMENTO DE ERRO
 	if VALTYPE(oRet) <> "O"
