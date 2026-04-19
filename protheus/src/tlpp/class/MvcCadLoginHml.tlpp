@@ -16,6 +16,9 @@ class CadLoginEvents From FWModelEvent
 	//atributos
 	PRIVATE data  oBrowseTable as object
 	PRIVATE data  cTitulo as character
+	PRIVATE data  cUrlProtheus as character
+	PRIVATE data  cUsuario as character
+	PRIVATE data  cSenha as character
 
 	//métodos
 	protected Method New() CONSTRUCTOR //metodo construtor da classe
@@ -26,11 +29,11 @@ class CadLoginEvents From FWModelEvent
 	public Method AfterTTS(oModel as object, cModelId as character)
 
 	Static Method CadastraLoginHml()  //método estático para cadastro de login na base de homologação, será chamado externamente via job / scheduler
-	Static Method RetornaCadLogin() as Logical  //método para retornar os dados da tabela de cadastro de login
-	Static Method ConectaApiLogin(jLogin as json, cToken as character)  as logical //método para conectar na API do protheus de cadastro de usuarios
-	Static Method AtualizaCadLogin(cLogin as character,cDataIn as character) //método para atualizar os dados da tabela de cadastro de login
-	Static Method ProtheusToken() as character //método para obter o token de acesso as APIs do protheus via API
-	Static Method InfoServer() as Logical //método para obter informações do server
+	protected Method RetornaCadLogin() as Logical  //método para retornar os dados da tabela de cadastro de login
+	Private Method ConectaApiLogin(jLogin as json, cToken as character)  as logical //método para conectar na API do protheus de cadastro de usuarios
+	Private Method AtualizaCadLogin(cLogin as character,cDataIn as character) //método para atualizar os dados da tabela de cadastro de login
+	Private Method ProtheusToken() as character //método para obter o token de acesso as APIs do protheus via API
+	Public Method InfoServer() as Logical //método para obter informações do server
 endclass
 
 /*/{Protheus.doc} CadLoginEvents::New
@@ -44,6 +47,9 @@ method New() class CadLoginEvents
 	// inicialização dos atributos
 	::oBrowseTable := nil
 	::cTitulo     := "MVC - TLPP - Cadastro de Login para base de Homologação"
+	::cUrlProtheus := ""
+	::cUsuario := ""
+	::cSenha := ""
 return self
 
 
@@ -62,6 +68,9 @@ Method finish() CLASS CadLoginEvents
 		::oBrowseTable := Nil
 	EndIf
 	::cTitulo := ""
+	::cUrlProtheus := ""
+	::cUsuario := ""
+	::cSenha := ""
 Return
 
 /*/{Protheus.doc} CadLoginEvents::ModelPosVld
@@ -91,8 +100,9 @@ Method BrowseDef() CLASS CadLoginEvents
 	::oBrowseTable := FWMBrowse():New()
 	::oBrowseTable:SetAlias("ZZG")
 
-	::oBrowseTable:AddLegend("!EMPTY(ZZG->ZZG_DATAIN)","GREEN"	,"Login Cadastrado")
-	::oBrowseTable:AddLegend("EMPTY(ZZG->ZZG_DATAIN)","RED"	,"Login Pendente Cadastro")
+	::oBrowseTable:AddLegend("!EMPTY(ZZG->ZZG_DATAIN) .AND. ZZG->ZZG_STATUS <> 'I'","GREEN"	,"Login Cadastrado")
+	::oBrowseTable:AddLegend("EMPTY(ZZG->ZZG_DATAIN) .AND. ZZG->ZZG_STATUS <> 'I'","ORANGE"	,"Login Pendente Cadastro")
+	::oBrowseTable:AddLegend("ZZG->ZZG_STATUS == 'I'","RED"	    ,"Login Inativo")
 
 	::oBrowseTable:SetUseCaseFilter(.T.)
 	::oBrowseTable:DisableDetails()
@@ -104,9 +114,12 @@ return
 
 
 Method CadastraLoginHml() CLASS CadLoginEvents
-	Local lRet as logical
+	Local lRet := .F. as logical
+	Local oCadLogin as object
 
-	lRet := mvcLogin.CadLoginEvents():InfoServer() //chamo o método para verificar se o ambiente é de teste/homologação
+	oCadLogin := MvcLogin.CadLoginEvents():New()  //instancio o objeto da classe
+
+	lRet := oCadLogin:InfoServer() //chamo o método para verificar se o ambiente é de teste/homologação
 
 	If ISBLIND() .OR. GetRemoteType() == -1 .OR. !TCIsConnected()
 		RpcClearEnv()
@@ -115,11 +128,14 @@ Method CadastraLoginHml() CLASS CadLoginEvents
 
 	if lRet // se for ambiente de teste ou homologação
 		//chamo metódo que retorna os dados da tabela de cadastro de login via API do protheus, para preencher o browse da tela
-		lRet := MvcLogin.CadLoginEvents():RetornaCadLogin()
+		lRet := oCadLogin:RetornaCadLogin()
+	else
+		varinfo("A Tag [AMBIENTE_AGUAS] nao foi localizada ou esta incorreta no arquivo de configuracao (.ini). O acesso via API nao foi autorizado; verifique o arquivo no servidor.", "CadLogin")
 	endif
 
 	If ISBLIND() .OR. GetRemoteType() == -1 .OR. !TCIsConnected()
 		RpcClearEnv()
+		VARINFO("Rotina executada em ambiente sem conexão, resultados não serão apresentados na tela.", "CadLogin")
 	else
 		if lRet
 			FWAlertSuccess("Login cadastrado com sucesso", "Api Login")
@@ -128,6 +144,8 @@ Method CadastraLoginHml() CLASS CadLoginEvents
 		endif
 	endif
 
+	freeObj(oCadLogin)
+	oCadLogin := nil
 return
 
 Method RetornaCadLogin() as Logical CLASS CadLoginEvents
@@ -147,6 +165,7 @@ Method RetornaCadLogin() as Logical CLASS CadLoginEvents
 	cQuery += " FROM    ? ZZG " + CRLF
 	cQuery += " WHERE ZZG.d_e_l_e_t_ = ? " + CRLF
 	cQuery += " AND ZZG_DATAIN = ? " + CRLF
+	cQuery += " AND ZZG_STATUS <> ? " + CRLF
 	cQuery += " ORDER BY 1,2 " + CRLF
 
 	oStatement := FWExecStatement():New(cQuery)
@@ -154,6 +173,7 @@ Method RetornaCadLogin() as Logical CLASS CadLoginEvents
 	oStatement:SetUnsafe(nParamOrder++, RetSqlName('ZZG')) // nome da tabela
 	oStatement:SetString(nParamOrder++, space(1)) // para selecionar registros não deletados
 	oStatement:SetString(nParamOrder++, space(1)) // para selecionar registros sem data de cadastro (pendentes)
+	oStatement:SetString(nParamOrder++, "I") 	// para selecionar registros com status <> I inativos
 
 	//Recupera a consulta já com os parâmetros injetados
 	cFinalQuery := oStatement:GetFixQuery()
@@ -164,7 +184,11 @@ Method RetornaCadLogin() as Logical CLASS CadLoginEvents
 	while !(cAlias)->(Eof())
 
 		if empty(cToken)
-			cToken := MvcLogin.CadLoginEvents():ProtheusToken() //chamo o método para obter o token de acesso as APIs do protheus somente 1x
+			cToken := ::ProtheusToken() //chamo o método para obter o token de acesso as APIs do protheus somente 1x
+			if empty(cToken)
+				VARINFO("Nao foi possivel obter o token de acesso do Protheus para a API de cadastro . Verifique as configuracoes e a conectividade com o servidor.", "CadLogin")
+				return .F.
+			endif
 		endif
 
 		jLogin := JsonObject():New()
@@ -175,10 +199,10 @@ Method RetornaCadLogin() as Logical CLASS CadLoginEvents
 		jLogin["CARGO"] := LOWER(ALLTRIM((cAlias)->ZZG_CARGO))
 		JLogin["DEPART"] := LOWER(ALLTRIM((cAlias)->ZZG_DEPART))
 
-		IF MvcLogin.CadLoginEvents():ConectaApiLogin( jLogin, cToken) //chamo o método de conexão com a API para cadastro do login, passando os dados do login em formato json
+		IF ::ConectaApiLogin( jLogin, cToken) //chamo o método de conexão com a API para cadastro do login, passando os dados do login em formato json
 
 			//caso a conexão com a API seja bem sucedida, atualizo a data de cadastro do login na tabela
-			MvcLogin.CadLoginEvents():AtualizaCadLogin((cAlias)->ZZG_LOGIN, DTOS(Date()))
+			::AtualizaCadLogin((cAlias)->ZZG_LOGIN, DTOS(Date()))
 			VARINFO("Login " + (cAlias)->ZZG_LOGIN + " cadastrado com sucesso via API", "CadLogin")
 			lRet := .T.
 		ELSE
@@ -191,7 +215,6 @@ return lRet
 
 Method ConectaApiLogin(jLogin as json, cToken as character)  as logical CLASS CadLoginEvents
 	Local aHeader   := {}
-	Local cEndPoint := GetNewPar("MV_XURLREST", "https://localhost:8003/rest")
 	Local cResource := "/api/framework/v1/users/" // Endpoint de gravação conforme sua imagem
 	Local cResult   := ""
 	Local oRest     := Nil
@@ -249,42 +272,42 @@ Method ConectaApiLogin(jLogin as json, cToken as character)  as logical CLASS Ca
 	aAdd(aHeader, "Authorization: Bearer " + AllTrim(cToken))
 	aAdd(aHeader, "Content-Length: " + cValToChar(Len(cBody)))
 
-	oRest := FWRest():New(cEndPoint)
+	oRest := FWRest():New(::cUrlProtheus)  //conecto ao EndPoint do serviço
 	oRest:SetPath(cResource)
 	oRest:SetPostParams(cBody)
 
 	// 4. Execução do POST
 	If oRest:Post(aHeader)
 		cResult := oRest:GetResult()
-		varinfo("Sucesso ao gravar usuário: " + cResult, "CadLogin")
+		varinfo("Sucesso ao gravar usuario: " + cResult, "CadLogin")
 		lRet := .T.
 	Else
-		cResult := oRest:GetLastError()
-		varinfo("Erro na gravação do usuário: " + cResult, "CadLogin")
-
-		// Se houver resposta do servidor mesmo com erro (ex: 400 ou 500)
-		varinfo("Resposta do servidor: " + oRest:GetResult(), "CadLogin")
+		IF VALTYPE(oRest) <> "O"
+			varinfo("Falha na conexao com a API: Objeto de conexao invalido", "CadLogin")
+		else
+			cResult := oRest:GetLastError()
+			varinfo("Erro na gravacao do usuario: " + cResult, "CadLogin")
+		endif
 	EndIf
 
 	FreeObj(oRest)
 Return lRet
 
 method ProtheusToken()  class CadLoginEvents
-	Local cEndPoint := GetnewPar("MV_XURLREST","https://localhost:8003/rest") 	as Character //EndPoint da API GAB para busca do token - Integração ICF x Protheus
 	Local cResource	:= "/api/oauth2/v1/token?grant_type=password" as Character
 	Local aHeader	:= {} as Array
 	Local oRet		:= Nil as object
 	Local cResult	:= "" as Character
 
-	oRet := FWRest():New(cEndPoint)  //conecto ao EndPoint do serviço
+	oRet := FWRest():New(::cUrlProtheus)  //conecto ao EndPoint do serviço
 
 	oRet:SetPath(cResource)		 	//defino a url final de conexao
 
 	// Inclusão de parametros no Header
 	aAdd(aHeader,"Content-Type: application/json")
 	aAdd(aHeader,"Accept: application/json" )
-	aAdd(aHeader,"username: eduardo.brust" )
-	aAdd(aHeader,"password: @Edu12345" )
+	aAdd(aHeader,"username: " + ::cUsuario )
+	aAdd(aHeader,"password: " + ::cSenha )
 
 	//TRATAMENTO DE ERRO
 	if VALTYPE(oRet) <> "O"
@@ -305,8 +328,8 @@ method ProtheusToken()  class CadLoginEvents
 		//recupero o token
 		cResult	:= 	oJson:GetJsonText("access_token")
 	else
-		cResult	:= oRet:GetLastError()
-		varinfo("Falha ao obter o token de acesso via API: " + cResult, "CadLogin")
+		cResult	:= ""
+		varinfo("Falha ao obter o token de acesso via API: " + oRet:GetLastError(), "CadLogin")
 	endif
 return cResult
 
@@ -320,14 +343,15 @@ Method AtualizaCadLogin(cLogin as character, cDataIn as character) CLASS CadLogi
 	IF !EMPTY(cLogin) .AND. !EMPTY(cDataIn)
 		cUpdate := ""
 		cUpdate += " UPDATE " +  RetSqlName("ZZG") + " SET ZZG_DATAIN = '" + cDataIn + "' " + CRLF
-		cUpdate += " WHERE ZZG_LOGIN = '" + cLogin + "' " + CRLF
+		cUpdate += " WHERE D_E_L_E_T_ = ' ' " + CRLF
+		cUpdate += " AND ZZG_LOGIN = '" + cLogin + "' " + CRLF
 
-		nRet := TCSQLExec(cUpdate) // Atualiza a temporária localmente
-
-		IF nRet > 0
+		nRet := TCSQLExec(cUpdate) // Atualiza a temporária localment
+		IF  EMPTY(TCSQLError())
 			VARINFO("Data de cadastro atualizada para o login " + cLogin, "CadLogin")
 		ELSE
 			VARINFO("Falha ao atualizar a data de cadastro para o login " + cLogin, "CadLogin")
+			VARINFO("TCSQLError() " + TCSQLError(), "CadLogin")
 		endif
 	ENDIF
 
@@ -336,6 +360,8 @@ return
 Method InfoServer() as Logical CLASS CadLoginEvents
 	Local cIniName		:= ""
 	Local cAmbiente		:= ""
+	Local cAmbValidos 	:= "|TESTE|HOMOLOGACAO|" as character
+	Local lUrlOk      	:= .F. as logical
 	Local lRet			:= .F. as logical  // se retornar .T. ambiente é teste ou homologacao
 
 	//VERIFICAR SE O AMBIENTE EM EXECUÇÃO É BASE TESTE OU PRODUÇÃO BUSCANDO UMA CHAVE NO INI QUE A ROTINA IRA RODAR
@@ -344,6 +370,9 @@ Method InfoServer() as Logical CLASS CadLoginEvents
 	//TRATAMENTO DE ERRO
 	IF VALTYPE(cIniName) == "C"
 		cAmbiente	:= ALLTRIM(GetPvProfString("AMBIENTE_AGUAS", "TIPO", "", cIniName))
+		::cUrlProtheus := ALLTRIM(GetPvProfString("AMBIENTE_AGUAS", "URL_PROTHEUS", "", cIniName))
+		::cUsuario := ALLTRIM(GetPvProfString("AMBIENTE_AGUAS", "USUARIO", "", cIniName))
+		::cSenha := ALLTRIM(GetPvProfString("AMBIENTE_AGUAS", "SENHA", "", cIniName))
 	ENDIF
 
 	//TRATAMENTO DE ERRO
@@ -351,8 +380,37 @@ Method InfoServer() as Logical CLASS CadLoginEvents
 		cAmbiente := ""
 	ENDIF
 
-	//TESTO SE O AMBIENTE LIDO NO INI DO SERVER E DE TESTE/HOMOLOGACAO
-	IF UPPER(cAmbiente) $ "|TESTE|HOMOLOGACA0|"
+	//TRATAMENTO DE ERRO
+	IF VALTYPE(::cUrlProtheus) <> "C"
+		::cUrlProtheus := ""
+	ENDIF
+
+	//TRATAMENTO DE ERRO
+	IF VALTYPE(::cUsuario) <> "C"
+		::cUsuario := ""
+	ENDIF
+
+	//TRATAMENTO DE ERRO
+	IF VALTYPE(::cSenha) <> "C"
+		::cSenha := ""
+	ENDIF
+
+	// Testo se a URL contém algum dos prefixos de desenvolvimento/homologação
+	lUrlOk := ( UPPER("d1") $ UPPER(::cUrlProtheus) .OR. ;
+		UPPER("hml") $ UPPER(::cUrlProtheus) .OR. ;
+		UPPER("localhost") $ UPPER(::cUrlProtheus) .OR. ;
+		UPPER("dev") $ UPPER(::cUrlProtheus) )
+
+	varinfo("Ambiente identificado: " + cAmbiente, "CadLogin")
+	varinfo("URL do Protheus para conexao: " + ::cUrlProtheus, "CadLogin")
+	varinfo("Usuario para conexao API: " + ::cUsuario, "CadLogin")
+	varinfo("Senha para conexao API: " + (IIF(!EMPTY(::cSenha), "********", "Nao informada")), "CadLogin")
+	varinfo("Validacao de url: " + (IIF(lUrlOk, "OK", "Falhou - URL nao parece ser de teste/homologacao")), "CadLogin")
+	varinfo("Validacao de Ambiente: " + (IIF(UPPER(cAmbiente) $ UPPER(cAmbValidos), "OK", "Falhou - Ambiente nao e Teste ou Homologacao")), "CadLogin")
+
+	// Validação final
+	IF UPPER(cAmbiente) $ UPPER(cAmbValidos) .AND. lUrlOk .AND. ;
+			!EMPTY(::cUsuario) .AND. !EMPTY(::cSenha)
 		lRet := .T.
 	ENDIF
 
@@ -370,12 +428,6 @@ User Function CadLogin()
 	Private oCadLogin as object
 
 	aArea := getArea()
-
-	//RETIRAR DEPOIS DE TESTAR
-
-	//RpcClearEnv()
-	//RpcSetType(3)
-	//lRet := RpcSetEnv( "00", "010101", , ,,ProcName(), )
 
 	oCadLogin := MvcLogin.CadLoginEvents():New()  //instancio o objeto da classe
 
@@ -477,3 +529,9 @@ User Function ViewDef() as object
 	oView:EnableTitleView('VIEW_CAB','Cadastro de Login - Base de Homologação')
 
 Return oView
+
+User Function JobCadLoginHml()
+
+	MvcLogin.CadLoginEvents():CadastraLoginHml()
+
+return
