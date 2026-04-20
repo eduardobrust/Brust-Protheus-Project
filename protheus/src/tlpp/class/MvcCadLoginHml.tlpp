@@ -19,6 +19,7 @@ class CadLoginEvents From FWModelEvent
 	PRIVATE data  cUrlProtheus as character
 	PRIVATE data  cUsuario as character
 	PRIVATE data  cSenha as character
+	PRIVATE data  dDataAtual as date
 
 	//métodos
 	protected Method New() CONSTRUCTOR //metodo construtor da classe
@@ -46,10 +47,11 @@ endclass
 method New() class CadLoginEvents
 	// inicialização dos atributos
 	::oBrowseTable := nil
-	::cTitulo     := "MVC - TLPP - Cadastro de Login para base de Homologação"
+	::cTitulo     := "MVC - TLPP - Cadastro de Login para base de Homologação "
 	::cUrlProtheus := ""
 	::cUsuario := ""
 	::cSenha := ""
+	::dDataAtual := Date()
 return self
 
 
@@ -71,6 +73,7 @@ Method finish() CLASS CadLoginEvents
 	::cUrlProtheus := ""
 	::cUsuario := ""
 	::cSenha := ""
+	::dDataAtual := Date()
 Return
 
 /*/{Protheus.doc} CadLoginEvents::ModelPosVld
@@ -100,8 +103,8 @@ Method BrowseDef() CLASS CadLoginEvents
 	::oBrowseTable := FWMBrowse():New()
 	::oBrowseTable:SetAlias("ZZG")
 
-	::oBrowseTable:AddLegend("!EMPTY(ZZG->ZZG_DATAIN) .AND. ZZG->ZZG_STATUS <> 'I'","GREEN"	,"Login Cadastrado")
-	::oBrowseTable:AddLegend("EMPTY(ZZG->ZZG_DATAIN) .AND. ZZG->ZZG_STATUS <> 'I'","ORANGE"	,"Login Pendente Cadastro")
+	::oBrowseTable:AddLegend("DTOS(ZZG->ZZG_DATAIN) >= '" + dtos(::dDataAtual) + "' .AND. ZZG->ZZG_STATUS <> 'I'","GREEN"	,"Login Cadastrado")
+	::oBrowseTable:AddLegend("DTOS(ZZG->ZZG_DATAIN) < '" + dtos(::dDataAtual) + "' .AND. ZZG->ZZG_STATUS <> 'I'","ORANGE"	,"Login Pendente Cadastro")
 	::oBrowseTable:AddLegend("ZZG->ZZG_STATUS == 'I'","RED"	    ,"Login Inativo")
 
 	::oBrowseTable:SetUseCaseFilter(.T.)
@@ -123,7 +126,7 @@ Method CadastraLoginHml() CLASS CadLoginEvents
 
 	If ISBLIND() .OR. GetRemoteType() == -1 .OR. !TCIsConnected()
 		RpcClearEnv()
-		RpcSetEnv( '99','01',,,,,)
+		RpcSetEnv( '99','01',,,,,) // trocar pelos parâmetros corretos de ambiente, filial, etc conforme sua necessidade
 	endif
 
 	if lRet // se for ambiente de teste ou homologação
@@ -164,7 +167,7 @@ Method RetornaCadLogin() as Logical CLASS CadLoginEvents
 	cQuery += " SELECT * "  + CRLF
 	cQuery += " FROM    ? ZZG " + CRLF
 	cQuery += " WHERE ZZG.d_e_l_e_t_ = ? " + CRLF
-	cQuery += " AND ZZG_DATAIN = ? " + CRLF
+	cQuery += " AND ZZG_DATAIN < ? " + CRLF
 	cQuery += " AND ZZG_STATUS <> ? " + CRLF
 	cQuery += " ORDER BY 1,2 " + CRLF
 
@@ -172,7 +175,7 @@ Method RetornaCadLogin() as Logical CLASS CadLoginEvents
 
 	oStatement:SetUnsafe(nParamOrder++, RetSqlName('ZZG')) // nome da tabela
 	oStatement:SetString(nParamOrder++, space(1)) // para selecionar registros não deletados
-	oStatement:SetString(nParamOrder++, space(1)) // para selecionar registros sem data de cadastro (pendentes)
+	oStatement:SetString(nParamOrder++, dtos(::dDataAtual)) // para selecionar registros com data de cadastro menor que a data atual, ou seja, pendentes
 	oStatement:SetString(nParamOrder++, "I") 	// para selecionar registros com status <> I inativos
 
 	//Recupera a consulta já com os parâmetros injetados

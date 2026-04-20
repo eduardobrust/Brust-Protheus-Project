@@ -1,0 +1,73 @@
+#include 'tlpp-core.th'
+#include 'tlpp-rest.th'
+#include "msobject.ch"
+#include "totvs.ch"
+
+
+//Definindo o namespace para a classe
+namespace nApiGab
+
+class cApiAprovacaoBordero
+
+	private data jBody      as json
+	private data jRetorno   as json
+
+	public method New() as object
+
+
+	@Post(endpoint='tlpp/cfg/v1/aprovacaobordero',description='Atualiza as informações de aprovação do borderô')
+	public method PostAaprovacaoBordero() as json
+
+endclass
+
+method new() as object class cApiAprovacaoBordero
+	::jBody    := Nil
+	::jRetorno := Nil
+return Self
+
+method PostAaprovacaoBordero() as json class cApiAprovacaoBordero
+
+	local jRequest := oRest:getBodyRequest() // Captura o JSON enviado pelo Integra
+
+	::jRetorno := jsonObject():new()
+
+	if jRequest <> Nil .and. jRequest:HasProperty("idAprovacao")
+
+		::jBody := jRequest
+
+		// Simulação do processamento de desbloqueio na SE2/SEA
+		if ::jBody["Status"] == "L"
+			::jRetorno["success"] := .T.
+			::jRetorno["message"] := "Aprovacao processada. Borderos liberados para remessa."
+			::jRetorno["idAprovacao"] := ::jBody["idAprovacao"]
+
+			oRest:setStatusCode(200) // Sucesso na atualização
+		else
+			::jRetorno["success"] := .F.
+			::jRetorno["message"] := "Erro ao processar desbloqueio interno."
+			oRest:setStatusCode(409) // Conflict
+		endif
+	else
+		::jRetorno["success"] := .F.
+		::jRetorno["message"] := "Payload invalido ou ID de aprovacao ausente."
+		oRest:setStatusCode(400) // Bad Request
+	endif
+
+return oRest:setResponse(::jRetorno)
+
+/*
+
+https://tdn.totvs.com/display/tec/Reflection+e+Annotation
+
+2. POST:
+   - 201 (Created): A solicitação foi bem-sucedida e um novo recurso foi criado.
+   - 200 (OK): A solicitação foi bem-sucedida e o recurso foi atualizado.
+   - 400 (Bad Request): A solicitação não pôde ser entendida ou contém parâmetros inválidos.
+   - 409 (Conflict): O servidor detectou um conflito durante o processamento da solicitação, como um conflito de duplicação de recursos.
+
+3. PUT:
+   - 200 (OK): A solicitação foi bem-sucedida e o recurso foi atualizado.
+   - 400 (Bad Request): A solicitação não pôde ser entendida ou contém parâmetros inválidos.
+   - 404 (Not Found): O recurso a ser atualizado não foi encontrado.
+
+*/
