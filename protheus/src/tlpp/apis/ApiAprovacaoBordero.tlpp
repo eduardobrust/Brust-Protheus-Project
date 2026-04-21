@@ -15,7 +15,7 @@ class cApiAprovacaoBordero
 	public method New() as object
 
 
-	@Post(endpoint='tlpp/cfg/v1/aprovacaobordero',description='Atualiza as informações de aprovação do borderô')
+	@Post(endpoint='tlpp/fin/v1/aprovacaobordero',description='Atualiza as informações de aprovação do borderô')
 	public method PostAaprovacaoBordero() as json
 
 endclass
