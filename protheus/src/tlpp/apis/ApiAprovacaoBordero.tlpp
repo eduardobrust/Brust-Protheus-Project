@@ -26,14 +26,19 @@ method new() as object class cApiAprovacaoBordero
 return Self
 
 method PostAaprovacaoBordero() as json class cApiAprovacaoBordero
-
-	local jRequest := oRest:getBodyRequest() // Captura o JSON enviado pelo Integra
+	Local lret := .F. as logical
 
 	::jRetorno := jsonObject():new()
 
-	if jRequest <> Nil .and. jRequest:HasProperty("idAprovacao")
+	::jBody := JsonObject():new()
+	::jBody:fromJson( oRest:GetBodyRequest() )
+	if !( ::jBody:HasProperty("idAprovacao") )
+		lRet := .F.
+		::jRetorno := {"erro": "Bad Request", "code": 400}
+		oRest:setStatusCode( 400 )
+	endif
 
-		::jBody := jRequest
+	if  ::jBody:HasProperty("idAprovacao")
 
 		// Simulação do processamento de desbloqueio na SE2/SEA
 		if ::jBody["Status"] == "L"
