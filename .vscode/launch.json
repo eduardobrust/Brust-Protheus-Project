@@ -37,8 +37,14 @@
 		},
 		{
 			"label": "SIGAATF"
+		},
+		{
+			"label": "SIGAFIN"
+		},
+		{
+			"label": "u_testeb4"
 		}
 	],
-	"lastProgramExecuted": "SIGAATF",
+	"lastProgramExecuted": "u_testeb4",
 	"lastProgramArguments": []
 }
