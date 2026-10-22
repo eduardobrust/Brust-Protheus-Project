@@ -1,0 +1,980 @@
+#include "protheus.ch"
+#include "totvs.ch"
+#include "tlpp-core.th"
+#include "tlpp-object.th"
+#include "fwmvcdef.ch"
+
+#ifndef MODEL_OPERATION_INSERT
+    #define MODEL_OPERATION_INSERT 3
+#endif
+
+namespace custom.ctb
+
+/*/{Protheus.doc} ImportaPlanoContas
+Classe responsavel pela leitura, validacao, importacao de Plano de Contas (CT1) via CSV,
+geracao de log em formato Excel (.xlsx) na subpasta LOGS utilizando a classe FwPrinterXlsx
+com destaque colorido no Status (Vermelho para ERRO / Verde para SUCESSO)
+e exibicao dos resultados diretamente em Grid interativo com resumo em Labels expandidos, legenda colorida, filtro
+e botao de exportacao personalizada para Excel respeitando o filtro ativo.
+@type class
+@author eduardo.brust
+@since 10/21/2026
+/*/
+class ImportaPlanoContas
+
+	// Atributos publicos
+	public data cFilePath      as character
+	public data nSuccess       as numeric
+	public data nError         as numeric
+	public data cLogPath       as character
+
+	// Atributos Privados
+	private data jColsExpected as json
+	private data aLogData      as array
+
+	// Metodos publicos
+	public method new() constructor
+	public method execute() as logical
+	public method processImport(oFile as object)
+	public method showTemplate()
+	public method showLogGrid()
+	public method applyGridFilter(cAlias as character, cFilterVal as character, oBrowse as object)
+	public method exportToExcel(cAlias as character, cFilterVal as character)
+
+	// Metodos Privados
+	private method validateLayout(oFile as object) as logical
+	private method validateData(jRow as json) as character
+	private method saveAccount(jRow as json, cErrorMVC as character) as logical
+	private method isSpecialChar(cText as character) as logical
+	private method generateExcelLog(cPath as character) as logical
+	private method writeLogRow(nLineNum as numeric, cStatus as character, jRow as json, cMotivo as character)
+	private method showTemplateMemo()
+
+endclass
+
+
+/*/{Protheus.doc} ImportaPlanoContas::new
+Construtor da Classe ImportaPlanoContas.
+@type method
+@author eduardo.brust
+@since 10/21/2026
+@return object, retorna o objeto da classe
+/*/
+method new() class ImportaPlanoContas
+	::cFilePath      := ""
+	::nSuccess       := 0
+	::nError         := 0
+	::cLogPath       := ""
+	::aLogData       := {}
+
+	// Dicionario JSON com o layout esperado das colunas
+	::jColsExpected := JsonObject():New()
+	::jColsExpected["1"] := "CT1_CONTA"
+	::jColsExpected["2"] := "CT1_DESC01"
+	::jColsExpected["3"] := "CT1_CLASSE"
+	::jColsExpected["4"] := "CT1_NORMAL"
+	::jColsExpected["5"] := "CT1_NIVEL"
+	::jColsExpected["6"] := "CT1_XZM3"
+	::jColsExpected["7"] := "CT1_CTASUP"
+return self
+
+
+/*/{Protheus.doc} ImportaPlanoContas::execute
+Metodo principal de orquestracao do fluxo de selecao, importacao, log em Excel via FwPrinterXlsx e exibicao em Grid.
+@type method
+@author eduardo.brust
+@since 10/21/2026
+@return logical, retorna o status da execucao
+/*/
+method execute() class ImportaPlanoContas
+	local oFile       as object
+	local lSuccess    as logical
+	local nOpcaoMenu  as numeric
+	local oSelf       as object
+
+	oSelf    := Self
+	lSuccess := .F.
+
+	nOpcaoMenu := Aviso("Importacao Plano de Contas", ;
+	                    "Selecione uma opcao para prosseguir:", ;
+	                    {"1. Importar CSV", "2. Ver Modelo CSV", "3. Cancelar"}, ;
+	                    3, ;
+	                    "Plano de Contas (CT1)")
+
+	If nOpcaoMenu == 3 .Or. nOpcaoMenu == 0
+		return .F.
+	ElseIf nOpcaoMenu == 2
+		::showTemplate()
+		If !MsgYesNo("Deseja prosseguir agora para a selecao e importacao do arquivo CSV?", "Importacao Plano de Contas")
+			return .F.
+		EndIf
+	EndIf
+
+	// 1. Tela de selecao do arquivo CSV
+	::cFilePath := cGetFile( "Arquivos CSV (*.csv) | *.csv", ;
+		"Selecione o arquivo CSV do Plano de Contas", ;
+		1, ;
+		"C:\", ;
+		.F., ;
+		GETF_LOCALHARD + GETF_NETWORKDRIVE, ;
+		.T., ;
+		.T. )
+
+	If Empty(::cFilePath) .Or. !File(::cFilePath)
+		MsgAlert("Nenhum arquivo foi selecionado ou o arquivo nao existe.", "Atencao")
+		return .F.
+	EndIf
+
+	// Bloqueio preventivo caso o usuario selecione um arquivo de LOG por engano
+	If "_LOG_" $ Upper(::cFilePath)
+		MsgStop("O arquivo selecionado e um arquivo de LOG (" + ::cFilePath + ")." + CRLF + ;
+		        "Por favor, selecione um arquivo CSV de carga valido do Plano de Contas.", "Arquivo Invalido")
+		return .F.
+	EndIf
+
+	// 2. Abertura do Arquivo Leitor
+	oFile := FWFileReader():New(::cFilePath)
+	If !oFile:Open()
+		MsgStop("Nao foi possivel abrir o arquivo selecionado: " + ::cFilePath, "Erro de Leitura")
+		return .F.
+	EndIf
+
+	// 3. Validacao do Layout do cabecalho
+	If !::validateLayout(oFile)
+		oFile:Close()
+		return .F.
+	EndIf
+
+	// 4. Leitura, validacao, gravacao e montagem do Log em memoria
+	Processa({|| oSelf:processImport(oFile)}, "Importando Plano de Contas ...", "Processando e gerando log...")
+
+	oFile:Close()
+
+	If ::nError == 0
+		lSuccess := .T.
+	EndIf
+
+	// 5. Exibicao do Grid Interativo de Resultados com Resumo em Labels (sem popup intermediario)
+	If Len(::aLogData) > 0
+		::showLogGrid()
+	EndIf
+
+return lSuccess
+
+
+/*/{Protheus.doc} ImportaPlanoContas::showTemplate
+Exibe um Grid FWBrowse interativo com a estrutura e dados de exemplo das 7 colunas do CSV,
+com botao para abrir a caixa de texto e copiar o modelo CSV.
+@type method
+@author eduardo.brust
+@since 10/21/2026
+/*/
+method showTemplate() class ImportaPlanoContas
+	local oDlg        as object
+	local oPanelTop   as object
+	local oPanelGrid  as object
+	local oBrowse     as object
+	local oTempTable  as object
+	local aFields     as array
+	local aSample     as array
+	local cAliasTpl   as character
+	local nI          as numeric
+	local oSelf       as object
+
+	oSelf     := Self
+	cAliasTpl := GetNextAlias()
+
+	// Criacao da Tabela Temporaria com a estrutura das 7 colunas do CSV
+	aFields := {}
+	AAdd(aFields, {"CONTA",    "C", 20, 0})
+	AAdd(aFields, {"DESCRICAO","C", 60, 0})
+	AAdd(aFields, {"CLASSE",   "C", 10, 0})
+	AAdd(aFields, {"NORMAL",   "C", 10, 0})
+	AAdd(aFields, {"NIVEL",    "C", 10, 0})
+	AAdd(aFields, {"XZM3",     "C", 10, 0})
+	AAdd(aFields, {"CTASUP",   "C", 20, 0})
+
+	oTempTable := FWTemporaryTable():New(cAliasTpl, aFields)
+	oTempTable:Create()
+
+	// Dados de Exemplo do Layout do Plano de Contas
+	aSample := {}
+	AAdd(aSample, {"1",        "ATIVO",             "1", "1", "1", "2", ""})
+	AAdd(aSample, {"11",       "CIRCULANTE",        "1", "1", "2", "2", "1"})
+	AAdd(aSample, {"111",      "DISPONIVEL",        "1", "1", "3", "2", "11"})
+	AAdd(aSample, {"11101",    "FUNDO FIXO",        "1", "1", "4", "2", "111"})
+	AAdd(aSample, {"11101001", "FUNDO FIXO",        "2", "1", "5", "1", "11101"})
+	AAdd(aSample, {"11102",    "CAIXA",             "1", "1", "4", "2", "111"})
+	AAdd(aSample, {"11102003", "CAIXA TRES TESTE",  "2", "1", "5", "2", "11102"})
+
+	For nI := 1 To Len(aSample)
+		RecLock(cAliasTpl, .T.)
+			(cAliasTpl)->CONTA     := aSample[nI][1]
+			(cAliasTpl)->DESCRICAO := aSample[nI][2]
+			(cAliasTpl)->CLASSE    := aSample[nI][3]
+			(cAliasTpl)->NORMAL    := aSample[nI][4]
+			(cAliasTpl)->NIVEL     := aSample[nI][5]
+			(cAliasTpl)->XZM3      := aSample[nI][6]
+			(cAliasTpl)->CTASUP    := aSample[nI][7]
+		(cAliasTpl)->(MsUnlock())
+	Next nI
+
+	(cAliasTpl)->(DbGoTop())
+
+	DEFINE MSDIALOG oDlg TITLE "Modelo do Layout CSV - Plano de Contas (CT1)" FROM 0, 0 TO 700, 1360 PIXEL STYLE DS_MODALFRAME
+
+	oPanelTop  := tPanel():New(000, 000, "", oDlg, , , , , , 680, 035)
+	oPanelGrid := tPanel():New(035, 000, "", oDlg, , , , , , 680, 265)
+
+	@ 010, 010 SAY "Estrutura e dados de exemplo das 7 colunas do arquivo CSV de importacao:" SIZE 500, 012 OF oPanelTop PIXEL
+
+	oBrowse := FWBrowse():New(oPanelGrid)
+	oBrowse:SetDataTable(.T.)
+	oBrowse:SetAlias(cAliasTpl)
+	oBrowse:DisableReport()
+
+	// Colunas do Grid com titulos explicativos das 7 colunas do CSV
+	oBrowse:AddColumn({"Conta (CT1_CONTA)",           {|| (cAliasTpl)->CONTA },     "C", "@!", 1, 15, 0, .F.})
+	oBrowse:AddColumn({"Descricao (CT1_DESC01)",       {|| (cAliasTpl)->DESCRICAO }, "C", "@!", 1, 30, 0, .F.})
+	oBrowse:AddColumn({"Classe (CT1_CLASSE)",         {|| (cAliasTpl)->CLASSE },    "C", "@!", 1, 15, 0, .F.})
+	oBrowse:AddColumn({"Normal (CT1_NORMAL)",         {|| (cAliasTpl)->NORMAL },    "C", "@!", 1, 15, 0, .F.})
+	oBrowse:AddColumn({"Nivel (CT1_NIVEL)",           {|| (cAliasTpl)->NIVEL },     "C", "@!", 1, 12, 0, .F.})
+	oBrowse:AddColumn({"XZM3 (CT1_XZM3)",             {|| (cAliasTpl)->XZM3 },      "C", "@!", 1, 12, 0, .F.})
+	oBrowse:AddColumn({"Conta Superior (CT1_CTASUP)", {|| (cAliasTpl)->CTASUP },    "C", "@!", 1, 18, 0, .F.})
+
+	@ 310, 480 BUTTON "Gerar / Copiar Texto CSV" SIZE 110, 018 OF oDlg ACTION (oSelf:showTemplateMemo()) PIXEL
+	@ 310, 600 BUTTON "Fechar"                   SIZE 065, 018 OF oDlg ACTION oDlg:End() PIXEL
+
+	oBrowse:Activate()
+	ACTIVATE MSDIALOG oDlg CENTERED
+
+	oTempTable:Delete()
+
+return
+
+
+/*/{Protheus.doc} ImportaPlanoContas::showTemplateMemo
+Exibe caixa de dialogo com o texto bruto do cabecalho e linhas de exemplo para copia do usuario.
+@type method
+@author eduardo.brust
+@since 10/21/2026
+/*/
+method showTemplateMemo() class ImportaPlanoContas
+	local oDlg       as object
+	local oGet       as object
+	local oFont      as object
+	local cTemplate  as character
+
+	cTemplate := "CT1_CONTA;CT1_DESC01;CT1_CLASSE;CT1_NORMAL;CT1_NIVEL;CT1_XZM3;CT1_CTASUP" + CRLF + ;
+	             "1;ATIVO;1;1;1;2;" + CRLF + ;
+	             "11;CIRCULANTE;1;1;2;2;1" + CRLF + ;
+	             "111;DISPONIVEL;1;1;3;2;11" + CRLF + ;
+	             "11101;FUNDO FIXO;1;1;4;2;111" + CRLF + ;
+	             "11101001;FUNDO FIXO;2;1;5;1;11101" + CRLF + ;
+	             "11102;CAIXA;1;1;4;2;111" + CRLF + ;
+	             "11102003;CAIXA TRES TESTE;2;1;5;2;11102"
+
+	DEFINE MSDIALOG oDlg TITLE "Texto do Modelo CSV - Copiar para Area de Transferencia" FROM 0, 0 TO 380, 680 PIXEL STYLE DS_MODALFRAME
+
+	@ 010, 010 SAY "Copie o modelo de layout CSV abaixo para estruturar o seu arquivo de importacao:" SIZE 320, 012 OF oDlg PIXEL
+
+	DEFINE FONT oFont NAME "Courier New" SIZE 0, -12
+
+	@ 025, 010 GET oGet VAR cTemplate MEMO SIZE 320, 125 OF oDlg PIXEL READONLY FONT oFont
+
+	@ 160, 180 BUTTON "Copiar Modelo" SIZE 070, 018 OF oDlg ACTION (CopyToClipboard(cTemplate), MsgInfo("Modelo copiado para a area de transferencia com sucesso!", "Copia Concluida")) PIXEL
+	@ 160, 260 BUTTON "Fechar"        SIZE 060, 018 OF oDlg ACTION oDlg:End() PIXEL
+
+	ACTIVATE MSDIALOG oDlg CENTERED
+
+return
+
+
+/*/{Protheus.doc} ImportaPlanoContas::showLogGrid
+Exibe um Grid FWBrowse interativo com resumo de totais (Total Lido, Sucessos, Erros) em fonte destacada, legenda colorida e exportacao Excel.
+@type method
+@author eduardo.brust
+@since 10/21/2026
+/*/
+method showLogGrid() class ImportaPlanoContas
+	local oDlg        as object
+	local oPanelTop   as object
+	local oPanelGrid  as object
+	local oBrowse     as object
+	local oCmbFilter  as object
+	local oTempTable  as object
+	local aFields     as array
+	local aComboItems as array
+	local cAlias      as character
+	local cFilterVal  as character
+	local nI          as numeric
+	local oSelf       as object
+	local oFontLabel  as object
+	local oSayTot     as object
+	local oSaySuc     as object
+	local oSayErr     as object
+	local cTextTot    as character
+	local cTextSuc    as character
+	local cTextErr    as character
+
+	oSelf      := Self
+	cAlias     := GetNextAlias()
+	cFilterVal := "1. Todos os Registros"
+	aComboItems:= {"1. Todos os Registros", "2. Apenas Erros (Vermelho)", "3. Apenas Sucessos (Verde)"}
+
+	// Criacao da Tabela Temporaria para carregar os dados do Log em Memoria
+	// Coluna DESCRICAO nomeada expressamente para evitar palavra reservada 'DESC' do Oracle (ORA-00904)
+	aFields := {}
+	AAdd(aFields, {"LINE_NUM",  "N",   6, 0})
+	AAdd(aFields, {"STATUS",    "C",  10, 0})
+	AAdd(aFields, {"CONTA",     "C",  20, 0})
+	AAdd(aFields, {"DESCRICAO", "C",  60, 0})
+	AAdd(aFields, {"MOTIVO",    "C", 250, 0})
+
+	oTempTable := FWTemporaryTable():New(cAlias, aFields)
+	oTempTable:Create()
+
+	// Carga na tabela temporaria a partir do array em memoria ::aLogData
+	For nI := 1 To Len(::aLogData)
+		RecLock(cAlias, .T.)
+			(cAlias)->LINE_NUM  := ::aLogData[nI][1]
+			(cAlias)->STATUS    := Upper(AllTrim(::aLogData[nI][2]))
+			(cAlias)->CONTA     := AllTrim(::aLogData[nI][3])
+			(cAlias)->DESCRICAO := AllTrim(::aLogData[nI][4])
+			(cAlias)->MOTIVO    := AllTrim(::aLogData[nI][5])
+		(cAlias)->(MsUnlock())
+	Next nI
+
+	(cAlias)->(DbGoTop())
+
+	// Interface Grafica Expandida (680 x 350 pixels)
+	DEFINE MSDIALOG oDlg TITLE "Resultado da Importacao - Log do Plano de Contas" FROM 0, 0 TO 700, 1360 PIXEL STYLE DS_MODALFRAME
+
+	// Fonte expandida (tamanho compativel com o combobox de filtro) em BOLD
+	DEFINE FONT oFontLabel NAME "Arial" SIZE 0, -15 BOLD
+
+	// Painel superior ajustado para acomodar os novos labels
+	oPanelTop  := tPanel():New(000, 000, "", oDlg, , , , , , 680, 040)
+	oPanelGrid := tPanel():New(040, 000, "", oDlg, , , , , , 680, 260)
+
+	// Filtro por Status
+	@ 010, 010 SAY "Filtrar por Status:" SIZE 065, 012 OF oPanelTop PIXEL
+	@ 008, 080 COMBOBOX oCmbFilter VAR cFilterVal ITEMS aComboItems SIZE 140, 015 OF oPanelTop PIXEL ;
+	           ON CHANGE (oSelf:applyGridFilter(cAlias, cFilterVal, oBrowse))
+
+	// Labels do Resumo em destaque no topo da tela (incluindo Total Lido)
+	cTextTot := "Total Lido: " + cValToChar(Len(::aLogData))
+	cTextSuc := "Sucessos: " + cValToChar(::nSuccess)
+	cTextErr := "Erros / Inconsistencias: " + cValToChar(::nError)
+
+	@ 008, 235 SAY oSayTot VAR cTextTot SIZE 095, 018 OF oPanelTop PIXEL FONT oFontLabel
+	@ 008, 335 SAY oSaySuc VAR cTextSuc SIZE 110, 018 OF oPanelTop PIXEL FONT oFontLabel
+	@ 008, 455 SAY oSayErr VAR cTextErr SIZE 215, 018 OF oPanelTop PIXEL FONT oFontLabel
+
+	oBrowse := FWBrowse():New(oPanelGrid)
+	oBrowse:SetDataTable(.T.)
+	oBrowse:SetAlias(cAlias)
+
+	// Desabilita o botao de "Imprimir browse" do FWBrowse
+	oBrowse:DisableReport()
+
+	// Duplo clique na linha para abrir popup com a mensagem completa do erro/observacao
+	oBrowse:bLDblClick := {|| FWAlertInfo(AllTrim((cAlias)->MOTIVO), "Detalhes do Log - Linha " + cValToChar((cAlias)->LINE_NUM) + " (" + AllTrim((cAlias)->CONTA) + ")") }
+
+	// Legenda Colorida na Primeira Coluna
+	oBrowse:AddLegend("AllTrim(STATUS) == 'SUCESSO'", "GREEN", "Importado com Sucesso")
+	oBrowse:AddLegend("AllTrim(STATUS) == 'ERRO'",    "RED",   "Inconsistencia / Erro")
+
+	// Colunas do Grid
+	oBrowse:AddColumn({"Linha",               {|| (cAlias)->LINE_NUM },  "N", "@9 99999", 1,   6, 0, .F.})
+	oBrowse:AddColumn({"Status",              {|| (cAlias)->STATUS },    "C", "@!",       1,  10, 0, .F.})
+	oBrowse:AddColumn({"Conta",               {|| (cAlias)->CONTA },     "C", "@!",       1,  16, 0, .F.})
+	oBrowse:AddColumn({"Descricao",           {|| (cAlias)->DESCRICAO }, "C", "@!",       1,  30, 0, .F.})
+	oBrowse:AddColumn({"Motivo / Observacao", {|| (cAlias)->MOTIVO },    "C", "@!",       1, 200, 0, .F.})
+
+	// Botoes de Acao no rodape da tela
+	@ 310, 500 BUTTON "Exportar Excel" SIZE 085, 018 OF oDlg ACTION (oSelf:exportToExcel(cAlias, cFilterVal)) PIXEL
+	@ 310, 600 BUTTON "Fechar"         SIZE 065, 018 OF oDlg ACTION oDlg:End() PIXEL
+
+	oBrowse:Activate()
+	ACTIVATE MSDIALOG oDlg CENTERED
+
+	oTempTable:Delete()
+
+return
+
+
+/*/{Protheus.doc} ImportaPlanoContas::applyGridFilter
+Aplica o filtro selecionado pelo usuario no Browse.
+@type method
+@author eduardo.brust
+@since 10/21/2026
+@param cAlias, character, alias da tabela temporaria
+@param cFilterVal, character, valor selecionado na combo
+@param oBrowse, object, instancia do FWBrowse
+/*/
+method applyGridFilter(cAlias as character, cFilterVal as character, oBrowse as object) class ImportaPlanoContas
+	If "2." $ cFilterVal
+		(cAlias)->(dbSetFilter({|| AllTrim(STATUS) == "ERRO" }, "AllTrim(STATUS) == 'ERRO'"))
+	ElseIf "3." $ cFilterVal
+		(cAlias)->(dbSetFilter({|| AllTrim(STATUS) == "SUCESSO" }, "AllTrim(STATUS) == 'SUCESSO'"))
+	Else
+		(cAlias)->(dbClearFilter())
+	EndIf
+
+	(cAlias)->(DbGoTop())
+	If oBrowse != Nil
+		oBrowse:Refresh()
+	EndIf
+return
+
+
+/*/{Protheus.doc} ImportaPlanoContas::exportToExcel
+Gera arquivo Excel (.xlsx) via FwPrinterXlsx a partir dos registros do Grid respeitando o filtro ativo ("Todos", "Erros" ou "Sucessos") e aplicando cor no Status (Vermelho/Verde).
+@type method
+@author eduardo.brust
+@since 10/21/2026
+@param cAlias, character, alias da tabela temporaria
+@param cFilterVal, character, valor do filtro selecionado
+/*/
+method exportToExcel(cAlias as character, cFilterVal as character) class ImportaPlanoContas
+	local oXLS       as object
+	local oHorzAlign as object
+	local oVertAlign as object
+	local cExcelFile as character
+	local cDrive     as character
+	local cDir       as character
+	local cFileName  as character
+	local cExt       as character
+	local cRelFile   as character
+	local cXlsxFile  as character
+	local nRows      as numeric
+	local nRow       as numeric
+	local cStatusVal as character
+
+	nRows := 0
+	SplitPath(::cFilePath, @cDrive, @cDir, @cFileName, @cExt)
+
+	cExcelFile := cGetFile( "Arquivo Excel (*.xlsx) | *.xlsx", ;
+		"Salvar Log Filtrado em Excel", ;
+		1, ;
+		cDrive + cDir + "LOGS\", ;
+		.T., ;
+		GETF_LOCALHARD + GETF_NETWORKDRIVE, ;
+		.T., ;
+		.T. )
+
+	If Empty(cExcelFile)
+		return
+	EndIf
+
+	If !(".XLSX" $ Upper(cExcelFile))
+		cExcelFile += ".xlsx"
+	EndIf
+
+	cRelFile := StrTran(Upper(cExcelFile), ".XLSX", ".rel")
+	cXlsxFile := cExcelFile
+
+	oXLS := FwPrinterXlsx():New(.T.)
+	oHorzAlign := FwXlsxCellAlignment():Horizontal()
+	oVertAlign := FwXlsxCellAlignment():Vertical()
+
+	oXLS:Activate(cRelFile)
+	oXLS:AddSheet("Log_Plano_Contas")
+
+	// Largura das colunas
+	oXLS:SetColumnsWidth(1, 1, 10)
+	oXLS:SetColumnsWidth(2, 2, 14)
+	oXLS:SetColumnsWidth(3, 3, 20)
+	oXLS:SetColumnsWidth(4, 4, 35)
+	oXLS:SetColumnsWidth(5, 5, 80)
+
+	// Cabecalho com fundo cinza e texto em negrito
+	oXLS:SetFont(FwPrinterFont():Arial(), 10, .F., .T., .F.)
+	oXLS:SetCellsFormat(oHorzAlign:Center(), oVertAlign:Center(), .F., 0, "000000", "CCCCCC")
+
+	oXLS:SetText(1, 1, "Linha")
+	oXLS:SetText(1, 2, "Status")
+	oXLS:SetText(1, 3, "Conta Contabil")
+	oXLS:SetText(1, 4, "Descricao")
+	oXLS:SetText(1, 5, "Motivo / Observacao")
+
+	(cAlias)->(DbGoTop())
+	While !(cAlias)->(Eof())
+		// Respeita o filtro ativo no momento
+		If "2." $ cFilterVal .And. AllTrim((cAlias)->STATUS) != "ERRO"
+			(cAlias)->(DbSkip())
+			Loop
+		ElseIf "3." $ cFilterVal .And. AllTrim((cAlias)->STATUS) != "SUCESSO"
+			(cAlias)->(DbSkip())
+			Loop
+		EndIf
+
+		nRows++
+		nRow := nRows + 1
+		cStatusVal := Upper(AllTrim((cAlias)->STATUS))
+
+		// Coluna 1: Linha
+		oXLS:SetFont(FwPrinterFont():Arial(), 10, .F., .F., .F.)
+		oXLS:SetCellsFormat(oHorzAlign:Left(), oVertAlign:Center(), .F., 0, "000000", "FFFFFF")
+		oXLS:SetText(nRow, 1, cValToChar((cAlias)->LINE_NUM))
+
+		// Coluna 2: Status - Negrito + Cor Vermelha (FF0000) se ERRO, Verde (008000) se SUCESSO
+		oXLS:SetFont(FwPrinterFont():Arial(), 10, .F., .T., .F.)
+		If cStatusVal == "ERRO"
+			oXLS:SetCellsFormat(oHorzAlign:Center(), oVertAlign:Center(), .F., 0, "FF0000", "FFFFFF")
+		Else
+			oXLS:SetCellsFormat(oHorzAlign:Center(), oVertAlign:Center(), .F., 0, "008000", "FFFFFF")
+		EndIf
+		oXLS:SetText(nRow, 2, cStatusVal)
+
+		// Colunas 3, 4, 5: Texto normal
+		oXLS:SetFont(FwPrinterFont():Arial(), 10, .F., .F., .F.)
+		oXLS:SetCellsFormat(oHorzAlign:Left(), oVertAlign:Center(), .T., 0, "000000", "FFFFFF")
+		oXLS:SetText(nRow, 3, AllTrim((cAlias)->CONTA))
+		oXLS:SetText(nRow, 4, AllTrim((cAlias)->DESCRICAO))
+		oXLS:SetText(nRow, 5, AllTrim((cAlias)->MOTIVO))
+
+		(cAlias)->(DbSkip())
+	EndDo
+
+	oXLS:toXLSX()
+	oXLS:DeActivate()
+	oXLS:Destroy()
+
+	If File(cRelFile)
+		fErase(cRelFile)
+	EndIf
+
+	MsgInfo("Exportacao para Excel concluida com sucesso!" + CRLF + CRLF + ;
+	        "Total de registros exportados: " + cValToChar(nRows) + CRLF + ;
+	        "Filtro Aplicado: " + cFilterVal + CRLF + ;
+	        "Arquivo salvo em: " + cXlsxFile, "Exportacao Concluida")
+
+return
+
+
+/*/{Protheus.doc} ImportaPlanoContas::generateExcelLog
+Gera o arquivo de log em Excel (.xlsx) na subpasta LOGS utilizando FwPrinterXlsx com cores no Status.
+@type method
+@author eduardo.brust
+@since 10/21/2026
+@param cPath, character, caminho do arquivo de origem
+@return logical, retorna status da geracao do arquivo
+/*/
+method generateExcelLog(cPath as character) as logical class ImportaPlanoContas
+	local oXLS       as object
+	local oHorzAlign as object
+	local oVertAlign as object
+	local cDrive     as character
+	local cDir       as character
+	local cFileName  as character
+	local cExt       as character
+	local cLogDir    as character
+	local cRelFile   as character
+	local cXlsxFile  as character
+	local nI         as numeric
+	local nRow       as numeric
+	local cStatusVal as character
+	local lSuccess   as logical
+
+	lSuccess := .F.
+	SplitPath(::cFilePath, @cDrive, @cDir, @cFileName, @cExt)
+
+	cLogDir := cDrive + cDir + "LOGS\"
+	If !ExistDir(cLogDir)
+		MakeDir(cLogDir)
+	EndIf
+
+	cFileName := cFileName + "_LOG_" + DToS(Date()) + "_" + StrTran(Time(), ":", "")
+	cRelFile  := cLogDir + cFileName + ".rel"
+	cXlsxFile := cLogDir + cFileName + ".xlsx"
+
+	::cLogPath := cXlsxFile
+
+	oXLS := FwPrinterXlsx():New(.T.)
+	oHorzAlign := FwXlsxCellAlignment():Horizontal()
+	oVertAlign := FwXlsxCellAlignment():Vertical()
+
+	oXLS:Activate(cRelFile)
+	oXLS:AddSheet("Log_Importacao")
+
+	// Largura das colunas
+	oXLS:SetColumnsWidth(1, 1, 10)
+	oXLS:SetColumnsWidth(2, 2, 14)
+	oXLS:SetColumnsWidth(3, 3, 20)
+	oXLS:SetColumnsWidth(4, 4, 35)
+	oXLS:SetColumnsWidth(5, 5, 80)
+
+	// Cabecalho com fundo cinza e texto em negrito
+	oXLS:SetFont(FwPrinterFont():Arial(), 10, .F., .T., .F.)
+	oXLS:SetCellsFormat(oHorzAlign:Center(), oVertAlign:Center(), .F., 0, "000000", "CCCCCC")
+
+	oXLS:SetText(1, 1, "Linha")
+	oXLS:SetText(1, 2, "Status")
+	oXLS:SetText(1, 3, "Conta Contabil")
+	oXLS:SetText(1, 4, "Descricao")
+	oXLS:SetText(1, 5, "Motivo / Observacao")
+
+	For nI := 1 To Len(::aLogData)
+		nRow := nI + 1
+		cStatusVal := Upper(AllTrim(::aLogData[nI][2]))
+
+		// Coluna 1: Linha
+		oXLS:SetFont(FwPrinterFont():Arial(), 10, .F., .F., .F.)
+		oXLS:SetCellsFormat(oHorzAlign:Left(), oVertAlign:Center(), .F., 0, "000000", "FFFFFF")
+		oXLS:SetText(nRow, 1, cValToChar(::aLogData[nI][1]))
+
+		// Coluna 2: Status - Negrito + Cor Vermelha (FF0000) se ERRO, Verde (008000) se SUCESSO
+		oXLS:SetFont(FwPrinterFont():Arial(), 10, .F., .T., .F.)
+		If cStatusVal == "ERRO"
+			oXLS:SetCellsFormat(oHorzAlign:Center(), oVertAlign:Center(), .F., 0, "FF0000", "FFFFFF")
+		Else
+			oXLS:SetCellsFormat(oHorzAlign:Center(), oVertAlign:Center(), .F., 0, "008000", "FFFFFF")
+		EndIf
+		oXLS:SetText(nRow, 2, cStatusVal)
+
+		// Colunas 3, 4, 5: Texto normal
+		oXLS:SetFont(FwPrinterFont():Arial(), 10, .F., .F., .F.)
+		oXLS:SetCellsFormat(oHorzAlign:Left(), oVertAlign:Center(), .T., 0, "000000", "FFFFFF")
+		oXLS:SetText(nRow, 3, AllTrim(::aLogData[nI][3]))
+		oXLS:SetText(nRow, 4, AllTrim(::aLogData[nI][4]))
+		oXLS:SetText(nRow, 5, AllTrim(::aLogData[nI][5]))
+	Next nI
+
+	oXLS:toXLSX()
+	oXLS:DeActivate()
+	oXLS:Destroy()
+
+	If File(cRelFile)
+		fErase(cRelFile)
+	EndIf
+
+	lSuccess := File(cXlsxFile)
+
+return lSuccess
+
+
+/*/{Protheus.doc} ImportaPlanoContas::writeLogRow
+Guarda a linha correspondente no array de log em memoria para futura geracao do Excel.
+@type method
+@author eduardo.brust
+@since 10/21/2026
+@param nLineNum, numeric, numero da linha
+@param cStatus, character, status da linha
+@param jRow, json, detalhes da linha
+@param cMotivo, character, motivo do erro ou sucesso
+/*/
+method writeLogRow(nLineNum as numeric, cStatus as character, jRow as json, cMotivo as character) class ImportaPlanoContas
+	local cCleanMotivo as character
+
+	cCleanMotivo := StrTran(cMotivo, CRLF, " | ")
+
+	AAdd(::aLogData, { ;
+		nLineNum, ;
+		cStatus, ;
+		jRow['cConta'], ;
+		jRow['cDesc'], ;
+		cCleanMotivo ;
+	})
+
+return
+
+
+/*/{Protheus.doc} ImportaPlanoContas::validateLayout
+Valida se a ordem e os nomes do cabecalho CSV correspondem ao esperado utilizando JsonObject.
+@type method
+@author eduardo.brust
+@since 10/21/2026
+@param oFile, object, recebe o objeto do arquivo
+@return logical, retorna status
+/*/
+method validateLayout(oFile as object) as logical class ImportaPlanoContas
+	local cLine   as character
+	local aHeader as array
+	local jHeader as json
+	local i       as numeric
+	local cKey    as character
+
+	If oFile:Eof()
+		MsgStop("O arquivo selecionado esta vazio!", "Validacao de Layout")
+		return .F.
+	EndIf
+
+	cLine   := AllTrim(oFile:GetLine())
+	aHeader := StrTokArr2(cLine, ";")
+
+	// Mapeia colunas lidas do arquivo em um objeto JSON chave/valor de posicao
+	jHeader := JsonObject():New()
+	For i := 1 To Len(aHeader)
+		cKey := cValToChar(i)
+		jHeader[cKey] := Upper(AllTrim(aHeader[i]))
+	Next i
+
+	If Len(aHeader) < 7
+		MsgStop("O layout do arquivo e invalido! Quantidade de colunas menor que o esperado (Esperado: 7 colunas).", "Validacao de Layout")
+		return .F.
+	EndIf
+
+	For i := 1 To 7
+		cKey := cValToChar(i)
+		If jHeader[cKey] != ::jColsExpected[cKey]
+			MsgStop("Layout incorreto na Coluna " + cKey + "!" + CRLF + ;
+				"Esperado: " + ::jColsExpected[cKey] + CRLF + ;
+				"Encontrado no CSV: " + jHeader[cKey], "Validacao de Layout")
+			return .F.
+		EndIf
+	Next i
+
+return .T.
+
+
+/*/{Protheus.doc} ImportaPlanoContas::processImport
+Varre as linhas do arquivo, monta objetos JSON por registro, valida, grava e gera log Excel via FwPrinterXlsx.
+@type method
+@author eduardo.brust
+@since 10/21/2026
+@param oFile, object, recebe objeto do arquivo
+/*/
+method processImport(oFile as object) class ImportaPlanoContas
+	local cLine     as character
+	local aCampos   as array
+	local nLineNum  as numeric
+	local jRow      as json
+	local cMsgVal   as character
+	local cErrorMVC as character
+
+	nLineNum  := 1 // Linha 1 foi o cabecalho
+	::aLogData := {}
+	ProcRegua(0)
+
+	While oFile:HasLine()
+		cLine := AllTrim(oFile:GetLine())
+		nLineNum++
+		IncProc("Processando linha " + cValToChar(nLineNum) + "...")
+
+		If Empty(cLine)
+			Loop
+		EndIf
+
+		aCampos := StrTokArr2(cLine, ";")
+
+		While Len(aCampos) < 7
+			AAdd(aCampos, "")
+		EndDo
+
+		// Estruturacao da linha lida em objeto JSON com chaves nomeadas
+		jRow := JsonObject():New()
+		jRow['cConta']  := AllTrim(aCampos[1])
+		jRow['cDesc']   := AllTrim(aCampos[2])
+		jRow['cClasse'] := AllTrim(aCampos[3])
+		jRow['cNormal'] := AllTrim(aCampos[4])
+		jRow['cNivel']  := AllTrim(aCampos[5])
+		jRow['cXZM3']   := AllTrim(aCampos[6])
+		jRow['cCtaSup'] := AllTrim(aCampos[7])
+
+		// 1. Validacao das Regras de Dados
+		cMsgVal := ::validateData(jRow)
+
+		If !Empty(cMsgVal)
+			::nError++
+			::writeLogRow(nLineNum, "ERRO", jRow, cMsgVal)
+			Loop
+		EndIf
+
+		// 2. Gravacao via Modelo MVC
+		cErrorMVC := ""
+		If ::saveAccount(jRow, @cErrorMVC)
+			::nSuccess++
+			::writeLogRow(nLineNum, "SUCESSO", jRow, "Registro importado com sucesso.")
+		Else
+			::nError++
+			::writeLogRow(nLineNum, "ERRO", jRow, cErrorMVC)
+		EndIf
+	EndDo
+
+return
+
+
+/*/{Protheus.doc} ImportaPlanoContas::validateData
+Realiza checagens de obrigatoriedade, tamanho de campos e caracteres especiais consumindo JSON.
+@type method
+@author eduardo.brust
+@since 10/21/2026
+@param jRow, json, linha do arquivo
+@return character, retorno do erro
+/*/
+method validateData(jRow as json) as character class ImportaPlanoContas
+	local cErros as character
+	cErros := ""
+
+	// 1. Validacao do Codigo da Conta (CT1_CONTA)
+	If Empty(jRow['cConta'])
+		cErros += "Codigo da conta (CT1_CONTA) em branco. "
+	ElseIf Len(jRow['cConta']) > TamSX3("CT1_CONTA")[1]
+		cErros += "Codigo da conta excede limite (" + cValToChar(TamSX3("CT1_CONTA")[1]) + " caracteres). "
+	ElseIf ::isSpecialChar(jRow['cConta'])
+		cErros += "Codigo da conta contem caracteres especiais nao permitidos. "
+	EndIf
+
+	// 2. Validacao da Descricao (CT1_DESC01)
+	If Empty(jRow['cDesc'])
+		cErros += "Descricao da conta (CT1_DESC01) em branco. "
+	ElseIf Len(jRow['cDesc']) > TamSX3("CT1_DESC01")[1]
+		cErros += "Descricao excede limite (" + cValToChar(TamSX3("CT1_DESC01")[1]) + " caracteres). "
+	EndIf
+
+	// 3. Validacao da Classe (CT1_CLASSE - 1=Sintetica, 2=Analitica)
+	If Empty(jRow['cClasse'])
+		cErros += "Classe da conta (CT1_CLASSE) em branco. "
+	ElseIf !(jRow['cClasse'] $ "1|2")
+		cErros += "Classe invalida (" + jRow['cClasse'] + " - Use 1=Sintetica, 2=Analitica). "
+	EndIf
+
+	// 4. Validacao da Condicao Normal (CT1_NORMAL - 1=Devedora, 2=Credora)
+	If Empty(jRow['cNormal'])
+		cErros += "Condicao Normal (CT1_NORMAL) em branco. "
+	ElseIf !(jRow['cNormal'] $ "1|2")
+		cErros += "Condicao Normal invalida (" + jRow['cNormal'] + " - Use 1=Devedora, 2=Credora). "
+	EndIf
+
+	// 5. Validacao do Nivel (CT1_NIVEL - Numerico)
+	If Empty(jRow['cNivel'])
+		cErros += "Nivel da conta (CT1_NIVEL) em branco. "
+	ElseIf !IsDigit(jRow['cNivel']) .And. Val(jRow['cNivel']) <= 0
+		cErros += "Nivel da conta invalido (" + jRow['cNivel'] + " - Deve ser numerico). "
+	EndIf
+
+	// 6. Validacao do Campo Customizado CT1_XZM3 (1 ou 2)
+	If Empty(jRow['cXZM3'])
+		cErros += "Campo CT1_XZM3 em branco. "
+	ElseIf !(jRow['cXZM3'] $ "1|2")
+		cErros += "Valor do campo CT1_XZM3 invalido (" + jRow['cXZM3'] + " - Use 1 ou 2). "
+	EndIf
+
+return AllTrim(cErros)
+
+
+/*/{Protheus.doc} ImportaPlanoContas::saveAccount
+Grava o registro no cadastro de Plano de Contas via Modelo MVC (CTBA020) recebendo o JSON.
+@type method
+@author eduardo.brust
+@since 10/21/2026
+@param jRow, json, recebe a linha
+@param cErrorMVC, character, recebe o erro
+@return logical, retorna o status
+/*/
+method saveAccount(jRow as json, cErrorMVC as character) as logical class ImportaPlanoContas
+	local oModel   as object
+	local lSaved   as logical
+	local aErroMVC as array
+	local jErroMVC as json
+
+	lSaved    := .F.
+	cErrorMVC := ""
+
+	oModel := FWLoadModel("CTBA020")
+	oModel:SetOperation(MODEL_OPERATION_INSERT)
+	oModel:Activate()
+
+	oModel:SetValue("CT1MASTER", "CT1_CONTA",  jRow['cConta'])
+	oModel:SetValue("CT1MASTER", "CT1_DESC01", jRow['cDesc'])
+	oModel:SetValue("CT1MASTER", "CT1_CLASSE", jRow['cClasse'])
+	oModel:SetValue("CT1MASTER", "CT1_NORMAL", jRow['cNormal'])
+	// oModel:SetValue("CT1MASTER", "CT1_NIVEL",  Val(jRow['cNivel'])) // Mantido comentado conforme solicitado (necessario em outras bases)
+	// oModel:SetValue("CT1MASTER", "CT1_XZM3",   jRow['cXZM3'])      // Mantido comentado conforme solicitado (necessario em outras bases)
+
+	If !Empty(jRow['cCtaSup'])
+		oModel:SetValue("CT1MASTER", "CT1_CTASUP", jRow['cCtaSup'])
+	EndIf
+
+	If oModel:VldData() .And. oModel:CommitData()
+		lSaved := .T.
+	Else
+		aErroMVC := oModel:GetErrorMessage()
+		If Len(aErroMVC) >= 6
+			// JSON para estruturacao da mensagem de erro e solucao do MVC
+			jErroMVC := JsonObject():New()
+			jErroMVC['mensagem'] := AllToChar(aErroMVC[5])
+			jErroMVC['solucao']  := AllToChar(aErroMVC[6])
+
+			cErrorMVC := "Erro MVC: " + jErroMVC['mensagem'] + " | Solucao: " + jErroMVC['solucao']
+		Else
+			cErrorMVC := "Erro nao especificado ao salvar o modelo MVC."
+		EndIf
+	EndIf
+
+	oModel:DeActivate()
+	oModel:Destroy()
+
+return lSaved
+
+
+/*/{Protheus.doc} ImportaPlanoContas::isSpecialChar
+Verifica a presenca de caracteres especiais nao permitidos na string.
+@type method
+@author eduardo.brust
+@since 10/21/2026
+@param cText, character, recebe o texto para validar
+@return logical, retorna o status
+/*/
+method isSpecialChar(cText as character) as logical class ImportaPlanoContas
+	local lInvalido as logical
+	local cValidos  as character
+	local i         as numeric
+	local cChar     as character
+
+	lInvalido := .F.
+	cValidos  := "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ.-"
+	cText     := Upper(cText)
+
+	For i := 1 To Len(cText)
+		cChar := SubStr(cText, i, 1)
+		If !(cChar $ cValidos)
+			lInvalido := .T.
+			Exit
+		EndIf
+	Next i
+
+return lInvalido
+
+
+// ============================================================================
+// PONTOS DE ENTRADA E FUNCOES ADVPL/TLPP PARA INTERFACE DO PROTHEUS
+// ============================================================================
+
+/*/{Protheus.doc} FuncaoImportaPlanoContas
+User Function para invocar a classe TLPP a partir de menus ou botoes.
+@type function
+@author eduardo.brust
+@since 10/21/2026
+/*/
+user function FuncaoImportaPlanoContas()
+	local oImporter as object
+	oImporter := custom.ctb.ImportaPlanoContas():new()
+	oImporter:execute()
+return
+
+/*/{Protheus.doc} FuncaoModeloPlanoContas
+User Function para exibir diretamente o modelo e cabecalho do CSV de importacao.
+@type function
+@author eduardo.brust
+@since 10/21/2026
+/*/
+user function FuncaoModeloPlanoContas()
+	local oImporter as object
+	oImporter := custom.ctb.ImportaPlanoContas():new()
+	oImporter:showTemplate()
+return
+
+/*/{Protheus.doc} CT020ROT
+Ponto de entrada no cadastro de Plano de Contas (CTBA020) para adicionar botoes no menu.
+@type function
+@author eduardo.brust
+@since 10/21/2026
+/*/
+user function CT020ROT()
+	local aRotina := PARAMIXB
+	AAdd(aRotina, { "Importar CSV (TLPP)", "U_FuncaoImportaPlanoContas", 0, 3, 0, Nil })
+	AAdd(aRotina, { "Modelo Layout CSV",  "U_FuncaoModeloPlanoContas",  0, 2, 0, Nil })
+return aRotina
