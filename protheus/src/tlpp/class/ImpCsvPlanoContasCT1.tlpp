@@ -450,15 +450,21 @@ method exportToExcel(cAlias as character, cFilterVal as character) class Importa
 	local cXlsxFile  as character
 	local nRows      as numeric
 	local nRow       as numeric
-	local cStatusVal as character
+	local cStatusVal   as character
+	local cDefaultName as character
+	local cInitPath    as character
 
 	nRows := 0
 	SplitPath(::cFilePath, @cDrive, @cDir, @cFileName, @cExt)
 
+	// Nome predefinido do arquivo no formato: LOG_ImportaPlanoContas_AAAAMMDD_HHMMSS.xlsx
+	cDefaultName := "LOG_ImportaPlanoContas_" + DToS(Date()) + "_" + StrTran(Time(), ":", "") + ".xlsx"
+	cInitPath    := cDrive + cDir + "LOGS\" + cDefaultName
+
 	cExcelFile := cGetFile( "Arquivo Excel (*.xlsx) | *.xlsx", ;
 		"Salvar Log Filtrado em Excel", ;
 		1, ;
-		cDrive + cDir + "LOGS\", ;
+		cInitPath, ;
 		.T., ;
 		GETF_LOCALHARD + GETF_NETWORKDRIVE, ;
 		.T., ;
@@ -575,7 +581,7 @@ method generateExcelLog(cPath as character) as logical class ImportaPlanoContas
 	local cXlsxFile  as character
 	local nI         as numeric
 	local nRow       as numeric
-	local cStatusVal as character
+	local cStatusVal   as character
 	local lSuccess   as logical
 
 	lSuccess := .F.
