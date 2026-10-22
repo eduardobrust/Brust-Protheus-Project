@@ -1,0 +1,21 @@
+#include "protheus.ch"
+#include "totvs.ch"
+#include "tlpp-core.th"
+#include "tlpp-object.th"
+#include "fwmvcdef.ch"
+
+/*/{Protheus.doc} CT020ROT
+Ponto de entrada no cadastro de Plano de Contas (CTBA020) para adicionar botoes no menu.
+@type function
+@author eduardo.brust
+@since 10/21/2026
+/*/
+
+user function CT020ROT()
+    local aRotina := PARAMIXB[1]
+    
+    // O 7º elemento (.T.) define os botoes como PAGEACTION (exibidos na barra superior)
+    AAdd(aRotina, { "Importar CSV (TLPP)", "custom.ctb.U_FuncaoImportaPlanoContas", 0, 0, 0, Nil, .F. })
+    AAdd(aRotina, { "Modelo Layout CSV",  "custom.ctb.U_FuncaoModeloPlanoContas",  0, 0, 0, Nil, .F. })
+
+return aRotina

@@ -37,6 +37,7 @@ class ImportaPlanoContas
 	public method execute() as logical
 	public method processImport(oFile as object)
 	public method showTemplate()
+	public method showTemplateMemo()
 	public method showLogGrid()
 	public method applyGridFilter(cAlias as character, cFilterVal as character, oBrowse as object)
 	public method exportToExcel(cAlias as character, cFilterVal as character)
@@ -49,8 +50,7 @@ class ImportaPlanoContas
 	private method isSpecialChar(cText as character) as logical
 	private method generateExcelLog(cPath as character) as logical
 	private method writeLogRow(nLineNum as numeric, cStatus as character, jRow as json, cMotivo as character)
-	private method showTemplateMemo()
-
+	
 endclass
 
 
@@ -1046,15 +1046,3 @@ user function FuncaoModeloPlanoContas()
 	oImporter := custom.ctb.ImportaPlanoContas():new()
 	oImporter:showTemplate()
 return
-
-/*/{Protheus.doc} CT020ROT
-Ponto de entrada no cadastro de Plano de Contas (CTBA020) para adicionar botoes no menu.
-@type function
-@author eduardo.brust
-@since 10/21/2026
-/*/
-user function CT020ROT()
-	local aRotina := PARAMIXB
-	AAdd(aRotina, { "Importar CSV (TLPP)", "U_FuncaoImportaPlanoContas", 0, 3, 0, Nil })
-	AAdd(aRotina, { "Modelo Layout CSV",  "U_FuncaoModeloPlanoContas",  0, 2, 0, Nil })
-return aRotina
