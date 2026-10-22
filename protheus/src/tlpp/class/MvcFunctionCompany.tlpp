@@ -633,3 +633,5 @@ User function MenuDef() as array
 	Add Option aRotina Title "Copiar" Action "ViewDef.MvcFunctionCompany.FuncComp" Operation OP_COPIA Access 0
 
 return aRotina
+
+Posicione("SD2", 3, xFilial("SD2") + SE1->E1_NUM + SE1->E1_PREFIXO + SE1->E1_CLIENTE + SE1->E1_LOJA, "D2_IDTRIB")

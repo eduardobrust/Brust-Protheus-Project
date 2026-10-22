@@ -40,6 +40,7 @@ class ImportaPlanoContas
 	public method showLogGrid()
 	public method applyGridFilter(cAlias as character, cFilterVal as character, oBrowse as object)
 	public method exportToExcel(cAlias as character, cFilterVal as character)
+	public method searchAccount(cAlias as character, cSearchVal as character, oBrowse as object, nType as numeric)
 
 	// Metodos Privados
 	private method validateLayout(oFile as object) as logical
@@ -297,30 +298,33 @@ Exibe um Grid FWBrowse interativo com resumo de totais (Total Lido, Sucessos, Er
 @since 10/21/2026
 /*/
 method showLogGrid() class ImportaPlanoContas
-	local oDlg        as object
-	local oPanelTop   as object
-	local oPanelGrid  as object
-	local oBrowse     as object
-	local oCmbFilter  as object
-	local oTempTable  as object
-	local aFields     as array
-	local aComboItems as array
-	local cAlias      as character
-	local cFilterVal  as character
-	local nI          as numeric
-	local oSelf       as object
-	local oFontLabel  as object
-	local oSayTot     as object
-	local oSaySuc     as object
-	local oSayErr     as object
-	local cTextTot    as character
-	local cTextSuc    as character
-	local cTextErr    as character
+	local oDlg         as object
+	local oPanelTop    as object
+	local oPanelGrid   as object
+	local oBrowse      as object
+	local oCmbFilter   as object
+	local oGetSearch   as object
+	local oTempTable   as object
+	local aFields      as array
+	local aComboItems  as array
+	local cAlias       as character
+	local cFilterVal   as character
+	local cSearchVal as character
+	local nI           as numeric
+	local oSelf        as object
+	local oFontLabel   as object
+	local oSayTot      as object
+	local oSaySuc      as object
+	local oSayErr      as object
+	local cTextTot     as character
+	local cTextSuc     as character
+	local cTextErr     as character
 
-	oSelf      := Self
-	cAlias     := GetNextAlias()
-	cFilterVal := "1. Todos os Registros"
-	aComboItems:= {"1. Todos os Registros", "2. Apenas Erros (Vermelho)", "3. Apenas Sucessos (Verde)"}
+	oSelf        := Self
+	cAlias       := GetNextAlias()
+	cFilterVal   := "1. Todos os Registros"
+	cSearchVal := PadR("", 60)
+	aComboItems  := {"1. Todos os Registros", "2. Apenas Erros (Vermelho)", "3. Apenas Sucessos (Verde)"}
 
 	// Criacao da Tabela Temporaria para carregar os dados do Log em Memoria
 	// Coluna DESCRICAO nomeada expressamente para evitar palavra reservada 'DESC' do Oracle (ORA-00904)
@@ -353,23 +357,35 @@ method showLogGrid() class ImportaPlanoContas
 	// Fonte expandida (tamanho compativel com o combobox de filtro) em BOLD
 	DEFINE FONT oFontLabel NAME "Arial" SIZE 0, -15 BOLD
 
-	// Painel superior ajustado para acomodar os novos labels
-	oPanelTop  := tPanel():New(000, 000, "", oDlg, , , , , , 680, 040)
-	oPanelGrid := tPanel():New(040, 000, "", oDlg, , , , , , 680, 260)
+	// Painel superior ajustado para acomodar filtro, busca e labels de resumo
+	oPanelTop  := tPanel():New(000, 000, "", oDlg, , , , , , 680, 052)
+	oPanelGrid := tPanel():New(052, 000, "", oDlg, , , , , , 680, 248)
 
-	// Filtro por Status
-	@ 010, 010 SAY "Filtrar por Status:" SIZE 065, 012 OF oPanelTop PIXEL
-	@ 008, 080 COMBOBOX oCmbFilter VAR cFilterVal ITEMS aComboItems SIZE 140, 015 OF oPanelTop PIXEL ;
+	// Linha 1: Filtro por Status e Resumo de Totais
+	@ 008, 010 SAY "Filtrar por Status:" SIZE 065, 012 OF oPanelTop PIXEL
+	@ 006, 080 COMBOBOX oCmbFilter VAR cFilterVal ITEMS aComboItems SIZE 140, 015 OF oPanelTop PIXEL ;
 	           ON CHANGE (oSelf:applyGridFilter(cAlias, cFilterVal, oBrowse))
 
-	// Labels do Resumo em destaque no topo da tela (incluindo Total Lido)
 	cTextTot := "Total Lido: " + cValToChar(Len(::aLogData))
 	cTextSuc := "Sucessos: " + cValToChar(::nSuccess)
 	cTextErr := "Erros / Inconsistencias: " + cValToChar(::nError)
 
-	@ 008, 235 SAY oSayTot VAR cTextTot SIZE 095, 018 OF oPanelTop PIXEL FONT oFontLabel
-	@ 008, 335 SAY oSaySuc VAR cTextSuc SIZE 110, 018 OF oPanelTop PIXEL FONT oFontLabel
-	@ 008, 455 SAY oSayErr VAR cTextErr SIZE 215, 018 OF oPanelTop PIXEL FONT oFontLabel
+	@ 006, 235 SAY oSayTot VAR cTextTot SIZE 095, 018 OF oPanelTop PIXEL FONT oFontLabel
+	@ 006, 335 SAY oSaySuc VAR cTextSuc SIZE 110, 018 OF oPanelTop PIXEL FONT oFontLabel
+	@ 006, 455 SAY oSayErr VAR cTextErr SIZE 215, 018 OF oPanelTop PIXEL FONT oFontLabel
+
+	// Linha 2: Caixa de Busca e Botoes de Acao (Codigo ou Descricao)
+	@ 028, 010 SAY "Buscar:" SIZE 055, 012 OF oPanelTop PIXEL
+	@ 026, 065 MSGET oGetSearch VAR cSearchVal SIZE 140, 014 OF oPanelTop PIXEL PICTURE "@!"
+
+	@ 025, 212 BUTTON "Buscar p/ Codigo" SIZE 080, 016 OF oPanelTop PIXEL ;
+	           ACTION (oSelf:searchAccount(cAlias, cSearchVal, oBrowse, 1))
+
+	@ 025, 297 BUTTON "Buscar p/ Descricao" SIZE 090, 016 OF oPanelTop PIXEL ;
+	           ACTION (oSelf:searchAccount(cAlias, cSearchVal, oBrowse, 2))
+
+	@ 025, 392 BUTTON "Limpar" SIZE 050, 016 OF oPanelTop PIXEL ;
+	           ACTION (cSearchVal := PadR("", 60), oGetSearch:Refresh(), oSelf:searchAccount(cAlias, "", oBrowse, 1))
 
 	oBrowse := FWBrowse():New(oPanelGrid)
 	oBrowse:SetDataTable(.T.)
@@ -413,6 +429,64 @@ Aplica o filtro selecionado pelo usuario no Browse.
 @param cFilterVal, character, valor selecionado na combo
 @param oBrowse, object, instancia do FWBrowse
 /*/
+
+
+/*/{Protheus.doc} ImportaPlanoContas::searchAccount
+Localiza a conta informada no grid do log e posiciona o cursor na linha correspondente.
+@type method
+@author eduardo.brust
+@since 10/22/2026
+@param cAlias, character, alias da tabela temporaria
+@param cSearchConta, character, conta digitada na caixa de busca
+@param oBrowse, object, instancia do FWBrowse
+/*/
+method searchAccount(cAlias as character, cSearchVal as character, oBrowse as object, nType as numeric) class ImportaPlanoContas
+	local cSearch as character
+	local lFound  as logical
+	local nRecSav as numeric
+	local cField  as character
+	local cLabel  as character
+
+	Default nType := 1
+
+	cSearch := Upper(AllTrim(cSearchVal))
+	lFound  := .F.
+
+	If Empty(cSearch)
+		(cAlias)->(DbGoTop())
+		If oBrowse != Nil
+			oBrowse:Refresh()
+		EndIf
+		return
+	EndIf
+
+	nRecSav := (cAlias)->(RecNo())
+	(cAlias)->(DbGoTop())
+
+	While !(cAlias)->(Eof())
+		If nType == 1
+			cField := Upper(AllTrim((cAlias)->CONTA))
+		Else
+			cField := Upper(AllTrim((cAlias)->DESCRICAO))
+		EndIf
+
+		If cSearch $ cField
+			lFound := .T.
+			Exit
+		EndIf
+		(cAlias)->(DbSkip())
+	EndDo
+
+	If lFound
+		If oBrowse != Nil
+			oBrowse:Refresh()
+		EndIf
+	Else
+		(cAlias)->(DbGoTo(nRecSav))
+		cLabel := Iif(nType == 1, "Codigo de Conta", "Descricao")
+		MsgAlert("Nenhum registro encontrado com " + cLabel + " contendo '" + cSearch + "'.", "Busca de Registro")
+	EndIf
+return
 method applyGridFilter(cAlias as character, cFilterVal as character, oBrowse as object) class ImportaPlanoContas
 	If "2." $ cFilterVal
 		(cAlias)->(dbSetFilter({|| AllTrim(STATUS) == "ERRO" }, "AllTrim(STATUS) == 'ERRO'"))
